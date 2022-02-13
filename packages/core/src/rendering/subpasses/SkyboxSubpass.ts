@@ -25,7 +25,7 @@ import {
   SamplerBindingLayout
 } from "../../webgpu";
 import { PrimitiveMesh } from "../../mesh/PrimitiveMesh";
-import { Matrix } from "@oasis-engine/math";
+import { Matrix } from "@arche-engine/math";
 import { ShaderMacroCollection } from "../../shader/ShaderMacroCollection";
 import { ShaderProgram } from "../../shader/ShaderProgram";
 

@@ -1,5 +1,5 @@
 import { Material, PBRMaterial, PBRSpecularMaterial, RenderFace, UnlitMaterial } from "@oasis-engine/core";
-import { Color } from "@oasis-engine/math";
+import { Color } from "@arche-engine/math";
 import { GLTFResource } from "../GLTFResource";
 import { MaterialAlphaMode } from "../Schema";
 import { Parser } from "./Parser";

@@ -1,5 +1,5 @@
 import { IClone } from "../clone/IClone";
-import { Color, Matrix, Vector2, Vector3, Vector4 } from "@oasis-engine/math";
+import { Color, Matrix, Vector2, Vector3, Vector4 } from "@arche-engine/math";
 import { IRefObject } from "../asset/IRefObject";
 import { ShaderDataGroup } from "./ShaderDataGroup";
 import { Shader } from "./Shader";

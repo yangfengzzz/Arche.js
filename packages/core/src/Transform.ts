@@ -1,4 +1,4 @@
-import { MathUtil, Matrix, Matrix3x3, Quaternion, Vector3 } from "@oasis-engine/math";
+import { MathUtil, Matrix, Matrix3x3, Quaternion, Vector3 } from "@arche-engine/math";
 import { deepClone, ignoreClone } from "./clone/CloneManager";
 import { Component } from "./Component";
 import { UpdateFlagManager } from "./UpdateFlagManager";

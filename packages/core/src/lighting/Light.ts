@@ -1,6 +1,6 @@
 import { Component } from "../Component";
 import { Entity } from "../Entity";
-import { Matrix } from "@oasis-engine/math";
+import { Matrix } from "@arche-engine/math";
 
 /**
  * Light base class.

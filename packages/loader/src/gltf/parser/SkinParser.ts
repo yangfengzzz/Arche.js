@@ -1,5 +1,5 @@
 import { Skin } from "@oasis-engine/core";
-import { Matrix } from "@oasis-engine/math";
+import { Matrix } from "@arche-engine/math";
 import { GLTFResource } from "../GLTFResource";
 import { GLTFUtil } from "../GLTFUtil";
 import { Parser } from "./Parser";

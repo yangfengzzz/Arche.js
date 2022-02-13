@@ -4,7 +4,7 @@ import { Component } from "./Component";
 import { Renderer } from "./Renderer";
 import { Script } from "./Script";
 import { ShaderMacroCollection } from "./shader/ShaderMacroCollection";
-import { Vector3 } from "@oasis-engine/math";
+import { Vector3 } from "@arche-engine/math";
 import { RenderElement } from "./rendering/RenderElement";
 
 /**

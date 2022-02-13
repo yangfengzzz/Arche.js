@@ -15,7 +15,6 @@
     "types/**/*"
   ],
   "dependencies": {
-    "arche-engine": "0.0.1",
-    "oasis-engine": "0.6.6"
+    "arche-engine": "0.0.1"
   }
 }

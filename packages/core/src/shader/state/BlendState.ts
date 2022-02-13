@@ -1,5 +1,5 @@
 import { RenderTargetBlendState } from "./RenderTargetBlendState";
-import { Color } from "@oasis-engine/math";
+import { Color } from "@arche-engine/math";
 import {
   BlendState as WGPUBlendState
 } from "../../webgpu/state/FragmentState";

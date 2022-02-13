@@ -1,4 +1,4 @@
-import { BoundingBox } from "@oasis-engine/math";
+import { BoundingBox } from "@arche-engine/math";
 import { Logger } from "../base";
 import { ignoreClone } from "../clone/CloneManager";
 import { ICustomClone } from "../clone/ComponentCloner";

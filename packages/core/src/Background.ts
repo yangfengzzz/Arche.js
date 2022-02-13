@@ -1,4 +1,4 @@
-import { Color } from "@oasis-engine/math";
+import { Color } from "@arche-engine/math";
 import { BackgroundMode } from "./enums/BackgroundMode";
 
 /**

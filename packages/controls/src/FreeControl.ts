@@ -1,5 +1,4 @@
-import { MathUtil, Vector3 } from "oasis-engine";
-import { Entity, Script } from "arche-engine";
+import { MathUtil, Vector3, Entity, Script } from "arche-engine";
 import { Spherical } from "./Spherical";
 
 // Prevent universal lock.

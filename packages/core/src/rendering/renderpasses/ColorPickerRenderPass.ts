@@ -10,7 +10,7 @@ import {
 } from "../../webgpu";
 import { Engine } from "../../Engine";
 import { ColorPickerSubpass } from "../subpasses";
-import { Vector2 } from "@oasis-engine/math";
+import { Vector2 } from "@arche-engine/math";
 import { Renderer } from "../../Renderer";
 import { Mesh } from "../../graphic";
 import { Camera } from "../../Camera";

@@ -9,7 +9,7 @@ import {
   Transform,
   TypedArray
 } from "@oasis-engine/core";
-import { Quaternion, Vector2, Vector3, Vector4 } from "@oasis-engine/math";
+import { Quaternion, Vector2, Vector3, Vector4 } from "@arche-engine/math";
 import { GLTFResource } from "../GLTFResource";
 import { GLTFUtil } from "../GLTFUtil";
 import { AccessorType, AnimationChannelTargetPath, AnimationSamplerInterpolation, IAnimationChannel } from "../Schema";

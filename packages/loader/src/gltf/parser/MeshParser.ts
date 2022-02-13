@@ -1,5 +1,5 @@
 import { BlendShape, Engine, EngineObject, ModelMesh, TypedArray } from "@oasis-engine/core";
-import { Vector3 } from "@oasis-engine/math";
+import { Vector3 } from "@arche-engine/math";
 import { GLTFResource } from "../GLTFResource";
 import { GLTFUtil } from "../GLTFUtil";
 import { AccessorType, IGLTF, IMesh, IMeshPrimitive } from "../Schema";

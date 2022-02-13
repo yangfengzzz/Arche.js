@@ -1,5 +1,5 @@
 import { PBRSpecularMaterial } from "@oasis-engine/core";
-import { Color } from "@oasis-engine/math";
+import { Color } from "@arche-engine/math";
 import { GLTFResource } from "../GLTFResource";
 import { MaterialParser } from "../parser/MaterialParser";
 import { registerExtension } from "../parser/Parser";

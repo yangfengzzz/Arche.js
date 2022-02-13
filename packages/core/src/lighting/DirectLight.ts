@@ -1,6 +1,6 @@
 import { Light } from "./Light";
 import { Entity } from "../Entity";
-import { Color, Matrix, Vector3 } from "@oasis-engine/math";
+import { Color, Matrix, Vector3 } from "@arche-engine/math";
 import { ignoreClone } from "../clone/CloneManager";
 
 export class DirectLight extends Light {

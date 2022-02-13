@@ -1,4 +1,4 @@
-import { BoundingBox } from "@oasis-engine/math";
+import { BoundingBox } from "@arche-engine/math";
 import { RefObject } from "../asset/RefObject";
 import { Engine } from "../Engine";
 import { IndexBufferBinding } from "./IndexBufferBinding";

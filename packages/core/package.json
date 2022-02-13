@@ -14,10 +14,7 @@
     "types/**/*"
   ],
   "dependencies": {
-    "@oasis-engine/math": "0.6.6",
+    "@arche-engine/math": "0.0.1",
     "@webgpu/types": "latest"
-  },
-  "devDependencies": {
-    "@oasis-engine/design": "0.6.6"
   }
 }

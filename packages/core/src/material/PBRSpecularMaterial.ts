@@ -1,4 +1,4 @@
-import { Color } from "@oasis-engine/math";
+import { Color } from "@arche-engine/math";
 import { Engine } from "../Engine";
 import { Shader } from "../shader";
 import { PBRBaseMaterial } from "./PBRBaseMaterial";

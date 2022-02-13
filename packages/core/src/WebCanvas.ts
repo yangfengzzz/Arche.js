@@ -1,5 +1,5 @@
 import { Canvas } from "./Canvas";
-import { Vector2 } from "@oasis-engine/math";
+import { Vector2 } from "@arche-engine/math";
 import { RenderContext } from "./rendering/RenderContext";
 
 type OffscreenCanvas = any;

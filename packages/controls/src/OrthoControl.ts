@@ -1,5 +1,4 @@
-import { Vector3, Vector2 } from "oasis-engine";
-import { Camera, Entity, Logger, Script } from "arche-engine";
+import { Vector3, Vector2, Camera, Entity, Logger, Script } from "arche-engine";
 
 /**
  * The camera's 2D controller, can zoom and pan.

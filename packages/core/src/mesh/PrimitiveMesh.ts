@@ -1,4 +1,4 @@
-import { Vector2, Vector3 } from "@oasis-engine/math";
+import { Vector2, Vector3 } from "@arche-engine/math";
 import { ModelMesh } from "./ModelMesh";
 import { Engine } from "../Engine";
 

@@ -1,4 +1,4 @@
-import { Color, Vector4 } from "@oasis-engine/math";
+import { Color, Vector4 } from "@arche-engine/math";
 import { Shader } from "../shader";
 import { BaseMaterial } from "./BaseMaterial";
 import { SampledTexture2D } from "../texture/SampledTexture2D";

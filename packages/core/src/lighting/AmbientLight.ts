@@ -1,4 +1,4 @@
-import { Color, SphericalHarmonics3 } from "@oasis-engine/math";
+import { Color, SphericalHarmonics3 } from "@arche-engine/math";
 import { Scene } from "../Scene";
 import { Shader } from "../shader";
 import { ShaderMacro } from "../shader/ShaderMacro";

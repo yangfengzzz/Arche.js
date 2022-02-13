@@ -5,7 +5,7 @@ import { BlendMode } from "./enums/BlendMode";
 import { RenderFace } from "./enums/RenderFace";
 import { RenderQueueType } from "./enums/RenderQueueType";
 import { Material } from "./Material";
-import { Vector4 } from "@oasis-engine/math";
+import { Vector4 } from "@arche-engine/math";
 
 export class BaseMaterial extends Material {
   private static _alphaCutoffMacro: ShaderMacro = Shader.getMacroByName("NEED_ALPHA_CUTOFF");

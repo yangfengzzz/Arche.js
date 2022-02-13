@@ -1,6 +1,5 @@
 "use strict";
-import { Vector3, Vector2, Matrix } from "oasis-engine";
-import { Entity, Script } from "arche-engine";
+import { Vector3, Vector2, Matrix, Entity, Script } from "arche-engine";
 import { Spherical } from "./Spherical";
 
 type MouseWheelEvent = any;

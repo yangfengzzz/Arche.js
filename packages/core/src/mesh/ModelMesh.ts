@@ -1,4 +1,4 @@
-import { Color, Vector2, Vector3, Vector4 } from "@oasis-engine/math";
+import { Color, Vector2, Vector3, Vector4 } from "@arche-engine/math";
 import { Mesh } from "../graphic/Mesh";
 import { Buffer } from "../graphic/Buffer";
 import { Engine } from "../Engine";

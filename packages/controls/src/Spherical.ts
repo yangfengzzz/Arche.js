@@ -1,4 +1,4 @@
-import { Vector3, MathUtil } from "oasis-engine";
+import { Vector3, MathUtil } from "arche-engine";
 
 // Prevent gimbal lock.
 const ESP = MathUtil.zeroTolerance;

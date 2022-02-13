@@ -1,4 +1,4 @@
-import { BoundingBox, Matrix, Vector3 } from "@oasis-engine/math";
+import { BoundingBox, Matrix, Vector3 } from "@arche-engine/math";
 import { deepClone, ignoreClone, shallowClone } from "./clone/CloneManager";
 import { Component } from "./Component";
 import { Entity } from "./Entity";

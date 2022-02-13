@@ -15,8 +15,8 @@
   ],
   "dependencies": {
     "@arche-engine/core": "0.0.1",
+    "@arche-engine/math": "0.0.1",
     "@oasis-engine/draco": "0.6.6",
-    "@oasis-engine/math": "0.6.6",
     "@webgpu/types": "latest"
   }
 }

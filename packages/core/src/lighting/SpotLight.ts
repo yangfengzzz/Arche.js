@@ -1,5 +1,5 @@
 import { Light } from "./Light";
-import { Color, Matrix, Vector3 } from "@oasis-engine/math";
+import { Color, Matrix, Vector3 } from "@arche-engine/math";
 import { Entity } from "../Entity";
 import { ignoreClone } from "../clone/CloneManager";
 
