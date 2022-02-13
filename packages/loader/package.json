@@ -1,0 +1,21 @@
+{
+  "name": "@arche-engine/loader",
+  "version": "0.0.1",
+  "license": "MIT",
+  "types": "types/index.d.ts",
+  "scripts": {
+    "b:types": "tsc"
+  },
+  "main": "dist/main.js",
+  "module": "dist/module.js",
+  "debug": "src/index.ts",
+  "files": [
+    "dist/**/*",
+    "types/**/*"
+  ],
+  "dependencies": {
+    "@arche-engine/core": "0.0.1",
+    "@oasis-engine/draco": "0.6.6",
+    "@oasis-engine/math": "0.6.6"
+  }
+}

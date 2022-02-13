@@ -1,0 +1,23 @@
+{
+  "name": "@arche-engine/core",
+  "version": "0.0.1",
+  "license": "MIT",
+  "main": "dist/main.js",
+  "module": "dist/module.js",
+  "types": "types/index.d.ts",
+  "debug": "src/index.ts",
+  "scripts": {
+    "b:types": "tsc"
+  },
+  "files": [
+    "dist/**/*",
+    "types/**/*"
+  ],
+  "dependencies": {
+    "@oasis-engine/math": "0.6.6",
+    "@webgpu/types": "latest"
+  },
+  "devDependencies": {
+    "@oasis-engine/design": "0.6.6"
+  }
+}

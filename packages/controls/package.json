@@ -1,0 +1,21 @@
+{
+  "name": "@arche-engine/controls",
+  "version": "0.0.1",
+  "license": "MIT",
+  "scripts": {
+    "b:types": "tsc",
+    "lint:fix": "tslint --fix --project ./tsconfig.json"
+  },
+  "types": "types/index.d.ts",
+  "browser": "dist/browser.js",
+  "main": "dist/main.js",
+  "module": "dist/module.js",
+  "files": [
+    "dist/**/*",
+    "types/**/*"
+  ],
+  "dependencies": {
+    "arche-engine": "0.0.1",
+    "oasis-engine": "0.6.6"
+  }
+}

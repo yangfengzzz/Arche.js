@@ -1,0 +1,21 @@
+{
+  "name": "arche-engine",
+  "version": "0.0.1",
+  "license": "MIT",
+  "scripts": {
+    "b:types": "tsc"
+  },
+  "types": "types/index.d.ts",
+  "main": "dist/browser.min.js",
+  "module": "dist/module.js",
+  "browser": "dist/browser.min.js",
+  "files": [
+    "dist/**/*",
+    "types/**/*"
+  ],
+  "dependencies": {
+    "@arche-engine/core": "0.0.1",
+    "@arche-engine/loader": "0.0.1",
+    "@oasis-engine/math": "0.6.6"
+  }
+}
