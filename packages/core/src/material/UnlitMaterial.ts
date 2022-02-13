@@ -1,7 +1,7 @@
-import { Color, Vector4 } from "@arche-engine/math";
+import { Color } from "@arche-engine/math";
 import { Shader } from "../shader";
 import { BaseMaterial } from "./BaseMaterial";
-import { SampledTexture2D } from "../texture/SampledTexture2D";
+import { SampledTexture2D } from "../texture";
 import { Engine } from "../Engine";
 
 /**

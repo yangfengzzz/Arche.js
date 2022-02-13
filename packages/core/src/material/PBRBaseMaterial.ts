@@ -2,7 +2,7 @@ import { Color } from "@arche-engine/math";
 import { Engine } from "../Engine";
 import { Shader } from "../shader";
 import { BaseMaterial } from "./BaseMaterial";
-import { SampledTexture2D } from "../texture/SampledTexture2D";
+import { SampledTexture2D } from "../texture";
 
 /**
  * PBR (Physically-Based Rendering) Material.
@@ -25,13 +25,14 @@ export abstract class PBRBaseMaterial extends BaseMaterial {
   private _emissiveTexture: SampledTexture2D;
   private _occlusionTexture: SampledTexture2D;
 
+  private _baseColor = new Color(1, 1, 1, 1);
+  private _emissiveColor = new Color(0, 0, 0, 1);
+
   /**
    * Base color.
    */
-  baseColor(color: Color): Color {
-    const pbrBaseData = this._pbrBaseData;
-    color.setValue(pbrBaseData[0], pbrBaseData[1], pbrBaseData[2], pbrBaseData[3]);
-    return color;
+  get baseColor(): Color {
+    return this._baseColor;
   }
 
   setBaseColor(value: Color) {
@@ -41,6 +42,11 @@ export abstract class PBRBaseMaterial extends BaseMaterial {
     pbrBaseData[2] = value.b;
     pbrBaseData[3] = value.a;
     this.shaderData.setFloatArray(PBRBaseMaterial._pbrBaseProp, pbrBaseData);
+
+    const baseColor = this._baseColor;
+    if (value !== baseColor) {
+      value.cloneTo(baseColor);
+    }
   }
 
   /**
@@ -80,19 +86,22 @@ export abstract class PBRBaseMaterial extends BaseMaterial {
   /**
    * Emissive color.
    */
-  emissiveColor(color: Color): Color {
-    const pbrBaseData = this._pbrBaseData;
-    color.setValue(pbrBaseData[4], pbrBaseData[5], pbrBaseData[6], pbrBaseData[7]);
-    return color;
+  get emissiveColor(): Color {
+    return this._emissiveColor;
   }
 
-  setEmissiveColor(value: Color) {
+  set emissiveColor(value: Color) {
     const pbrBaseData = this._pbrBaseData;
     pbrBaseData[4] = value.r;
     pbrBaseData[5] = value.g;
     pbrBaseData[6] = value.b;
     pbrBaseData[7] = value.a;
     this.shaderData.setFloatArray(PBRBaseMaterial._pbrBaseProp, pbrBaseData);
+
+    const emissiveColor = this._emissiveColor;
+    if (value !== emissiveColor) {
+      value.cloneTo(emissiveColor);
+    }
   }
 
   /**
@@ -117,7 +126,11 @@ export abstract class PBRBaseMaterial extends BaseMaterial {
 
   set emissiveTexture(value: SampledTexture2D) {
     this._emissiveTexture = value;
-    this.shaderData.setSampledTexture(PBRBaseMaterial._emissiveTextureProp, PBRBaseMaterial._emissiveSamplerProp, value);
+    this.shaderData.setSampledTexture(
+      PBRBaseMaterial._emissiveTextureProp,
+      PBRBaseMaterial._emissiveSamplerProp,
+      value
+    );
     if (value) {
       this.shaderData.enableMacro("HAS_EMISSIVEMAP");
     } else {
@@ -134,7 +147,11 @@ export abstract class PBRBaseMaterial extends BaseMaterial {
 
   set occlusionTexture(value: SampledTexture2D) {
     this._occlusionTexture = value;
-    this.shaderData.setSampledTexture(PBRBaseMaterial._occlusionTextureProp, PBRBaseMaterial._occlusionSamplerProp, value);
+    this.shaderData.setSampledTexture(
+      PBRBaseMaterial._occlusionTextureProp,
+      PBRBaseMaterial._occlusionSamplerProp,
+      value
+    );
     if (value) {
       this.shaderData.enableMacro("HAS_OCCLUSIONMAP");
     } else {

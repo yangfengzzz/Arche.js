@@ -2,7 +2,7 @@ import { Color } from "@arche-engine/math";
 import { Engine } from "../Engine";
 import { Shader } from "../shader";
 import { PBRBaseMaterial } from "./PBRBaseMaterial";
-import { SampledTexture2D } from "../texture/SampledTexture2D";
+import { SampledTexture2D } from "../texture";
 
 /**
  * PBR (Specular-Glossiness Workflow) Material.
@@ -16,22 +16,27 @@ export class PBRSpecularMaterial extends PBRBaseMaterial {
   private _pbrSpecularData: Float32Array = new Float32Array(8);
   private _specularGlossinessTexture: SampledTexture2D;
 
+  private _specularColor = new Color(1, 1, 1, 1);
+
   /**
    * Specular color.
    */
-  specularColor(color: Color): Color {
-    const pbrSpecularData = this._pbrSpecularData;
-    color.setValue(pbrSpecularData[0], pbrSpecularData[1], pbrSpecularData[2], pbrSpecularData[3]);
-    return color;
+  get specularColor(): Color {
+    return this._specularColor;
   }
 
-  setSpecularColor(value: Color) {
+  set specularColor(value: Color) {
     const pbrSpecularData = this._pbrSpecularData;
     pbrSpecularData[0] = value.r;
     pbrSpecularData[1] = value.g;
     pbrSpecularData[2] = value.b;
     pbrSpecularData[3] = value.a;
     this.shaderData.setFloatArray(PBRSpecularMaterial._pbrSpecularProp, pbrSpecularData);
+
+    const specularColor = this._specularColor;
+    if (value !== specularColor) {
+      value.cloneTo(specularColor);
+    }
   }
 
   /**
@@ -57,7 +62,11 @@ export class PBRSpecularMaterial extends PBRBaseMaterial {
 
   set specularGlossinessTexture(value: SampledTexture2D) {
     this._specularGlossinessTexture = value;
-    this.shaderData.setSampledTexture(PBRSpecularMaterial._specularGlossinessTextureProp, PBRSpecularMaterial._specularGlossinessSamplerProp, value);
+    this.shaderData.setSampledTexture(
+      PBRSpecularMaterial._specularGlossinessTextureProp,
+      PBRSpecularMaterial._specularGlossinessSamplerProp,
+      value
+    );
     if (value) {
       this.shaderData.enableMacro("HAS_SPECULARGLOSSINESSMAP");
     } else {

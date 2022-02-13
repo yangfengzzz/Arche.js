@@ -1,5 +1,5 @@
 import { IClone } from "../clone/IClone";
-import { RefObject } from "../asset/RefObject";
+import { RefObject } from "../asset";
 import { CloneManager } from "../clone/CloneManager";
 import { Engine } from "../Engine";
 import { ShaderDataGroup } from "../shader/ShaderDataGroup";

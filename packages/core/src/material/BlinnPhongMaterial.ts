@@ -2,7 +2,7 @@ import { Color } from "@arche-engine/math";
 import { Engine } from "../Engine";
 import { Shader } from "../shader";
 import { BaseMaterial } from "./BaseMaterial";
-import { SampledTexture2D } from "../texture/SampledTexture2D";
+import { SampledTexture2D } from "../texture";
 
 /**
  * Blinn-phong Material.
@@ -25,22 +25,28 @@ export class BlinnPhongMaterial extends BaseMaterial {
   private _emissiveTexture: SampledTexture2D;
   private _normalTexture: SampledTexture2D;
 
+  private _baseColor: Color = new Color(1, 1, 1, 1);
+  private _specularColor: Color = new Color(1, 1, 1, 1);
+
   /**
    * Base color.
    */
-  baseColor(color: Color): Color {
-    const blinnPhongData = this._blinnPhongData;
-    color.setValue(blinnPhongData[0], blinnPhongData[1], blinnPhongData[2], blinnPhongData[3]);
-    return color;
+  get baseColor(): Color {
+    return this._baseColor;
   }
 
-  setBaseColor(value: Color) {
+  set baseColor(value: Color) {
     const blinnPhongData = this._blinnPhongData;
     blinnPhongData[0] = value.r;
     blinnPhongData[1] = value.g;
     blinnPhongData[2] = value.b;
     blinnPhongData[3] = value.a;
     this.shaderData.setFloatArray(BlinnPhongMaterial._blinnPhongProp, blinnPhongData);
+
+    const baseColor = this._baseColor;
+    if (value !== baseColor) {
+      value.cloneTo(baseColor);
+    }
   }
 
   /**
@@ -63,19 +69,22 @@ export class BlinnPhongMaterial extends BaseMaterial {
   /**
    * Specular color.
    */
-  specularColor(color: Color): Color {
-    const blinnPhongData = this._blinnPhongData;
-    color.setValue(blinnPhongData[4], blinnPhongData[5], blinnPhongData[6], blinnPhongData[7]);
-    return color;
+  get specularColor(): Color {
+    return this._specularColor;
   }
 
-  setSpecularColor(value: Color) {
+  set specularColor(value: Color) {
     const blinnPhongData = this._blinnPhongData;
     blinnPhongData[4] = value.r;
     blinnPhongData[5] = value.g;
     blinnPhongData[6] = value.b;
     blinnPhongData[7] = value.a;
     this.shaderData.setFloatArray(BlinnPhongMaterial._blinnPhongProp, blinnPhongData);
+
+    const specularColor = this._specularColor;
+    if (value !== specularColor) {
+      value.cloneTo(specularColor);
+    }
   }
 
   /**
@@ -87,7 +96,11 @@ export class BlinnPhongMaterial extends BaseMaterial {
 
   set specularTexture(value: SampledTexture2D) {
     this._specularTexture = value;
-    this.shaderData.setSampledTexture(BlinnPhongMaterial._specularTextureProp, BlinnPhongMaterial._specularSamplerProp, value);
+    this.shaderData.setSampledTexture(
+      BlinnPhongMaterial._specularTextureProp,
+      BlinnPhongMaterial._specularSamplerProp,
+      value
+    );
     if (value) {
       this.shaderData.enableMacro("HAS_SPECULAR_TEXTURE");
     } else {
@@ -122,7 +135,11 @@ export class BlinnPhongMaterial extends BaseMaterial {
 
   set emissiveTexture(value: SampledTexture2D) {
     this._emissiveTexture = value;
-    this.shaderData.setSampledTexture(BlinnPhongMaterial._emissiveTextureProp, BlinnPhongMaterial._emissiveSamplerProp, value);
+    this.shaderData.setSampledTexture(
+      BlinnPhongMaterial._emissiveTextureProp,
+      BlinnPhongMaterial._emissiveSamplerProp,
+      value
+    );
     if (value) {
       this.shaderData.enableMacro("HAS_EMISSIVE_TEXTURE");
     } else {
@@ -139,7 +156,11 @@ export class BlinnPhongMaterial extends BaseMaterial {
 
   set normalTexture(value: SampledTexture2D) {
     this._normalTexture = value;
-    this.shaderData.setSampledTexture(BlinnPhongMaterial._normalTextureProp, BlinnPhongMaterial._normalSamplerProp, value);
+    this.shaderData.setSampledTexture(
+      BlinnPhongMaterial._normalTextureProp,
+      BlinnPhongMaterial._normalSamplerProp,
+      value
+    );
     if (value) {
       this.shaderData.enableMacro("HAS_NORMAL_TEXTURE");
     } else {

@@ -1,7 +1,7 @@
 import { Engine } from "../Engine";
 import { Shader } from "../shader";
 import { PBRBaseMaterial } from "./PBRBaseMaterial";
-import { SampledTexture2D } from "../texture/SampledTexture2D";
+import { SampledTexture2D } from "../texture";
 
 /**
  * PBR (Metallic-Roughness Workflow) Material.
