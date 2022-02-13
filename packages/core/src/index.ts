@@ -1,5 +1,6 @@
 export { Engine } from "./Engine";
 export type { Canvas } from "./Canvas";
+export { WebGPUEngine } from "./WebGPUEngine";
 
 export { Scene } from "./Scene";
 export { SceneManager } from "./SceneManager";
@@ -31,10 +32,12 @@ export { Background } from "./Background";
 export { BackgroundMode } from "./enums/BackgroundMode";
 export { CameraClearFlags } from "./enums/CameraClearFlags";
 export { ColorSpace } from "./enums/ColorSpace";
-export * from "./lighting/index"
-export * from "./material/index"
-export * from "./texture/index"
-export * from "./shaderlib/index"
-export * from "./shader/index"
+export * from "./lighting/index";
+export * from "./material/index";
+export * from "./texture/index";
+export * from "./graphic/index";
+export * from "./shaderlib/index";
+export * from "./mesh/index";
+export * from "./shader/index";
 export * from "./Layer";
 export * from "./clone/CloneManager";

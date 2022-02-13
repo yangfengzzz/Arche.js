@@ -1,5 +1,3 @@
-import "@webgpu/types";
-
 export * from "./state";
 export * from "./RenderPipelineDescriptor";
 export * from "./ComputePipelineDescriptor";

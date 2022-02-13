@@ -10,7 +10,8 @@
     "incremental": false,
     "skipLibCheck": true,
     "emitDeclarationOnly": true,
-    "sourceMap": true
+    "sourceMap": true,
+    "typeRoots": [ "./node_modules/@webgpu/types", "./node_modules/@types"]
   },
   "include": [
     "src/**/*"
