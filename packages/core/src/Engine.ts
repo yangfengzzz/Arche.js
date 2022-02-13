@@ -177,16 +177,22 @@ export class Engine {
     clearTimeout(this._timeoutId);
   }
 
-  async init() {
-    this._adapter = await navigator.gpu.requestAdapter({
-      powerPreference: "high-performance"
-    });
+  init(): Promise<void> {
+    return new Promise<void>((resolve => {
+      navigator.gpu.requestAdapter({
+        powerPreference: "high-performance"
+      }).then((adapter) => {
+        this._adapter = adapter;
+        this._adapter.requestDevice().then((device) => {
+          this._device = device;
 
-    this._device = await this._adapter.requestDevice();
-    this._renderContext = this._canvas.createRenderContext(this._adapter, this._device);
-    this._renderPasses.push(new ForwardRenderPass(this));
-
-    this._sceneManager.activeScene = new Scene(this, "DefaultScene");
+          this._renderContext = this._canvas.createRenderContext(this._adapter, this._device);
+          this._renderPasses.push(new ForwardRenderPass(this));
+          this._sceneManager.activeScene = new Scene(this, "DefaultScene");
+          resolve();
+        });
+      });
+    }));
   }
 
   /**

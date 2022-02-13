@@ -37,6 +37,6 @@ export class RenderPass {
       this._subpasses[i].draw(scene, camera, renderPassEncoder);
     }
     this._activeSubpassIndex = 0;
-    renderPassEncoder.endPass();
+    renderPassEncoder.end();
   }
 }

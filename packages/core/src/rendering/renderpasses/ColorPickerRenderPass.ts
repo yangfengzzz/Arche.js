@@ -12,7 +12,7 @@ import { Engine } from "../../Engine";
 import { ColorPickerSubpass } from "../subpasses";
 import { Vector2 } from "@oasis-engine/math";
 import { Renderer } from "../../Renderer";
-import { Mesh } from "../../graphic/Mesh";
+import { Mesh } from "../../graphic";
 import { Camera } from "../../Camera";
 import { Scene } from "../../Scene";
 
@@ -63,11 +63,14 @@ export class ColorPickerRenderPass extends RenderPass {
 
     const colorPickerColorAttachments = this._colorPickerColorAttachments;
     colorPickerColorAttachments.storeOp = "store";
-    colorPickerColorAttachments.loadValue = { r: 1.0, g: 1.0, b: 1.0, a: 1.0 };
+    colorPickerColorAttachments.loadOp = 'clear';
+    colorPickerColorAttachments.clearValue = { r: 1.0, g: 1.0, b: 1.0, a: 1.0 };
     const colorPickerDepthStencilAttachment = this._colorPickerDepthStencilAttachment;
-    colorPickerDepthStencilAttachment.depthLoadValue = 1.0;
+    colorPickerDepthStencilAttachment.depthLoadOp = 'clear';
+    colorPickerDepthStencilAttachment.depthClearValue = 1.0;
     colorPickerDepthStencilAttachment.depthStoreOp = "store";
-    colorPickerDepthStencilAttachment.stencilLoadValue = 0.0;
+    colorPickerDepthStencilAttachment.stencilLoadOp = 'clear';
+    colorPickerDepthStencilAttachment.stencilClearValue= 0.0;
     colorPickerDepthStencilAttachment.stencilStoreOp = "store";
     colorPickerDepthStencilAttachment.view = engine.renderContext.depthStencilTexture();
     this.renderPassDescriptor.colorAttachments.push(colorPickerColorAttachments);
