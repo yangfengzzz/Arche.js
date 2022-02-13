@@ -38,6 +38,7 @@ export * from "./texture/index";
 export * from "./graphic/index";
 export * from "./shaderlib/index";
 export * from "./mesh/index";
+export * from "./rendering/index";
 export * from "./shader/index";
 export * from "./Layer";
 export * from "./clone/CloneManager";
