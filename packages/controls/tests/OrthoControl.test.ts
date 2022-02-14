@@ -1,4 +1,4 @@
-import { Camera, Entity, WebGLEngine } from "oasis-engine";
+import { Camera, Entity, WebGLEngine } from "arche-engine";
 import { OrthoControl } from "../src/OrthoControl";
 
 const canvasDOM = document.createElement("canvas");
