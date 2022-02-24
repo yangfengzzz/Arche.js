@@ -157,7 +157,9 @@ export class Shader {
     }
 
     // console.log(vertexCode[0]);
-    // console.log(fragmentCode[0]);
+    // if (fragmentCode) {
+    //   console.log(fragmentCode[0]);
+    // }
     // debugger;
 
     // move to vecMap

@@ -168,6 +168,8 @@ export class ShadowManager extends RenderPass {
 
     ShadowManager._cubeShadowCount = 0;
     this._drawPointShadowMap(scene, camera, commandEncoder);
+    debugger;
+
     if (ShadowManager._cubeShadowCount) {
       if (!this._packedCubeTexture) {
         this._packedCubeTexture = new SampledTextureCube(
@@ -203,8 +205,6 @@ export class ShadowManager extends RenderPass {
   }
 
   private _drawSpotShadowMap(scene: Scene, camera: Camera, commandEncoder: GPUCommandEncoder) {
-    let shadowCount = ShadowManager._shadowCount;
-    let numOfdrawCall = this._numOfdrawCall;
     const shadowMaps = this._shadowMaps;
     const materialPool = this._materialPool;
     const shadowDatas = this._shadowDatas;
@@ -213,13 +213,13 @@ export class ShadowManager extends RenderPass {
     const lights = engine._lightManager.spotLights._elements;
     for (let i = lights.length - 1; i >= 0; --i) {
       const light = lights[i];
-      if (light.enableShadow && shadowCount < ShadowManager.MAX_SHADOW) {
+      if (light.enableShadow && ShadowManager._shadowCount < ShadowManager.MAX_SHADOW) {
         ShadowManager._updateSpotShadow(light, ShadowManager._shadowData);
-        shadowDatas.set(ShadowManager._shadowData, shadowCount * ShadowManager._shadowDataLength);
+        shadowDatas.set(ShadowManager._shadowData, ShadowManager._shadowCount * ShadowManager._shadowDataLength);
 
         let texture: GPUTexture;
-        if (shadowCount < shadowMaps.length) {
-          texture = shadowMaps[shadowCount];
+        if (ShadowManager._shadowCount < shadowMaps.length) {
+          texture = shadowMaps[ShadowManager._shadowCount];
         } else {
           const descriptor = new TextureDescriptor();
           descriptor.size = new Extent3DDict();
@@ -234,8 +234,8 @@ export class ShadowManager extends RenderPass {
         this._depthStencilAttachment.view = texture.createView();
         {
           let material: ShadowMaterial;
-          if (numOfdrawCall < materialPool.length) {
-            material = materialPool[numOfdrawCall];
+          if (this._numOfdrawCall < materialPool.length) {
+            material = materialPool[this._numOfdrawCall];
           } else {
             material = new ShadowMaterial(engine);
             materialPool.push(material);
@@ -263,16 +263,14 @@ export class ShadowManager extends RenderPass {
           material.viewProjectionMatrix = viewProjectionMatrix;
           this._shadowSubpass.shadowMaterial = material;
           super.draw(scene, camera, commandEncoder);
-          numOfdrawCall++;
+          this._numOfdrawCall++;
         }
-        shadowCount++;
+        ShadowManager._shadowCount++;
       }
     }
   }
 
   private _drawDirectShadowMap(scene: Scene, camera: Camera, commandEncoder: GPUCommandEncoder) {
-    let shadowCount = ShadowManager._shadowCount;
-    let numOfdrawCall = this._numOfdrawCall;
     const shadowMaps = this._shadowMaps;
     const materialPool = this._materialPool;
     const shadowDatas = this._shadowDatas;
@@ -281,13 +279,13 @@ export class ShadowManager extends RenderPass {
     const lights = engine._lightManager.directLights._elements;
     for (let i = lights.length - 1; i >= 0; --i) {
       const light = lights[i];
-      if (light.enableShadow && shadowCount < ShadowManager.MAX_SHADOW) {
+      if (light.enableShadow && ShadowManager._shadowCount < ShadowManager.MAX_SHADOW) {
         this._updateCascadesShadow(camera, light, ShadowManager._shadowData);
-        shadowDatas.set(ShadowManager._shadowData, shadowCount * ShadowManager._shadowDataLength);
+        shadowDatas.set(ShadowManager._shadowData, ShadowManager._shadowCount * ShadowManager._shadowDataLength);
 
         let texture: GPUTexture;
-        if (shadowCount < shadowMaps.length) {
-          texture = shadowMaps[shadowCount];
+        if (ShadowManager._shadowCount < shadowMaps.length) {
+          texture = shadowMaps[ShadowManager._shadowCount];
         } else {
           const descriptor = new TextureDescriptor();
           descriptor.size = new Extent3DDict();
@@ -302,8 +300,8 @@ export class ShadowManager extends RenderPass {
 
         for (let i = 0; i < ShadowManager.SHADOW_MAP_CASCADE_COUNT; i++) {
           let material: ShadowMaterial;
-          if (numOfdrawCall < materialPool.length) {
-            material = materialPool[numOfdrawCall];
+          if (this._numOfdrawCall < materialPool.length) {
+            material = materialPool[this._numOfdrawCall];
           } else {
             material = new ShadowMaterial(engine);
             materialPool.push(material);
@@ -340,9 +338,9 @@ export class ShadowManager extends RenderPass {
             this._depthStencilAttachment.depthLoadOp = "load";
           }
           super.draw(scene, camera, commandEncoder);
-          numOfdrawCall++;
+          this._numOfdrawCall++;
         }
-        shadowCount++;
+        ShadowManager._shadowCount++;
       }
     }
     this._depthStencilAttachment.depthLoadOp = "clear";
@@ -350,8 +348,6 @@ export class ShadowManager extends RenderPass {
   }
 
   private _drawPointShadowMap(scene: Scene, camera: Camera, commandEncoder: GPUCommandEncoder) {
-    let cubeShadowCount = ShadowManager._cubeShadowCount;
-    let numOfdrawCall = this._numOfdrawCall;
     const cubeShadowMaps = this._cubeShadowMaps;
     const materialPool = this._materialPool;
     const cubeShadowDatas = this._cubeShadowDatas;
@@ -359,10 +355,10 @@ export class ShadowManager extends RenderPass {
     const lights = engine._lightManager.pointLights._elements;
     for (let i = lights.length - 1; i >= 0; --i) {
       const light = lights[i];
-      if (light.enableShadow && cubeShadowCount < ShadowManager.MAX_CUBE_SHADOW) {
+      if (light.enableShadow && ShadowManager._cubeShadowCount < ShadowManager.MAX_CUBE_SHADOW) {
         let texture: GPUTexture;
-        if (cubeShadowCount < cubeShadowMaps.length) {
-          texture = cubeShadowMaps[cubeShadowCount];
+        if (ShadowManager._cubeShadowCount < cubeShadowMaps.length) {
+          texture = cubeShadowMaps[ShadowManager._cubeShadowCount];
         } else {
           const descriptor = new TextureDescriptor();
           descriptor.size = new Extent3DDict();
@@ -376,7 +372,10 @@ export class ShadowManager extends RenderPass {
         }
 
         this._updatePointShadow(light, ShadowManager._cubeShadowData);
-        cubeShadowDatas.set(ShadowManager._cubeShadowData, ShadowManager._cubeShadowDataLength * cubeShadowCount);
+        cubeShadowDatas.set(
+          ShadowManager._cubeShadowData,
+          ShadowManager._cubeShadowDataLength * ShadowManager._cubeShadowCount
+        );
 
         const descriptor = new TextureViewDescriptor();
         descriptor.format = ShadowManager.SHADOW_MAP_FORMAT;
@@ -387,15 +386,15 @@ export class ShadowManager extends RenderPass {
           this._depthStencilAttachment.view = texture.createView(descriptor);
 
           let material: ShadowMaterial;
-          if (numOfdrawCall < materialPool.length) {
-            material = materialPool[numOfdrawCall];
+          if (this._numOfdrawCall < materialPool.length) {
+            material = materialPool[this._numOfdrawCall];
           } else {
             material = new ShadowMaterial(engine);
             materialPool.push(material);
           }
           const stride = i * 16;
           const viewProjectionMatrix = material.viewProjectionMatrix;
-          const shadowData = cubeShadowDatas[cubeShadowCount];
+          const shadowData = cubeShadowDatas[ShadowManager._cubeShadowCount];
           viewProjectionMatrix.setValue(
             shadowData[4 + stride],
             shadowData[5 + stride],
@@ -418,9 +417,9 @@ export class ShadowManager extends RenderPass {
 
           this._shadowSubpass.shadowMaterial = material;
           super.draw(scene, camera, commandEncoder);
-          numOfdrawCall++;
+          this._numOfdrawCall++;
         }
-        cubeShadowCount++;
+        ShadowManager._cubeShadowCount++;
       }
     }
   }
