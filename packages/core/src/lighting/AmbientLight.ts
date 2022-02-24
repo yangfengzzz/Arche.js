@@ -209,11 +209,6 @@ export class AmbientLight {
     envMapLight[5] = 1; // specularIntensity
     const { shaderData } = value;
     shaderData.setFloatArray(AmbientLight._envMapProperty, envMapLight);
-
-    this.diffuseMode = this._diffuseMode;
-    this.diffuseSphericalHarmonics = this._diffuseSphericalHarmonics;
-    this.specularTexture = this._specularReflection;
-    this.specularTextureDecodeRGBM = this._specularTextureDecodeRGBM;
   }
 
   private static _preComputeSH(sh: SphericalHarmonics3, out: Float32Array): Float32Array {
