@@ -100,13 +100,19 @@ export class LightManager {
     const directLightData = LightManager._directLightData;
     const directLightCount = _directLights.length;
 
-    if (this._pointLightDatas === undefined || this._pointLightDatas.length !== pointLightCount * pointLightData.length) {
+    if (
+      this._pointLightDatas === undefined ||
+      this._pointLightDatas.length !== pointLightCount * pointLightData.length
+    ) {
       this._pointLightDatas = new Float32Array(_pointLights.length * pointLightData.length);
     }
     if (this._spotLightDatas === undefined || this._spotLightDatas.length !== spotLightCount * spotLightData.length) {
       this._spotLightDatas = new Float32Array(_spotLights.length * spotLightData.length);
     }
-    if (this._directLightDatas == undefined || this._directLightDatas.length !== directLightCount * directLightData.length) {
+    if (
+      this._directLightDatas == undefined ||
+      this._directLightDatas.length !== directLightCount * directLightData.length
+    ) {
       this._directLightDatas = new Float32Array(_directLights.length * directLightData.length);
     }
 

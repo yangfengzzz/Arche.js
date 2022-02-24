@@ -1,4 +1,4 @@
-import { RefObject } from "../asset/RefObject";
+import { RefObject } from "../asset";
 import { Engine } from "../Engine";
 import { TypedArray } from "../base/Constant";
 import { BufferDescriptor } from "../webgpu";
@@ -38,9 +38,11 @@ export class Buffer extends RefObject implements GPUBufferBinding {
    */
   constructor(engine: Engine, data: ArrayBuffer | ArrayBufferView, bufferUsage: GPUBufferUsageFlags);
 
-  constructor(engine: Engine,
-              byteLengthOrData: number | ArrayBuffer | ArrayBufferView,
-              bufferUsage: GPUBufferUsageFlags) {
+  constructor(
+    engine: Engine,
+    byteLengthOrData: number | ArrayBuffer | ArrayBufferView,
+    bufferUsage: GPUBufferUsageFlags
+  ) {
     super(engine);
     const bufferDescriptor = Buffer._bufferDescriptor;
     if (typeof byteLengthOrData === "number") {
@@ -62,6 +64,5 @@ export class Buffer extends RefObject implements GPUBufferBinding {
     this.engine.device.queue.writeBuffer(this._nativeBuffer, bufferByteOffset, typedArray, dataOffset, dataLength);
   }
 
-  protected _onDestroy(): void {
-  }
+  protected _onDestroy(): void {}
 }

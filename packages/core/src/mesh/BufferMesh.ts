@@ -1,6 +1,4 @@
-import { Mesh } from "../graphic/Mesh";
-import { IndexBufferBinding } from "../graphic/IndexBufferBinding";
-import { Buffer } from "../graphic/Buffer";
+import { Mesh, IndexBufferBinding, Buffer } from "../graphic";
 import { VertexBufferLayout } from "../webgpu";
 
 /**

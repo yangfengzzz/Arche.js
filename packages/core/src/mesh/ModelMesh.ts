@@ -1,8 +1,6 @@
 import { Color, Vector2, Vector3, Vector4 } from "@arche-engine/math";
-import { Mesh } from "../graphic/Mesh";
-import { Buffer } from "../graphic/Buffer";
+import { Mesh, Buffer, IndexBufferBinding } from "../graphic";
 import { Engine } from "../Engine";
-import { IndexBufferBinding } from "../graphic/IndexBufferBinding";
 import { VertexAttribute, VertexBufferLayout } from "../webgpu";
 import { Attributes } from "../shaderlib";
 
@@ -345,7 +343,11 @@ export class ModelMesh extends Mesh {
     if (_indices) {
       if (!indexBuffer || _indices.byteLength != indexBuffer.size) {
         // indexBuffer?.destroy();
-        let newIndexBuffer = new Buffer(this.engine, <Uint32Array>this._indices, GPUBufferUsage.INDEX | GPUBufferUsage.COPY_DST);
+        let newIndexBuffer = new Buffer(
+          this.engine,
+          <Uint32Array>this._indices,
+          GPUBufferUsage.INDEX | GPUBufferUsage.COPY_DST
+        );
         newIndexBuffer.uploadData(<Uint32Array>this._indices, 0, 0, this._indices.length);
         this._setIndexBufferBinding(new IndexBufferBinding(newIndexBuffer, this._indicesFormat));
       }

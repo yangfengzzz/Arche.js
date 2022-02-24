@@ -76,4 +76,3 @@ export class SpotLight extends Light {
     shaderData[11] = Math.cos(angle + penumbra);
   }
 }
-

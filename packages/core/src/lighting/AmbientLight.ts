@@ -102,7 +102,10 @@ export class AmbientLight {
     if (!this._scene) return;
 
     if (value) {
-      this._scene.shaderData.setFloatArray(AmbientLight._diffuseSHProperty, AmbientLight._preComputeSH(value, this._shArray));
+      this._scene.shaderData.setFloatArray(
+        AmbientLight._diffuseSHProperty,
+        AmbientLight._preComputeSH(value, this._shArray)
+      );
     }
   }
 

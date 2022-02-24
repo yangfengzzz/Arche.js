@@ -1,5 +1,5 @@
 import { BoundingBox } from "@arche-engine/math";
-import { RefObject } from "../asset/RefObject";
+import { RefObject } from "../asset";
 import { Engine } from "../Engine";
 import { IndexBufferBinding } from "./IndexBufferBinding";
 import { SubMesh } from "./SubMesh";

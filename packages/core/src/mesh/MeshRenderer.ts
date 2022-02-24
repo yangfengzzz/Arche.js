@@ -3,7 +3,7 @@ import { Logger } from "../base";
 import { ignoreClone } from "../clone/CloneManager";
 import { ICustomClone } from "../clone/ComponentCloner";
 import { Entity } from "../Entity";
-import { Mesh } from "../graphic/Mesh";
+import { Mesh } from "../graphic";
 import { Renderer } from "../Renderer";
 import { Shader } from "../shader";
 import { UpdateFlag } from "../UpdateFlag";
@@ -56,9 +56,7 @@ export class MeshRenderer extends Renderer implements ICustomClone {
   /**
    * @internal
    */
-  _render(opaqueQueue: RenderElement[],
-          alphaTestQueue: RenderElement[],
-          transparentQueue: RenderElement[]): void {
+  _render(opaqueQueue: RenderElement[], alphaTestQueue: RenderElement[], transparentQueue: RenderElement[]): void {
     const mesh = this._mesh;
     if (mesh) {
       if (this._meshUpdateFlag.flag) {

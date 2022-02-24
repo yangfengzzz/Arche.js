@@ -26,7 +26,6 @@ import {
   WGSLWorldPosVert
 } from "./functors";
 import { WGSLEncoder } from "./WGSLEncoder";
-import { BuiltInType, UniformType } from "./WGSLCommon";
 
 export class WGSLBlinnPhongVertex extends WGSL {
   private _common: WGSLCommon;

@@ -3,8 +3,8 @@ export const Util = {
     "isArray" in Array
       ? Array.isArray
       : (value: any): boolean => {
-        return toString.call(value) === "[object Array]";
-      },
+          return toString.call(value) === "[object Array]";
+        },
   isArrayLike(x: any): boolean {
     return !!x && typeof x.length === "number" && typeof x !== "function";
   },
