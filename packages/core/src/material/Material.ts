@@ -65,6 +65,5 @@ export class Material extends RefObject implements IClone {
   /**
    * @override
    */
-  protected _onDestroy(): void {
-  }
+  protected _onDestroy(): void {}
 }

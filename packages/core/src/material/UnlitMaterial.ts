@@ -48,7 +48,7 @@ export class UnlitMaterial extends BaseMaterial {
   }
 
   /**
-   * Create a unlit material instance.
+   * Create an unlit material instance.
    * @param engine - Engine to which the material belongs
    */
   constructor(engine: Engine) {
