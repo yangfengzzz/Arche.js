@@ -33,10 +33,10 @@ export class WGSLLightFragDefine {
       encoder.addStruct(
         "struct SpotLight {\n" +
           "  color : vec3<f32>;\n" +
-          "  position : vec3<f32>;\n" +
-          "  direction : vec3<f32>;\n" +
           "  distance : f32;\n" +
+          "  position : vec3<f32>;\n" +
           "  angleCos : f32;\n" +
+          "  direction : vec3<f32>;\n" +
           "  penumbraCos : f32;\n" +
           "};\n"
       );
