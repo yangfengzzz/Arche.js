@@ -19,7 +19,7 @@ export class WGSLDirectIrradianceFragDefine {
 
   execute(encoder: WGSLEncoder, macros: ShaderMacroCollection, counterIndex: number) {
     let func = "fn addDirectRadiance(incidentDirection:vec3<f32>, color:vec3<f32>, geometry:GeometricContext, \n";
-    func += "material:PhysicalMaterial, reflectedLight:ptr<func, ReflectedLight>) {\n";
+    func += "material:PhysicalMaterial, reflectedLight:ptr<function, ReflectedLight>) {\n";
     func += "   var dotNL = saturate( dot( geometry.normal, incidentDirection ) );\n";
     func += "\n";
     func += "   var irradiance = dotNL * color;\n";
@@ -32,7 +32,7 @@ export class WGSLDirectIrradianceFragDefine {
     encoder.addFunction(func);
 
     if (macros.isEnable("DIRECT_LIGHT_COUNT")) {
-      func = "fn addDirectionalDirectLightRadiance(directionalLight:DirectLight, geometry:GeometricContext, material:PhysicalMaterial, reflectedLight:ptr<func, ReflectedLight>) {\n";
+      func = "fn addDirectionalDirectLightRadiance(directionalLight:DirectLight, geometry:GeometricContext, material:PhysicalMaterial, reflectedLight:ptr<function, ReflectedLight>) {\n";
       func += "    var color = directionalLight.color;\n";
       func += "    var direction = -directionalLight.direction;\n";
       func += "\n";
@@ -41,7 +41,7 @@ export class WGSLDirectIrradianceFragDefine {
       encoder.addFunction(func);
     }
     if (macros.isEnable("POINT_LIGHT_COUNT")) {
-      func = "fn addPointDirectLightRadiance(pointLight:PointLight, geometry:GeometricContext, material:PhysicalMaterial, reflectedLight:ptr<func, ReflectedLight>) {\n";
+      func = "fn addPointDirectLightRadiance(pointLight:PointLight, geometry:GeometricContext, material:PhysicalMaterial, reflectedLight:ptr<function, ReflectedLight>) {\n";
       func += "    var lVector = pointLight.position - geometry.position;\n";
       func += "    var direction = normalize( lVector );\n";
       func += "\n";
@@ -55,7 +55,7 @@ export class WGSLDirectIrradianceFragDefine {
       encoder.addFunction(func);
     }
     if (macros.isEnable("SPOT_LIGHT_COUNT")) {
-      func = "fn addSpotDirectLightRadiance(spotLight:SpotLight, geometry:GeometricContext, material:PhysicalMaterial, reflectedLight:ptr<func, ReflectedLight>) {\n";
+      func = "fn addSpotDirectLightRadiance(spotLight:SpotLight, geometry:GeometricContext, material:PhysicalMaterial, reflectedLight:ptr<function, ReflectedLight>) {\n";
       func += "    var lVector = spotLight.position - geometry.position;\n";
       func += "    var direction = normalize( lVector );\n";
       func += "\n";
@@ -73,7 +73,7 @@ export class WGSLDirectIrradianceFragDefine {
       encoder.addFunction(func);
     }
 
-    func = "fn addTotalDirectRadiance(geometry:GeometricContext, material:PhysicalMaterial, reflectedLight:ptr<func, ReflectedLight>){\n";
+    func = "fn addTotalDirectRadiance(geometry:GeometricContext, material:PhysicalMaterial, reflectedLight:ptr<function, ReflectedLight>){\n";
     if (macros.isEnable("DIRECT_LIGHT_COUNT")) {
       func += "{\n";
       func += "var i:i32 = 0;\n";

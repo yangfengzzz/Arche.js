@@ -26,6 +26,11 @@ export class WGSLPbrHelper {
   constructor(outputStructName: string, is_metallic_workflow: boolean) {
     this._outputStructName = outputStructName;
     this._is_metallic_workflow = is_metallic_workflow;
+
+    this._normalGet = new WGSLNormalGet(outputStructName);
+    this._brdf = new WGSLBRDF(outputStructName);
+    this._directIrradianceFragDefine = new WGSLDirectIrradianceFragDefine(outputStructName);
+    this._iblFragDefine = new WGSLIBLFragDefine(outputStructName);
   }
 
   execute(encoder: WGSLEncoder, macros: ShaderMacroCollection, counterIndex: number) {
