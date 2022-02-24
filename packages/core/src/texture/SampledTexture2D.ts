@@ -50,17 +50,19 @@ export class SampledTexture2D extends SampledTexture {
     mipmap: boolean = true
   ) {
     super(engine);
-    const textureDesc = this._platformTextureDesc;
-    textureDesc.size = new Extent3DDict();
-    textureDesc.size.width = width;
-    textureDesc.size.height = height;
-    textureDesc.size.depthOrArrayLayers = depthOrArrayLayers;
-    textureDesc.format = format;
-    textureDesc.usage = usage;
-    textureDesc.mipLevelCount = this._getMipmapCount(mipmap);
+    if (width !== 0) {
+      const textureDesc = this._platformTextureDesc;
+      textureDesc.size = new Extent3DDict();
+      textureDesc.size.width = width;
+      textureDesc.size.height = height;
+      textureDesc.size.depthOrArrayLayers = depthOrArrayLayers;
+      textureDesc.format = format;
+      textureDesc.usage = usage;
+      textureDesc.mipLevelCount = this._getMipmapCount(mipmap);
 
-    this._dimension = "2d";
-    this._platformTexture = engine.device.createTexture(textureDesc);
+      this._dimension = "2d";
+      this._platformTexture = engine.device.createTexture(textureDesc);
+    }
   }
 
   get textureView(): GPUTextureView {
