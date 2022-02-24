@@ -506,12 +506,12 @@ export class Matrix implements IClone {
 
     oe[8] = 0;
     oe[9] = 0;
-    oe[10] = 2 * nf;
+    oe[10] = nf;
     oe[11] = 0;
 
     oe[12] = (left + right) * lr;
     oe[13] = (top + bottom) * bt;
-    oe[14] = (far + near) * nf;
+    oe[14] = near * nf;
     oe[15] = 1;
   }
 
@@ -540,12 +540,12 @@ export class Matrix implements IClone {
 
     oe[8] = 0;
     oe[9] = 0;
-    oe[10] = (far + near) * nf;
+    oe[10] = far * nf;
     oe[11] = -1;
 
     oe[12] = 0;
     oe[13] = 0;
-    oe[14] = 2 * far * near * nf;
+    oe[14] = far * near * nf;
     oe[15] = 0;
   }
 
