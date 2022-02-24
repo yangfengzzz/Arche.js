@@ -30,97 +30,82 @@ export class Script extends Component {
   /**
    * Called when be enabled first time, only once.
    */
-  onAwake(): void {
-  }
+  onAwake(): void {}
 
   /**
    * Called when be enabled.
    */
-  onEnable(): void {
-  }
+  onEnable(): void {}
 
   /**
    * Called before the frame-level loop start for the first time, only once.
    */
-  onStart(): void {
-  }
+  onStart(): void {}
 
   /**
    * The main loop, called frame by frame.
-   * @param deltaTime - The deltaTime when the script update.
+   * @param deltaTime - The deltaTime when the script updates.
    */
-  onUpdate(deltaTime: number): void {
-  }
+  onUpdate(deltaTime: number): void {}
 
   /**
    * Called after the onUpdate finished, called frame by frame.
-   * @param deltaTime - The deltaTime when the script update.
+   * @param deltaTime - The deltaTime when the script updates.
    */
-  onLateUpdate(deltaTime: number): void {
-  }
+  onLateUpdate(deltaTime: number): void {}
 
   /**
    * Called before camera rendering, called per camera.
    * @param camera - Current camera.
    */
-  onBeginRender(camera: Camera): void {
-  }
+  onBeginRender(camera: Camera): void {}
 
   /**
    * Called after camera rendering, called per camera.
    * @param camera - Current camera.
    */
-  onEndRender(camera: Camera): void {
-  }
+  onEndRender(camera: Camera): void {}
 
   /**
    * Called when the pointer is down while over the ColliderShape.
    */
-  onPointerDown(): void {
-  }
+  onPointerDown(): void {}
 
   /**
    * Called when the pointer is up while over the ColliderShape.
    */
-  onPointerUp(): void {
-  }
+  onPointerUp(): void {}
 
   /**
    * Called when the pointer is down and up with the same collider.
    */
-  onPointerClick(): void {
-  }
+  onPointerClick(): void {}
 
   /**
    * Called when the pointer is enters the ColliderShape.
    */
-  onPointerEnter(): void {
-  }
+  onPointerEnter(): void {}
 
   /**
    * Called when the pointer is no longer over the ColliderShape.
    */
-  onPointerExit(): void {
-  }
+  onPointerExit(): void {}
 
   /**
    * Called when the pointer is down while over the ColliderShape and is still holding down.
    * @remarks onPointerDrag is called every frame while the pointer is down.
    */
-  onPointerDrag(): void {
-  }
+  onPointerDrag(): void {}
 
   /**
    * Called when be disabled.
    */
-  onDisable(): void {
-  }
+  onDisable(): void {}
 
   /**
    * Called at the end of the destroyed frame.
    */
-  onDestroy(): void {
-  }
+  onDestroy(): void {}
 
   /**
    * @internal

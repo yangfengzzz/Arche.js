@@ -1,4 +1,4 @@
-import { AssetPromise } from "./asset/AssetPromise";
+import { AssetPromise } from "./asset";
 import { Engine } from "./Engine";
 import { Scene } from "./Scene";
 
@@ -27,8 +27,7 @@ export class SceneManager {
   /**
    * @internal
    */
-  constructor(public readonly engine: Engine) {
-  }
+  constructor(public readonly engine: Engine) {}
 
   /**
    * Load and activate scene.

@@ -67,8 +67,7 @@ export class ComponentsDependencies {
     }
   }
 
-  private constructor() {
-  }
+  private constructor() {}
 }
 
 export function dependencies(...abilityClass: ComponentConstructor[]) {

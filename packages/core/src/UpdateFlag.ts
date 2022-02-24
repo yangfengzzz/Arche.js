@@ -15,8 +15,7 @@ export class UpdateFlag {
    * Destroy.
    */
   destroy(): void {
-    const flags = this._flags;
-    removeFromArray(flags, this);
+    removeFromArray(this._flags, this);
     this._flags = null;
   }
 }

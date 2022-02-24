@@ -123,9 +123,12 @@ export class ColorPickerSubpass extends Subpass {
 
     for (let i = 0, n = items.length; i < n; i++) {
       const { mesh, subMesh, renderer } = items[i];
+
+      const camera = this._camera;
+      renderer._updateShaderData(camera.viewMatrix, camera.projectionMatrix);
       // union render global macro and material self macro.
       ShaderMacroCollection.unionCollection(
-        this._camera._globalShaderMacro,
+        camera._globalShaderMacro,
         renderer.shaderData._macroCollection,
         compileMacros
       );

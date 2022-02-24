@@ -4,7 +4,7 @@ import { Component } from "./Component";
 import { Renderer } from "./Renderer";
 import { Script } from "./Script";
 import { ShaderMacroCollection } from "./shader/ShaderMacroCollection";
-import { Vector3 } from "@arche-engine/math";
+import { BoundingFrustum, Vector3 } from "@arche-engine/math";
 import { RenderElement } from "./rendering/RenderElement";
 
 /**
@@ -154,10 +154,12 @@ export class ComponentsManager {
     }
   }
 
-  callRender(camera: Camera,
-             opaqueQueue: RenderElement[],
-             alphaTestQueue: RenderElement[],
-             transparentQueue: RenderElement[]): void {
+  callRender(
+    camera: Camera,
+    opaqueQueue: RenderElement[],
+    alphaTestQueue: RenderElement[],
+    transparentQueue: RenderElement[]
+  ): void {
     const elements = this._renderers._elements;
     for (let i = this._renderers.length - 1; i >= 0; --i) {
       const element = elements[i];
@@ -196,6 +198,21 @@ export class ComponentsManager {
         element.shaderData._macroCollection,
         element._globalShaderMacro
       );
+    }
+  }
+
+  callFrustumRender(
+    frustum: BoundingFrustum,
+    opaqueQueue: RenderElement[],
+    alphaTestQueue: RenderElement[],
+    transparentQueue: RenderElement[]
+  ): void {
+    for (let i = 0; i < this._renderers.length; i++) {
+      const renderer = this._renderers[i];
+      // filter by renderer castShadow and frustum cull
+      if (frustum.intersectsBox(renderer.bounds())) {
+        renderer._render(opaqueQueue, alphaTestQueue, transparentQueue);
+      }
     }
   }
 

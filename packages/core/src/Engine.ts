@@ -15,7 +15,7 @@ import { RenderElement } from "./rendering/RenderElement";
 import { ClassPool } from "./rendering/ClassPool";
 import { ShaderProgramPool } from "./shader/ShaderProgramPool";
 import { LightManager } from "./lighting";
-import { ForwardRenderPass } from "./rendering/renderpasses/ForwardRenderPass";
+import { ForwardRenderPass } from "./rendering";
 
 ShaderPool.init();
 
@@ -178,21 +178,23 @@ export class Engine {
   }
 
   init(): Promise<void> {
-    return new Promise<void>((resolve => {
-      navigator.gpu.requestAdapter({
-        powerPreference: "high-performance"
-      }).then((adapter) => {
-        this._adapter = adapter;
-        this._adapter.requestDevice().then((device) => {
-          this._device = device;
+    return new Promise<void>((resolve) => {
+      navigator.gpu
+        .requestAdapter({
+          powerPreference: "high-performance"
+        })
+        .then((adapter) => {
+          this._adapter = adapter;
+          this._adapter.requestDevice().then((device) => {
+            this._device = device;
 
-          this._renderContext = this._canvas.createRenderContext(this._adapter, this._device);
-          this._renderPasses.push(new ForwardRenderPass(this));
-          this._sceneManager.activeScene = new Scene(this, "DefaultScene");
-          resolve();
+            this._renderContext = this._canvas.createRenderContext(this._adapter, this._device);
+            this._renderPasses.push(new ForwardRenderPass(this));
+            this._sceneManager.activeScene = new Scene(this, "DefaultScene");
+            resolve();
+          });
         });
-      });
-    }));
+    });
   }
 
   /**

@@ -21,6 +21,7 @@ import { ShaderMacroCollection } from "../../shader/ShaderMacroCollection";
 import { Material } from "../../material";
 import { Renderer } from "../../Renderer";
 import { ShaderDataGroup } from "../../shader/ShaderDataGroup";
+import { ShadowManager } from "../../shadow";
 
 export class ForwardSubpass extends Subpass {
   static readonly _compileMacros: ShaderMacroCollection = new ShaderMacroCollection();
@@ -102,9 +103,20 @@ export class ForwardSubpass extends Subpass {
 
     for (let i = 0, n = items.length; i < n; i++) {
       const { mesh, subMesh, material, renderer } = items[i];
+      const shadowCount = ShadowManager.shadowCount();
+      if (renderer.receiveShadow && shadowCount != 0) {
+        renderer.shaderData.enableMacro("SHADOW_MAP_COUNT", shadowCount.toString());
+      }
+      const cubeShadowCount = ShadowManager.cubeShadowCount();
+      if (renderer.receiveShadow && cubeShadowCount != 0) {
+        renderer.shaderData.enableMacro("CUBE_SHADOW_MAP_COUNT", cubeShadowCount.toString());
+      }
+
+      const camera = this._camera;
+      renderer._updateShaderData(camera.viewMatrix, camera.projectionMatrix);
       // union render global macro and material self macro.
       ShaderMacroCollection.unionCollection(
-        this._camera._globalShaderMacro,
+        camera._globalShaderMacro,
         renderer.shaderData._macroCollection,
         compileMacros
       );

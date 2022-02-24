@@ -11,9 +11,7 @@ export class WebGPUEngine extends Engine {
    * Create an engine suitable for the WebGL platform.
    * @param canvas - Native web canvas
    */
-  constructor(
-    canvas: string | HTMLCanvasElement | OffscreenCanvas
-  ) {
+  constructor(canvas: string | HTMLCanvasElement | OffscreenCanvas) {
     const webCanvas = new WebCanvas(
       <HTMLCanvasElement | OffscreenCanvas>(typeof canvas === "string" ? document.getElementById(canvas) : canvas)
     );

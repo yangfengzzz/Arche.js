@@ -24,7 +24,6 @@ class MathTemp {
 export class Camera extends Component {
   private static _cameraProperty = Shader.getPropertyByName("u_cameraData");
 
-
   /** Shader data. */
   readonly shaderData: ShaderData;
 
@@ -465,7 +464,13 @@ export class Camera extends Component {
     this._isInvViewProjDirty.flag = true;
   }
 
-  private static _innerViewportToWorldPoint(x: number, y: number, z: number, invViewProjMat: Matrix, out: Vector3): Vector3 {
+  private static _innerViewportToWorldPoint(
+    x: number,
+    y: number,
+    z: number,
+    invViewProjMat: Matrix,
+    out: Vector3
+  ): Vector3 {
     // Depth is a normalized value, 0 is nearPlane, 1 is farClipPlane.
     // Transform to clipping space matrix
     const clipPoint = MathTemp.tempVec3;

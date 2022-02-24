@@ -23,6 +23,11 @@ export abstract class Renderer extends Component {
   @ignoreClone
   isCulled: boolean = false;
 
+  /** Set whether the renderer to receive shadows. */
+  receiveShadow = false;
+  /** Set whether the renderer to cast shadows. */
+  castShadow = false;
+
   /** @internal */
   @ignoreClone
   _distanceForSort: number;
@@ -238,8 +243,7 @@ export abstract class Renderer extends Component {
     }
   }
 
-  update(deltaTime: number): void {
-  }
+  update(deltaTime: number): void {}
 
   /**
    * @internal
@@ -287,9 +291,11 @@ export abstract class Renderer extends Component {
   /**
    * @internal
    */
-  abstract _render(opaqueQueue: RenderElement[],
-                   alphaTestQueue: RenderElement[],
-                   transparentQueue: RenderElement[]): void;
+  abstract _render(
+    opaqueQueue: RenderElement[],
+    alphaTestQueue: RenderElement[],
+    transparentQueue: RenderElement[]
+  ): void;
 
   /**
    * @internal
@@ -299,10 +305,12 @@ export abstract class Renderer extends Component {
    * @param alphaTestQueue
    * @param transparentQueue
    */
-  _pushPrimitive(element: RenderElement,
-                 opaqueQueue: RenderElement[],
-                 alphaTestQueue: RenderElement[],
-                 transparentQueue: RenderElement[]) {
+  _pushPrimitive(
+    element: RenderElement,
+    opaqueQueue: RenderElement[],
+    alphaTestQueue: RenderElement[],
+    transparentQueue: RenderElement[]
+  ): void {
     const renderQueueType = element.material.renderQueueType;
 
     if (renderQueueType > (RenderQueueType.Transparent + RenderQueueType.AlphaTest) >> 1) {
@@ -331,8 +339,7 @@ export abstract class Renderer extends Component {
     }
   }
 
-  protected _updateBounds(worldBounds: BoundingBox): void {
-  }
+  protected _updateBounds(worldBounds: BoundingBox): void {}
 
   private _createInstanceMaterial(material: Material, index: number): Material {
     const insMaterial: Material = material.clone();

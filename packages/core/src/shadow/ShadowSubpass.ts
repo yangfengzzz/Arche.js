@@ -3,7 +3,7 @@ import { Engine } from "../Engine";
 import { Scene } from "../Scene";
 import { Camera } from "../Camera";
 import { ShadowMaterial } from "./ShadowMaterial";
-import { Vector4 } from "@arche-engine/math";
+import { BoundingFrustum, Matrix, Vector4 } from "@arche-engine/math";
 import { ShaderMacroCollection } from "../shader/ShaderMacroCollection";
 import { RenderElement } from "../rendering/RenderElement";
 import {
@@ -24,13 +24,15 @@ import { ShaderDataGroup } from "../shader/ShaderDataGroup";
 import { ShadowManager } from "./ShadowManager";
 
 export class ShadowSubpass extends Subpass {
+  private static _frustum = new BoundingFrustum();
+  private static _identityMatrix = new Matrix();
+
   static readonly _compileMacros: ShaderMacroCollection = new ShaderMacroCollection();
 
   private _viewport?: Vector4 = undefined;
   private _material: ShadowMaterial;
 
   private _scene: Scene;
-  private _camera: Camera;
   private _opaqueQueue: RenderElement[] = [];
   private _alphaTestQueue: RenderElement[] = [];
   private _transparentQueue: RenderElement[] = [];
@@ -73,7 +75,6 @@ export class ShadowSubpass extends Subpass {
 
   draw(scene: Scene, camera: Camera, renderPassEncoder: GPURenderPassEncoder) {
     this._scene = scene;
-    this._camera = camera;
 
     renderPassEncoder.pushDebugGroup("Draw Element");
     const viewport = this._viewport;
@@ -88,8 +89,10 @@ export class ShadowSubpass extends Subpass {
     this._opaqueQueue = [];
     this._alphaTestQueue = [];
     this._transparentQueue = [];
-    this._engine._componentsManager.callRender(
-      this._camera,
+
+    ShadowSubpass._frustum.calculateFromMatrix(this._material.viewProjectionMatrix);
+    this._engine._componentsManager.callFrustumRender(
+      ShadowSubpass._frustum,
       this._opaqueQueue,
       this._alphaTestQueue,
       this._transparentQueue
@@ -109,68 +112,70 @@ export class ShadowSubpass extends Subpass {
     const material = this._material;
     for (let i = 0, n = items.length; i < n; i++) {
       const { mesh, subMesh, renderer } = items[i];
-      // union render global macro and material self macro.
-      ShaderMacroCollection.unionCollection(
-        this._camera._globalShaderMacro,
-        renderer.shaderData._macroCollection,
-        compileMacros
-      );
+      if (renderer.castShadow) {
+        renderer._updateShaderData(ShadowSubpass._identityMatrix, ShadowSubpass._identityMatrix);
 
-      ShaderMacroCollection.unionCollection(compileMacros, material.shaderData._macroCollection, compileMacros);
+        // union render global macro and material self macro.
+        ShaderMacroCollection.unionCollection(
+          material.shaderData._macroCollection,
+          renderer.shaderData._macroCollection,
+          compileMacros
+        );
 
-      const device = this._engine.device;
-      // PSO
-      {
-        const shader = material.shader;
-        const program = shader.getShaderProgram(this._engine, compileMacros);
-        this._vertex.module = program.vertexShader;
+        const device = this._engine.device;
+        // PSO
+        {
+          const shader = material.shader;
+          const program = shader.getShaderProgram(this._engine, compileMacros);
+          this._vertex.module = program.vertexShader;
 
-        const bindGroupDescriptor = this._bindGroupDescriptor;
-        const bindGroupEntries = this._bindGroupEntries;
+          const bindGroupDescriptor = this._bindGroupDescriptor;
+          const bindGroupEntries = this._bindGroupEntries;
 
-        const bindGroupLayoutDescriptors = program.bindGroupLayoutDescriptorMap;
-        let bindGroupLayouts: BindGroupLayout[] = [];
-        bindGroupLayoutDescriptors.forEach((descriptor, group) => {
-          const bindGroupLayout = device.createBindGroupLayout(descriptor);
-          this._bindGroupEntries = [];
-          bindGroupEntries.length = descriptor.entries.length;
-          for (let i = 0, n = descriptor.entries.length; i < n; i++) {
-            const entry = descriptor.entries[i];
-            bindGroupEntries[i] = new BindGroupEntry(); // cache
-            bindGroupEntries[i].binding = entry.binding;
-            if (entry.buffer !== undefined) {
-              this._bindingData(bindGroupEntries[i], material, renderer);
+          const bindGroupLayoutDescriptors = program.bindGroupLayoutDescriptorMap;
+          let bindGroupLayouts: BindGroupLayout[] = [];
+          bindGroupLayoutDescriptors.forEach((descriptor, group) => {
+            const bindGroupLayout = device.createBindGroupLayout(descriptor);
+            this._bindGroupEntries = [];
+            bindGroupEntries.length = descriptor.entries.length;
+            for (let i = 0, n = descriptor.entries.length; i < n; i++) {
+              const entry = descriptor.entries[i];
+              bindGroupEntries[i] = new BindGroupEntry(); // cache
+              bindGroupEntries[i].binding = entry.binding;
+              if (entry.buffer !== undefined) {
+                this._bindingData(bindGroupEntries[i], material, renderer);
+              }
             }
+            bindGroupDescriptor.layout = bindGroupLayout;
+            bindGroupDescriptor.entries = bindGroupEntries;
+            const uniformBindGroup = device.createBindGroup(bindGroupDescriptor);
+            renderPassEncoder.setBindGroup(group, uniformBindGroup);
+            bindGroupLayouts.push(bindGroupLayout);
+          });
+          shader.flush();
+
+          this._pipelineLayoutDescriptor.bindGroupLayouts = bindGroupLayouts;
+          this._pipelineLayout = device.createPipelineLayout(this._pipelineLayoutDescriptor);
+          this._shadowGenDescriptor.layout = this._pipelineLayout;
+
+          material.renderState._apply(this._shadowGenDescriptor, renderPassEncoder, false);
+
+          this._vertex.buffers.length = mesh._vertexBufferLayouts.length;
+          for (let j = 0, m = mesh._vertexBufferLayouts.length; j < m; j++) {
+            this._vertex.buffers[j] = mesh._vertexBufferLayouts[j];
           }
-          bindGroupDescriptor.layout = bindGroupLayout;
-          bindGroupDescriptor.entries = bindGroupEntries;
-          const uniformBindGroup = device.createBindGroup(bindGroupDescriptor);
-          renderPassEncoder.setBindGroup(group, uniformBindGroup);
-          bindGroupLayouts.push(bindGroupLayout);
-        });
-        shader.flush();
+          this._shadowGenDescriptor.primitive.topology = subMesh.topology;
 
-        this._pipelineLayoutDescriptor.bindGroupLayouts = bindGroupLayouts;
-        this._pipelineLayout = device.createPipelineLayout(this._pipelineLayoutDescriptor);
-        this._shadowGenDescriptor.layout = this._pipelineLayout;
-
-        material.renderState._apply(this._shadowGenDescriptor, renderPassEncoder, false);
-
-        this._vertex.buffers.length = mesh._vertexBufferLayouts.length;
-        for (let j = 0, m = mesh._vertexBufferLayouts.length; j < m; j++) {
-          this._vertex.buffers[j] = mesh._vertexBufferLayouts[j];
+          const renderPipeline = device.createRenderPipeline(this._shadowGenDescriptor);
+          renderPassEncoder.setPipeline(renderPipeline);
         }
-        this._shadowGenDescriptor.primitive.topology = subMesh.topology;
 
-        const renderPipeline = device.createRenderPipeline(this._shadowGenDescriptor);
-        renderPassEncoder.setPipeline(renderPipeline);
+        for (let j = 0, m = mesh._vertexBufferBindings.length; j < m; j++) {
+          renderPassEncoder.setVertexBuffer(j, mesh._vertexBufferBindings[j].buffer);
+        }
+        renderPassEncoder.setIndexBuffer(mesh._indexBufferBinding.buffer.buffer, mesh._indexBufferBinding.format);
+        renderPassEncoder.drawIndexed(subMesh.count, 1, subMesh.start, 0, 0);
       }
-
-      for (let j = 0, m = mesh._vertexBufferBindings.length; j < m; j++) {
-        renderPassEncoder.setVertexBuffer(j, mesh._vertexBufferBindings[j].buffer);
-      }
-      renderPassEncoder.setIndexBuffer(mesh._indexBufferBinding.buffer.buffer, mesh._indexBufferBinding.format);
-      renderPassEncoder.drawIndexed(subMesh.count, 1, subMesh.start, 0, 0);
     }
   }
 
@@ -180,10 +185,6 @@ export class ShadowSubpass extends Subpass {
       switch (group) {
         case ShaderDataGroup.Scene:
           entry.resource = this._scene.shaderData._getDataBuffer(entry.binding);
-          break;
-
-        case ShaderDataGroup.Camera:
-          entry.resource = this._camera.shaderData._getDataBuffer(entry.binding);
           break;
 
         case ShaderDataGroup.Renderer:

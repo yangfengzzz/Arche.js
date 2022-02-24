@@ -1,6 +1,6 @@
 import { Canvas } from "./Canvas";
 import { Vector2 } from "@arche-engine/math";
-import { RenderContext } from "./rendering/RenderContext";
+import { RenderContext } from "./rendering";
 
 type OffscreenCanvas = any;
 

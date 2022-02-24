@@ -84,38 +84,32 @@ export abstract class Component extends EngineObject {
   /**
    * @internal
    */
-  _onAwake(): void {
-  }
+  _onAwake(): void {}
 
   /**
    * @internal
    */
-  _onEnable(): void {
-  }
+  _onEnable(): void {}
 
   /**
    * @internal
    */
-  _onDisable(): void {
-  }
+  _onDisable(): void {}
 
   /**
    * @internal
    */
-  _onDestroy(): void {
-  }
+  _onDestroy(): void {}
 
   /**
    * @internal
    */
-  _onActive(): void {
-  }
+  _onActive(): void {}
 
   /**
    * @internal
    */
-  _onInActive(): void {
-  }
+  _onInActive(): void {}
 
   /**
    * @internal
