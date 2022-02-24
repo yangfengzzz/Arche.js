@@ -20,6 +20,7 @@ export class ShadowManager extends RenderPass {
   private static _tempProjMatrix = new Matrix();
   private static _tempViewMatrix = new Matrix();
   private static _tempVector = new Vector3();
+  private static _tempWorldPos = new Vector3();
 
   private static _cascadeSplits = new Float32Array(4);
   private static _frustumCorners = [
@@ -468,7 +469,8 @@ export class ShadowManager extends RenderPass {
     shadowData[1] = light.shadowBias;
     shadowData[2] = light.shadowIntensity;
 
-    const worldPos = light.entity.transform.worldPosition;
+    const worldPos = ShadowManager._tempWorldPos;
+    light.entity.transform.worldPosition.cloneTo(worldPos);
 
     const nearClip = camera.nearClipPlane;
     const farClip = camera.farClipPlane;
