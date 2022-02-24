@@ -21,6 +21,7 @@ import { Material } from "../material";
 import { Renderer } from "../Renderer";
 import { Shader } from "../shader";
 import { ShaderDataGroup } from "../shader/ShaderDataGroup";
+import { ShadowManager } from "./ShadowManager";
 
 export class ShadowSubpass extends Subpass {
   static readonly _compileMacros: ShaderMacroCollection = new ShaderMacroCollection();
@@ -65,7 +66,7 @@ export class ShadowSubpass extends Subpass {
     this._shadowGenDescriptor.vertex = this._vertex;
     this._shadowGenDescriptor.label = "Forward Pipeline";
     {
-      this._depthStencilState.format = this._engine.renderContext.depthStencilTextureFormat();
+      this._depthStencilState.format = ShadowManager.SHADOW_MAP_FORMAT;
       this._vertex.entryPoint = "main";
     }
   }
