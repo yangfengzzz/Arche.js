@@ -42,3 +42,4 @@ export * from "./rendering/index";
 export * from "./shader/index";
 export * from "./Layer";
 export * from "./clone/CloneManager";
+export * from "./shadow";

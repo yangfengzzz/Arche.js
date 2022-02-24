@@ -52,8 +52,8 @@ export class ShadowManager extends RenderPass {
 
   private _engine: Engine;
 
-  private _renderPassDescriptor: RenderPassDescriptor;
-  private _depthStencilAttachment: RenderPassDepthStencilAttachment;
+  private _renderPassDescriptor = new RenderPassDescriptor();
+  private _depthStencilAttachment = new RenderPassDepthStencilAttachment();
 
   private _shadowSubpass: ShadowSubpass;
 
@@ -216,8 +216,8 @@ export class ShadowManager extends RenderPass {
     const shadowDatas = this._shadowDatas;
     const engine = this._engine;
 
-    const lights = engine._lightManager.spotLights;
-    for (let i = 0, n = lights.length; i < n; i++) {
+    const lights = engine._lightManager.spotLights._elements;
+    for (let i = lights.length - 1; i >= 0; --i) {
       const light = lights[i];
       if (light.enableShadow && shadowCount < ShadowManager.MAX_SHADOW) {
         ShadowManager._updateSpotShadow(light, ShadowManager._shadowData);
@@ -283,8 +283,8 @@ export class ShadowManager extends RenderPass {
     const shadowDatas = this._shadowDatas;
     const engine = this._engine;
 
-    const lights = engine._lightManager.directLights;
-    for (let i = 0, n = lights.length; i < n; i++) {
+    const lights = engine._lightManager.directLights._elements;
+    for (let i = lights.length - 1; i >= 0; --i) {
       const light = lights[i];
       if (light.enableShadow && shadowCount < ShadowManager.MAX_SHADOW) {
         this._updateCascadesShadow(camera, light, ShadowManager._shadowData);
@@ -360,8 +360,8 @@ export class ShadowManager extends RenderPass {
     const materialPool = this._materialPool;
     const cubeShadowDatas = this._cubeShadowDatas;
     const engine = this._engine;
-    const lights = engine._lightManager.pointLights;
-    for (let i = 0, n = lights.length; i < n; i++) {
+    const lights = engine._lightManager.pointLights._elements;
+    for (let i = lights.length - 1; i >= 0; --i) {
       const light = lights[i];
       if (light.enableShadow && cubeShadowCount < ShadowManager.MAX_CUBE_SHADOW) {
         let texture: GPUTexture;
