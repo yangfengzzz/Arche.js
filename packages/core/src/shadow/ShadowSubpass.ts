@@ -3,7 +3,7 @@ import { Engine } from "../Engine";
 import { Scene } from "../Scene";
 import { Camera } from "../Camera";
 import { ShadowMaterial } from "./ShadowMaterial";
-import { BoundingFrustum, Matrix, Vector4 } from "@arche-engine/math";
+import { BoundingFrustum, Vector4 } from "@arche-engine/math";
 import { ShaderMacroCollection } from "../shader/ShaderMacroCollection";
 import { RenderElement } from "../rendering/RenderElement";
 import {
@@ -25,7 +25,6 @@ import { ShadowManager } from "./ShadowManager";
 
 export class ShadowSubpass extends Subpass {
   private static _frustum = new BoundingFrustum();
-  private static _identityMatrix = new Matrix();
 
   static readonly _compileMacros: ShaderMacroCollection = new ShaderMacroCollection();
 
@@ -33,6 +32,8 @@ export class ShadowSubpass extends Subpass {
   private _material: ShadowMaterial;
 
   private _scene: Scene;
+  private _camera: Camera;
+
   private _opaqueQueue: RenderElement[] = [];
   private _alphaTestQueue: RenderElement[] = [];
   private _transparentQueue: RenderElement[] = [];
@@ -75,6 +76,7 @@ export class ShadowSubpass extends Subpass {
 
   draw(scene: Scene, camera: Camera, renderPassEncoder: GPURenderPassEncoder) {
     this._scene = scene;
+    this._camera = camera;
 
     renderPassEncoder.pushDebugGroup("Draw Element");
     const viewport = this._viewport;
@@ -113,14 +115,17 @@ export class ShadowSubpass extends Subpass {
     for (let i = 0, n = items.length; i < n; i++) {
       const { mesh, subMesh, renderer } = items[i];
       if (renderer.castShadow) {
-        renderer._updateShaderData(ShadowSubpass._identityMatrix, ShadowSubpass._identityMatrix);
+        const camera = this._camera;
+        renderer._updateShaderData(camera.viewMatrix, camera.projectionMatrix);
 
         // union render global macro and material self macro.
         ShaderMacroCollection.unionCollection(
-          material.shaderData._macroCollection,
+          camera._globalShaderMacro,
           renderer.shaderData._macroCollection,
           compileMacros
         );
+
+        ShaderMacroCollection.unionCollection(compileMacros, material.shaderData._macroCollection, compileMacros);
 
         const device = this._engine.device;
         // PSO
@@ -185,6 +190,10 @@ export class ShadowSubpass extends Subpass {
       switch (group) {
         case ShaderDataGroup.Scene:
           entry.resource = this._scene.shaderData._getDataBuffer(entry.binding);
+          break;
+
+        case ShaderDataGroup.Camera:
+          entry.resource = this._camera.shaderData._getDataBuffer(entry.binding);
           break;
 
         case ShaderDataGroup.Renderer:
