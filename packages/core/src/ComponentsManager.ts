@@ -207,10 +207,11 @@ export class ComponentsManager {
     alphaTestQueue: RenderElement[],
     transparentQueue: RenderElement[]
   ): void {
-    for (let i = 0; i < this._renderers.length; i++) {
-      const renderer = this._renderers[i];
+    const elements = this._renderers._elements;
+    for (let i = this._renderers.length - 1; i >= 0; --i) {
+      const renderer = elements[i];
       // filter by renderer castShadow and frustum cull
-      if (frustum.intersectsBox(renderer.bounds())) {
+      if (frustum.intersectsBox(renderer.bounds)) {
         renderer._render(opaqueQueue, alphaTestQueue, transparentQueue);
       }
     }

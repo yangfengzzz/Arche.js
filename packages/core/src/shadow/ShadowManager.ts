@@ -1,9 +1,4 @@
-import {
-  RenderPassDepthStencilAttachment,
-  RenderPassDescriptor,
-  TextureDescriptor,
-  TextureViewDescriptor
-} from "../webgpu";
+import { Extent3DDict, RenderPassDepthStencilAttachment, TextureDescriptor, TextureViewDescriptor } from "../webgpu";
 import { RenderPass } from "../rendering";
 import { ShadowSubpass } from "./ShadowSubpass";
 import { SampledTexture } from "../texture/SampledTexture";
@@ -52,7 +47,6 @@ export class ShadowManager extends RenderPass {
 
   private _engine: Engine;
 
-  private _renderPassDescriptor = new RenderPassDescriptor();
   private _depthStencilAttachment = new RenderPassDepthStencilAttachment();
 
   private _shadowSubpass: ShadowSubpass;
@@ -118,8 +112,8 @@ export class ShadowManager extends RenderPass {
   constructor(engine: Engine) {
     super();
     this._engine = engine;
-    const { _renderPassDescriptor, _depthStencilAttachment } = this;
-    _renderPassDescriptor.depthStencilAttachment = _depthStencilAttachment;
+    const { renderPassDescriptor, _depthStencilAttachment } = this;
+    renderPassDescriptor.depthStencilAttachment = _depthStencilAttachment;
     _depthStencilAttachment.depthLoadOp = "clear";
     _depthStencilAttachment.depthClearValue = 1.0;
     _depthStencilAttachment.depthStoreOp = "store";
@@ -228,6 +222,7 @@ export class ShadowManager extends RenderPass {
           texture = shadowMaps[shadowCount];
         } else {
           const descriptor = new TextureDescriptor();
+          descriptor.size = new Extent3DDict();
           descriptor.size.width = ShadowManager.SHADOW_MAP_RESOLUTION;
           descriptor.size.height = ShadowManager.SHADOW_MAP_RESOLUTION;
           descriptor.format = ShadowManager.SHADOW_MAP_FORMAT;
@@ -295,6 +290,7 @@ export class ShadowManager extends RenderPass {
           texture = shadowMaps[shadowCount];
         } else {
           const descriptor = new TextureDescriptor();
+          descriptor.size = new Extent3DDict();
           descriptor.size.width = ShadowManager.SHADOW_MAP_RESOLUTION;
           descriptor.size.height = ShadowManager.SHADOW_MAP_RESOLUTION;
           descriptor.format = ShadowManager.SHADOW_MAP_FORMAT;
@@ -369,6 +365,7 @@ export class ShadowManager extends RenderPass {
           texture = cubeShadowMaps[cubeShadowCount];
         } else {
           const descriptor = new TextureDescriptor();
+          descriptor.size = new Extent3DDict();
           descriptor.size.width = ShadowManager.SHADOW_MAP_RESOLUTION;
           descriptor.size.height = ShadowManager.SHADOW_MAP_RESOLUTION;
           descriptor.size.depthOrArrayLayers = 6;

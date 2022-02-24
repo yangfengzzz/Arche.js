@@ -104,12 +104,12 @@ export class Shader {
   _shaderId: number = 0;
 
   private _vertexSource: WGSL;
-  private readonly _fragmentSource: WGSL;
+  private readonly _fragmentSource?: WGSL;
   private _bindGroupInfo: BindGroupInfo = new Map<number, Set<number>>();
   private _bindGroupLayoutEntryVecMap: BindGroupLayoutEntryVecMap = new Map<number, BindGroupLayoutEntry[]>();
   private _bindGroupLayoutDescriptorMap: BindGroupLayoutDescriptorMap = new Map<number, BindGroupLayoutDescriptor>();
 
-  private constructor(name: string, vertexSource: WGSL, fragmentSource: WGSL) {
+  private constructor(name: string, vertexSource: WGSL, fragmentSource?: WGSL) {
     this._shaderId = Shader._shaderCounter++;
     this.name = name;
     this._vertexSource = vertexSource;
@@ -142,15 +142,19 @@ export class Shader {
         this._bindGroupInfo.get(group).add(binding);
       });
     });
-    const fragmentCode = this._fragmentSource.compile(macroCollection);
-    fragmentCode[1].forEach((bindings, group) => {
-      bindings.forEach((binding) => {
-        if (!this._bindGroupInfo.has(group)) {
-          this._bindGroupInfo.set(group, new Set<number>());
-        }
-        this._bindGroupInfo.get(group).add(binding);
+
+    let fragmentCode: [string, BindGroupInfo] = null;
+    if (this._fragmentSource) {
+      fragmentCode = this._fragmentSource.compile(macroCollection);
+      fragmentCode[1].forEach((bindings, group) => {
+        bindings.forEach((binding) => {
+          if (!this._bindGroupInfo.has(group)) {
+            this._bindGroupInfo.set(group, new Set<number>());
+          }
+          this._bindGroupInfo.get(group).add(binding);
+        });
       });
-    });
+    }
 
     // console.log(vertexCode[0]);
     // console.log(fragmentCode[0]);
@@ -176,7 +180,7 @@ export class Shader {
     shaderProgram = new ShaderProgram(
       engine.device,
       vertexCode[0],
-      fragmentCode[0],
+      fragmentCode ? fragmentCode[0] : null,
       this._bindGroupLayoutDescriptorMap
     );
     shaderProgramPool.cache(shaderProgram);

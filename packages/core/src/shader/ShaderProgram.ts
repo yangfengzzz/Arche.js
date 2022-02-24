@@ -29,7 +29,7 @@ export class ShaderProgram {
   constructor(
     device: GPUDevice,
     vertexSource: string,
-    fragmentSource: string,
+    fragmentSource?: string,
     bindGroupLayoutDescriptorMap?: BindGroupLayoutDescriptorMap
   ) {
     if (bindGroupLayoutDescriptorMap) {
@@ -52,11 +52,13 @@ export class ShaderProgram {
   /**
    * init and link program with shader.
    */
-  private _createProgram(vertexSource: string, fragmentSource: string) {
+  private _createProgram(vertexSource: string, fragmentSource?: string) {
     ShaderProgram._shaderModuleDescriptor.code = vertexSource;
     this._vertexShader = this._device.createShaderModule(ShaderProgram._shaderModuleDescriptor);
 
-    ShaderProgram._shaderModuleDescriptor.code = fragmentSource;
-    this._fragmentShader = this._device.createShaderModule(ShaderProgram._shaderModuleDescriptor);
+    if (fragmentSource) {
+      ShaderProgram._shaderModuleDescriptor.code = fragmentSource;
+      this._fragmentShader = this._device.createShaderModule(ShaderProgram._shaderModuleDescriptor);
+    }
   }
 }
