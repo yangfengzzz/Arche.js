@@ -26,8 +26,15 @@ class KTXCubeLoader extends Loader<SampledTextureCube> {
           const parsedData = parseCubeKTX(data);
           const { width, mipmapsFaces, engineFormat } = parsedData;
           const mipmap = mipmapsFaces[0].length > 1;
-          const texture = new SampledTextureCube(resourceManager.engine, width, width, engineFormat,
-            GPUTextureUsage.RENDER_ATTACHMENT | GPUTextureUsage.TEXTURE_BINDING | GPUTextureUsage.COPY_DST, mipmap);
+          const texture = new SampledTextureCube(
+            resourceManager.engine,
+            width,
+            width,
+            1,
+            engineFormat,
+            GPUTextureUsage.RENDER_ATTACHMENT | GPUTextureUsage.TEXTURE_BINDING | GPUTextureUsage.COPY_DST,
+            mipmap
+          );
 
           for (let face = 0; face < 6; face++) {
             const length = mipmapsFaces[face].length;

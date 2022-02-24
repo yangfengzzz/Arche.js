@@ -29,9 +29,9 @@ class Texture2DLoader extends Loader<SampledTexture2D> {
           for (let level = 0; level < levelCount; level++) {
             imageBitmapOptions.resizeWidth = Math.max(1, image.width / Math.pow(2, level));
             imageBitmapOptions.resizeHeight = Math.max(1, image.height / Math.pow(2, level));
-            createImageBitmap(image, imageBitmapOptions).then((value => {
+            createImageBitmap(image, imageBitmapOptions).then((value) => {
               texture.setImageSource(value, level);
-            }));
+            });
           }
 
           if (item.url.indexOf("data:") !== 0) {

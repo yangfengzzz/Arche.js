@@ -18,10 +18,18 @@ import { DirectLight, PointLight, SpotLight } from "../lighting";
 import { SampledTexture2D, SampledTextureCube, TextureUtils } from "../texture";
 
 export class ShadowManager extends RenderPass {
+  private static _shadowDataLength: number = 72;
+  // ShadowData: bias:number, intensity:number, radius:number, dump:number, vp: Matrix[4], cascadeSplits: Vector4
+  private static _shadowData = new Float32Array(72);
+
+  private static _cubeShadowDataLength: number = 104;
+  // CubeShadowData: bias:number, intensity:number, radius:number, dump:number, vp: Matrix[6], lightPos: Vector4
+  private static _cubeShadowData = new Float32Array(104);
+
   private static _tempProjMatrix = new Matrix();
   private static _tempViewMatrix = new Matrix();
-
   private static _tempVector = new Vector3();
+
   private static _cascadeSplits = new Float32Array(4);
   private static _frustumCorners = [
     new Vector3(-1.0, 1.0, 0.0),
@@ -55,8 +63,7 @@ export class ShadowManager extends RenderPass {
   private static _shadowDataProp: ShaderProperty = Shader.getPropertyByName("u_shadowData");
   private _shadowMaps: GPUTexture[] = [];
   private _packedTexture: SampledTexture;
-  // ShadowData: bias:number, intensity:number, radius:number, dump:number, vp: Matrix[4], cascadeSplits: Vector4
-  private _shadowDatas: Float32Array[] = [];
+  private _shadowDatas: Float32Array = new Float32Array(72 * 10);
 
   private static _cubeShadowCount: number;
   private static _cubeShadowMapProp: ShaderProperty = Shader.getPropertyByName("u_cubeShadowMap");
@@ -64,8 +71,7 @@ export class ShadowManager extends RenderPass {
   private static _cubeShadowDataProp: ShaderProperty = Shader.getPropertyByName("u_cubeShadowData");
   private _cubeShadowMaps: GPUTexture[] = [];
   private _packedCubeTexture: SampledTexture;
-  // CubeShadowData: bias:number, intensity:number, radius:number, dump:number, vp: Matrix[6], lightPos: Vector4
-  private _cubeShadowDatas: Float32Array[] = [];
+  private _cubeShadowDatas: Float32Array = new Float32Array(104 * 5);
 
   private _numOfdrawCall: number = 0;
   private _materialPool: ShadowMaterial[] = [];
@@ -198,7 +204,7 @@ export class ShadowManager extends RenderPass {
         ShadowManager._cubeShadowSamplerProp,
         this._packedCubeTexture
       );
-      scene.shaderData.setData(ShadowManager._cubeShadowDataProp, this._cubeShadowDatas);
+      scene.shaderData.setFloatArray(ShadowManager._cubeShadowDataProp, this._cubeShadowDatas);
     }
   }
 
@@ -214,7 +220,8 @@ export class ShadowManager extends RenderPass {
     for (let i = 0, n = lights.length; i < n; i++) {
       const light = lights[i];
       if (light.enableShadow && shadowCount < ShadowManager.MAX_SHADOW) {
-        ShadowManager._updateSpotShadow(light, shadowDatas[shadowCount]);
+        ShadowManager._updateSpotShadow(light, ShadowManager._shadowData);
+        shadowDatas.set(ShadowManager._shadowData, shadowCount * ShadowManager._shadowDataLength);
 
         let texture: GPUTexture;
         if (shadowCount < shadowMaps.length) {
@@ -280,7 +287,8 @@ export class ShadowManager extends RenderPass {
     for (let i = 0, n = lights.length; i < n; i++) {
       const light = lights[i];
       if (light.enableShadow && shadowCount < ShadowManager.MAX_SHADOW) {
-        this._updateCascadesShadow(camera, light, shadowDatas[shadowCount]);
+        this._updateCascadesShadow(camera, light, ShadowManager._shadowData);
+        shadowDatas.set(ShadowManager._shadowData, shadowCount * ShadowManager._shadowDataLength);
 
         let texture: GPUTexture;
         if (shadowCount < shadowMaps.length) {
@@ -370,7 +378,9 @@ export class ShadowManager extends RenderPass {
           cubeShadowMaps.push(texture);
         }
 
-        this._updatePointShadow(light, cubeShadowDatas[cubeShadowCount]);
+        this._updatePointShadow(light, ShadowManager._cubeShadowData);
+        cubeShadowDatas.set(ShadowManager._cubeShadowData, ShadowManager._cubeShadowDataLength * cubeShadowCount);
+
         const descriptor = new TextureViewDescriptor();
         descriptor.format = ShadowManager.SHADOW_MAP_FORMAT;
         descriptor.dimension = "2d";

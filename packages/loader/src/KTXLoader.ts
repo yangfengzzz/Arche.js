@@ -21,8 +21,15 @@ export class KTXLoader extends Loader<SampledTexture2D> {
           const parsedData = parseSingleKTX(bin);
           const { width, height, mipmaps, engineFormat } = parsedData;
           const mipmap = mipmaps.length > 1;
-          const texture = new SampledTexture2D(resourceManager.engine, width, height, engineFormat,
-            GPUTextureUsage.RENDER_ATTACHMENT | GPUTextureUsage.TEXTURE_BINDING | GPUTextureUsage.COPY_DST, mipmap);
+          const texture = new SampledTexture2D(
+            resourceManager.engine,
+            width,
+            height,
+            1,
+            engineFormat,
+            GPUTextureUsage.RENDER_ATTACHMENT | GPUTextureUsage.TEXTURE_BINDING | GPUTextureUsage.COPY_DST,
+            mipmap
+          );
 
           for (let miplevel = 0; miplevel < mipmaps.length; miplevel++) {
             const { width, height, data } = mipmaps[miplevel];
