@@ -429,8 +429,8 @@ export class ShadowManager extends RenderPass {
     Matrix.invert(light.entity.transform.worldMatrix, viewMatrix);
     Matrix.multiply(projMatrix, viewMatrix, viewMatrix);
     shadowData.set(viewMatrix.elements, 4);
-    shadowData[20] = 1;
-    shadowData[21] = -1; // mark cascade with negative sign
+    shadowData[68] = 1;
+    shadowData[69] = -1; // mark cascade with negative sign
   }
 
   private _updatePointShadow(light: PointLight, shadowData: Float32Array) {
