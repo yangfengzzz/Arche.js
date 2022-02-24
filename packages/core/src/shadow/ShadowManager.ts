@@ -2,22 +2,18 @@ import { Extent3DDict, RenderPassDepthStencilAttachment, TextureDescriptor, Text
 import { RenderPass } from "../rendering";
 import { ShadowSubpass } from "./ShadowSubpass";
 import { SampledTexture } from "../texture/SampledTexture";
-import { ShaderProperty } from "../shader/ShaderProperty";
 import { ShadowMaterial } from "./ShadowMaterial";
 import { Matrix, Vector3, Vector4 } from "@arche-engine/math";
 import { Engine } from "../Engine";
-import { Shader } from "../shader";
+import { Shader, ShaderProperty } from "../shader";
 import { Scene } from "../Scene";
 import { Camera } from "../Camera";
 import { DirectLight, PointLight, SpotLight } from "../lighting";
 import { SampledTexture2D, SampledTextureCube, TextureUtils } from "../texture";
 
 export class ShadowManager extends RenderPass {
-  private static _shadowDataLength: number = 72;
   // ShadowData: bias:number, intensity:number, radius:number, dump:number, vp: Matrix[4], cascadeSplits: Vector4
   private static _shadowData = new Float32Array(72);
-
-  private static _cubeShadowDataLength: number = 104;
   // CubeShadowData: bias:number, intensity:number, radius:number, dump:number, vp: Matrix[6], lightPos: Vector4
   private static _cubeShadowData = new Float32Array(104);
 
@@ -214,7 +210,7 @@ export class ShadowManager extends RenderPass {
       const light = lights[i];
       if (light.enableShadow && ShadowManager._shadowCount < ShadowManager.MAX_SHADOW) {
         ShadowManager._updateSpotShadow(light, ShadowManager._shadowData);
-        shadowDatas.set(ShadowManager._shadowData, ShadowManager._shadowCount * ShadowManager._shadowDataLength);
+        shadowDatas.set(ShadowManager._shadowData, ShadowManager._shadowCount * ShadowManager._shadowData.length);
 
         let texture: GPUTexture;
         if (ShadowManager._shadowCount < shadowMaps.length) {
@@ -240,7 +236,7 @@ export class ShadowManager extends RenderPass {
             materialPool.push(material);
           }
           const viewProjectionMatrix = material.viewProjectionMatrix;
-          const shadowData = shadowDatas[ShadowManager._shadowCount];
+          const shadowData = ShadowManager._shadowData;
           viewProjectionMatrix.setValue(
             shadowData[4],
             shadowData[5],
@@ -280,7 +276,7 @@ export class ShadowManager extends RenderPass {
       const light = lights[i];
       if (light.enableShadow && ShadowManager._shadowCount < ShadowManager.MAX_SHADOW) {
         this._updateCascadesShadow(camera, light, ShadowManager._shadowData);
-        shadowDatas.set(ShadowManager._shadowData, ShadowManager._shadowCount * ShadowManager._shadowDataLength);
+        shadowDatas.set(ShadowManager._shadowData, ShadowManager._shadowCount * ShadowManager._shadowData.length);
 
         let texture: GPUTexture;
         if (ShadowManager._shadowCount < shadowMaps.length) {
@@ -307,7 +303,7 @@ export class ShadowManager extends RenderPass {
           }
           const stride = i * 16;
           const viewProjectionMatrix = material.viewProjectionMatrix;
-          const shadowData = shadowDatas[ShadowManager._shadowCount];
+          const shadowData = ShadowManager._shadowData;
           viewProjectionMatrix.setValue(
             shadowData[4 + stride],
             shadowData[5 + stride],
@@ -373,7 +369,7 @@ export class ShadowManager extends RenderPass {
         this._updatePointShadow(light, ShadowManager._cubeShadowData);
         cubeShadowDatas.set(
           ShadowManager._cubeShadowData,
-          ShadowManager._cubeShadowDataLength * ShadowManager._cubeShadowCount
+          ShadowManager._cubeShadowData.length * ShadowManager._cubeShadowCount
         );
 
         const descriptor = new TextureViewDescriptor();
@@ -393,7 +389,7 @@ export class ShadowManager extends RenderPass {
           }
           const stride = i * 16;
           const viewProjectionMatrix = material.viewProjectionMatrix;
-          const shadowData = cubeShadowDatas[ShadowManager._cubeShadowCount];
+          const shadowData = ShadowManager._cubeShadowData;
           viewProjectionMatrix.setValue(
             shadowData[4 + stride],
             shadowData[5 + stride],
