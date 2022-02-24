@@ -4,6 +4,7 @@ import {
   Extent3DDict,
   ImageCopyBuffer,
   ImageCopyTexture,
+  Origin3DDict,
   RenderPassColorAttachment,
   RenderPassDepthStencilAttachment,
   TextureDescriptor
@@ -17,6 +18,7 @@ import { Camera } from "../../Camera";
 import { Scene } from "../../Scene";
 
 export class ColorPickerRenderPass extends RenderPass {
+  private static _origin3DDict = new Origin3DDict();
   private _colorPickerColorAttachments = new RenderPassColorAttachment();
   private _colorPickerDepthStencilAttachment = new RenderPassDepthStencilAttachment();
   private _engine: Engine;
@@ -36,7 +38,8 @@ export class ColorPickerRenderPass extends RenderPass {
 
   /**
    * Set the callback function after pick up.
-   * @param {Function} fun Callback function. if there is an renderer selected, the parameter 1 is {component, primitive }, otherwise it is undefined
+   * @param {Function} fun Callback function. if there is a renderer selected,
+   * the parameter 1 is {component, primitive }, otherwise it is undefined
    */
   set onPick(fun: (renderer: Renderer, mesh: Mesh) => void) {
     this._onPick = fun;
@@ -63,14 +66,14 @@ export class ColorPickerRenderPass extends RenderPass {
 
     const colorPickerColorAttachments = this._colorPickerColorAttachments;
     colorPickerColorAttachments.storeOp = "store";
-    colorPickerColorAttachments.loadOp = 'clear';
+    colorPickerColorAttachments.loadOp = "clear";
     colorPickerColorAttachments.clearValue = { r: 1.0, g: 1.0, b: 1.0, a: 1.0 };
     const colorPickerDepthStencilAttachment = this._colorPickerDepthStencilAttachment;
-    colorPickerDepthStencilAttachment.depthLoadOp = 'clear';
+    colorPickerDepthStencilAttachment.depthLoadOp = "clear";
     colorPickerDepthStencilAttachment.depthClearValue = 1.0;
     colorPickerDepthStencilAttachment.depthStoreOp = "store";
-    colorPickerDepthStencilAttachment.stencilLoadOp = 'clear';
-    colorPickerDepthStencilAttachment.stencilClearValue= 0.0;
+    colorPickerDepthStencilAttachment.stencilLoadOp = "clear";
+    colorPickerDepthStencilAttachment.stencilClearValue = 0.0;
     colorPickerDepthStencilAttachment.stencilStoreOp = "store";
     colorPickerDepthStencilAttachment.view = engine.renderContext.depthStencilTexture();
     this.renderPassDescriptor.colorAttachments.push(colorPickerColorAttachments);
@@ -138,7 +141,11 @@ export class ColorPickerRenderPass extends RenderPass {
     const left = Math.floor(nx * (canvasWidth - 1));
     const bottom = Math.floor((1 - ny) * (canvasHeight - 1));
 
-    this._imageCopyTexture.origin = [left, canvasHeight - bottom, 0];
+    const origin = ColorPickerRenderPass._origin3DDict;
+    origin.x = left;
+    origin.y = canvasHeight - bottom;
+    origin.z = 0;
+    this._imageCopyTexture.origin = origin;
     commandEncoder.copyTextureToBuffer(this._imageCopyTexture, this._imageCopyBuffer, this._extent);
   }
 
@@ -150,5 +157,4 @@ export class ColorPickerRenderPass extends RenderPass {
       this._stageBuffer.unmap();
     });
   }
-
 }

@@ -134,47 +134,51 @@ export class Shader {
 
     // merge info
     const vertexCode = this._vertexSource.compile(macroCollection);
-    vertexCode[1].forEach(((bindings, group) => {
-      bindings.forEach((binding => {
+    vertexCode[1].forEach((bindings, group) => {
+      bindings.forEach((binding) => {
         if (!this._bindGroupInfo.has(group)) {
           this._bindGroupInfo.set(group, new Set<number>());
         }
         this._bindGroupInfo.get(group).add(binding);
-      }));
-    }));
+      });
+    });
     const fragmentCode = this._fragmentSource.compile(macroCollection);
-    fragmentCode[1].forEach(((bindings, group) => {
-      bindings.forEach((binding => {
+    fragmentCode[1].forEach((bindings, group) => {
+      bindings.forEach((binding) => {
         if (!this._bindGroupInfo.has(group)) {
           this._bindGroupInfo.set(group, new Set<number>());
         }
         this._bindGroupInfo.get(group).add(binding);
-      }));
-    }));
+      });
+    });
 
     // console.log(vertexCode[0]);
     // console.log(fragmentCode[0]);
     // debugger;
 
     // move to vecMap
-    this._bindGroupInfo.forEach(((bindings, group) => {
-      bindings.forEach((binding => {
+    this._bindGroupInfo.forEach((bindings, group) => {
+      bindings.forEach((binding) => {
         if (!this._bindGroupLayoutEntryVecMap.has(group)) {
           this._bindGroupLayoutEntryVecMap.set(group, []);
         }
         this._bindGroupLayoutEntryVecMap.get(group).push(this._findEntry(group, binding));
-      }));
-    }));
+      });
+    });
 
     // generate map
-    this._bindGroupLayoutEntryVecMap.forEach(((entries, group) => {
+    this._bindGroupLayoutEntryVecMap.forEach((entries, group) => {
       const desc = new BindGroupLayoutDescriptor();
       desc.entries = entries;
       this._bindGroupLayoutDescriptorMap.set(group, desc);
-    }));
+    });
 
-    shaderProgram = new ShaderProgram(engine.device, vertexCode[0], fragmentCode[0],
-      this._bindGroupLayoutDescriptorMap);
+    shaderProgram = new ShaderProgram(
+      engine.device,
+      vertexCode[0],
+      fragmentCode[0],
+      this._bindGroupLayoutDescriptorMap
+    );
     shaderProgramPool.cache(shaderProgram);
     return shaderProgram;
   }

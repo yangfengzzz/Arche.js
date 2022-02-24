@@ -20,9 +20,7 @@ export class RenderState {
   /**
    * @internal
    */
-  _apply(pipelineDescriptor: RenderPipelineDescriptor,
-         encoder: GPURenderPassEncoder,
-         frontFaceInvert: boolean): void {
+  _apply(pipelineDescriptor: RenderPipelineDescriptor, encoder: GPURenderPassEncoder, frontFaceInvert: boolean): void {
     this.blendState.platformApply(pipelineDescriptor, encoder);
     this.depthState.platformApply(pipelineDescriptor);
     this.stencilState.platformApply(pipelineDescriptor, encoder);

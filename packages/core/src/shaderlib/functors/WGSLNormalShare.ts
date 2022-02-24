@@ -12,15 +12,11 @@ export class WGSLNormalShare {
     const outputStructName = this._outputStructName;
     if (macros.isEnable("HAS_NORMAL")) {
       if (macros.isEnable("HAS_TANGENT") && macros.isEnable("HAS_NORMAL_TEXTURE")) {
-        encoder.addInoutType(outputStructName, WGSLEncoder.getCounterNumber(counterIndex),
-          "v_normalW", "vec3<f32>");
-        encoder.addInoutType(outputStructName, WGSLEncoder.getCounterNumber(counterIndex),
-          "v_tangentW", "vec3<f32>");
-        encoder.addInoutType(outputStructName, WGSLEncoder.getCounterNumber(counterIndex),
-          "v_bitangentW", "vec3<f32>");
+        encoder.addInoutType(outputStructName, WGSLEncoder.getCounterNumber(counterIndex), "v_normalW", "vec3<f32>");
+        encoder.addInoutType(outputStructName, WGSLEncoder.getCounterNumber(counterIndex), "v_tangentW", "vec3<f32>");
+        encoder.addInoutType(outputStructName, WGSLEncoder.getCounterNumber(counterIndex), "v_bitangentW", "vec3<f32>");
       } else {
-        encoder.addInoutType(outputStructName, WGSLEncoder.getCounterNumber(counterIndex),
-          "v_normal", "vec3<f32>");
+        encoder.addInoutType(outputStructName, WGSLEncoder.getCounterNumber(counterIndex), "v_normal", "vec3<f32>");
       }
     }
   }

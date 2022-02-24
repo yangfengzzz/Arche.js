@@ -11,7 +11,8 @@ import {
   PrimitiveState,
   RenderPipelineDescriptor,
   VertexState,
-  ColorTargetState, BindGroupLayout
+  ColorTargetState,
+  BindGroupLayout
 } from "../../webgpu";
 import { Engine } from "../../Engine";
 import { RenderElement } from "../RenderElement";
@@ -81,7 +82,12 @@ export class ForwardSubpass extends Subpass {
     this._opaqueQueue = [];
     this._alphaTestQueue = [];
     this._transparentQueue = [];
-    this._engine._componentsManager.callRender(this._camera, this._opaqueQueue, this._alphaTestQueue, this._transparentQueue);
+    this._engine._componentsManager.callRender(
+      this._camera,
+      this._opaqueQueue,
+      this._alphaTestQueue,
+      this._transparentQueue
+    );
     this._opaqueQueue.sort(Subpass._compareFromNearToFar);
     this._alphaTestQueue.sort(Subpass._compareFromNearToFar);
     this._transparentQueue.sort(Subpass._compareFromFarToNear);
@@ -103,11 +109,7 @@ export class ForwardSubpass extends Subpass {
         compileMacros
       );
 
-      ShaderMacroCollection.unionCollection(
-        compileMacros,
-        material.shaderData._macroCollection,
-        compileMacros
-      );
+      ShaderMacroCollection.unionCollection(compileMacros, material.shaderData._macroCollection, compileMacros);
 
       const device = this._engine.device;
       // PSO
@@ -122,7 +124,7 @@ export class ForwardSubpass extends Subpass {
 
         const bindGroupLayoutDescriptors = program.bindGroupLayoutDescriptorMap;
         let bindGroupLayouts: BindGroupLayout[] = [];
-        bindGroupLayoutDescriptors.forEach(((descriptor, group) => {
+        bindGroupLayoutDescriptors.forEach((descriptor, group) => {
           const bindGroupLayout = device.createBindGroupLayout(descriptor);
           this._bindGroupEntries = [];
           bindGroupEntries.length = descriptor.entries.length;
@@ -143,7 +145,7 @@ export class ForwardSubpass extends Subpass {
           const uniformBindGroup = device.createBindGroup(bindGroupDescriptor);
           renderPassEncoder.setBindGroup(group, uniformBindGroup);
           bindGroupLayouts.push(bindGroupLayout);
-        }));
+        });
         shader.flush();
 
         this._pipelineLayoutDescriptor.bindGroupLayouts = bindGroupLayouts;
@@ -170,8 +172,7 @@ export class ForwardSubpass extends Subpass {
     }
   }
 
-  _bindingData(entry: BindGroupEntry,
-               mat: Material, renderer: Renderer) {
+  _bindingData(entry: BindGroupEntry, mat: Material, renderer: Renderer) {
     const group = Shader.getShaderPropertyGroup(entry.binding);
     if (group != null) {
       switch (group) {
@@ -197,8 +198,7 @@ export class ForwardSubpass extends Subpass {
     }
   }
 
-  _bindingTexture(entry: BindGroupEntry,
-                  mat: Material, renderer: Renderer) {
+  _bindingTexture(entry: BindGroupEntry, mat: Material, renderer: Renderer) {
     const group = Shader.getShaderPropertyGroup(entry.binding);
     if (group != null) {
       switch (group) {
@@ -224,8 +224,7 @@ export class ForwardSubpass extends Subpass {
     }
   }
 
-  _bindingSampler(entry: BindGroupEntry,
-                  mat: Material, renderer: Renderer) {
+  _bindingSampler(entry: BindGroupEntry, mat: Material, renderer: Renderer) {
     const group = Shader.getShaderPropertyGroup(entry.binding);
     if (group != null) {
       switch (group) {

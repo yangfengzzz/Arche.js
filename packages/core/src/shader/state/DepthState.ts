@@ -18,7 +18,7 @@ export class DepthState {
     if (enabled) {
       // apply compare func.
       depthStencil.depthCompare = compareFunction;
-      // apply write enabled.
+      // apply to write enabled.
       depthStencil.depthWriteEnabled = writeEnabled;
     }
   }

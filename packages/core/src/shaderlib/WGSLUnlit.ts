@@ -1,8 +1,11 @@
 import { BindGroupInfo, WGSL } from "./WGSL";
 import { ShaderMacroCollection } from "../shader/ShaderMacroCollection";
 import {
-  WGSLBeginPositionVert, WGSLBlendShapeInput,
-  WGSLBlendShapeVert, WGSLCommon, WGSLCommonVert,
+  WGSLBeginPositionVert,
+  WGSLBlendShapeInput,
+  WGSLBlendShapeVert,
+  WGSLCommon,
+  WGSLCommonVert,
   WGSLPositionVert,
   WGSLSkinningVert,
   WGSLUVShare,
@@ -44,7 +47,7 @@ export class WGSLUnlitVertex extends WGSL {
       this._uvShare.execute(encoder, macros, outputStructCounter);
       encoder.addBuiltInoutType("VertexOut", "position", "position", "vec4<f32>");
 
-      encoder.addEntry([["in", "VertexIn"]], ["out", "VertexOut"], (() => {
+      encoder.addEntry([["in", "VertexIn"]], ["out", "VertexOut"], () => {
         let source: string = "";
         source += this._beginPositionVert.execute(macros);
         source += this._blendShapeVert.execute(macros);
@@ -52,7 +55,7 @@ export class WGSLUnlitVertex extends WGSL {
         source += this._uvVert.execute(macros);
         source += this._positionVert.execute(macros);
         return source;
-      }));
+      });
       encoder.flush();
     }
     WGSLEncoder.endCounter(inputStructCounter);
@@ -86,7 +89,7 @@ export class WGSLUnlitFragment extends WGSL {
         encoder.addSampledTextureBinding("u_baseTexture", "texture_2d<f32>", "u_baseSampler", "sampler");
       }
 
-      encoder.addEntry([["in", "VertexOut"]], ["out", "Output"], (() => {
+      encoder.addEntry([["in", "VertexOut"]], ["out", "Output"], () => {
         let source: string = "";
         source += "var baseColor = u_baseColor;\n";
         if (macros.isEnable("HAS_BASE_TEXTURE")) {
@@ -100,7 +103,7 @@ export class WGSLUnlitFragment extends WGSL {
         }
         source += "out.finalColor = baseColor;\n";
         return source;
-      }));
+      });
       encoder.flush();
     }
     WGSLEncoder.endCounter(inputStructCounter);

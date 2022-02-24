@@ -3,8 +3,8 @@ import { Engine } from "../../Engine";
 import { Scene } from "../../Scene";
 import { Camera } from "../../Camera";
 import { SampledTextureCube } from "../../texture";
-import { ModelMesh } from "../../mesh/ModelMesh";
-import { Buffer } from "../../graphic/Buffer";
+import { ModelMesh } from "../../mesh";
+import { Buffer } from "../../graphic";
 import { WGSL, WGSLSkyboxFragment, WGSLSkyboxVertex } from "../../shaderlib";
 import {
   BindGroupDescriptor,
@@ -24,7 +24,7 @@ import {
   TextureBindingLayout,
   SamplerBindingLayout
 } from "../../webgpu";
-import { PrimitiveMesh } from "../../mesh/PrimitiveMesh";
+import { PrimitiveMesh } from "../../mesh";
 import { Matrix } from "@arche-engine/math";
 import { ShaderMacroCollection } from "../../shader/ShaderMacroCollection";
 import { ShaderProgram } from "../../shader/ShaderProgram";
@@ -99,9 +99,11 @@ export class SkyboxSubpass extends Subpass {
     // Shader
     {
       const macros = new ShaderMacroCollection();
-      const program = new ShaderProgram(this.engine.device,
+      const program = new ShaderProgram(
+        this.engine.device,
         this._vertexSource.compile(macros)[0],
-        this._fragmentSource.compile(macros)[0]);
+        this._fragmentSource.compile(macros)[0]
+      );
       this._vertex.entryPoint = "main";
       this._vertex.module = program.vertexShader;
       this._fragment.entryPoint = "main";
@@ -211,5 +213,6 @@ export class SkyboxSubpass extends Subpass {
 }
 
 enum SkyBoxType {
-  Cuboid, Sphere
+  Cuboid,
+  Sphere
 }

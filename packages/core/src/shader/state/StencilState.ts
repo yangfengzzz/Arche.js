@@ -32,8 +32,7 @@ export class StencilState {
   private _stencilFront = new StencilFaceState();
   private _stencilBack = new StencilFaceState();
 
-  platformApply(pipelineDescriptor: RenderPipelineDescriptor,
-                encoder: GPURenderPassEncoder): void {
+  platformApply(pipelineDescriptor: RenderPipelineDescriptor, encoder: GPURenderPassEncoder): void {
     const {
       enabled,
       referenceValue,

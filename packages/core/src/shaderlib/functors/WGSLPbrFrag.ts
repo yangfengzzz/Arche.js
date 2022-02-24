@@ -22,9 +22,11 @@ export class WGSLPbrFrag {
     source += `), normalize(u_cameraData.u_cameraPos - ${input}.v_pos));\n`;
 
     if (is_metallic_workflow) {
-      source += "var material = getPhysicalMaterial(u_pbrBaseData.baseColor, u_pbrData.metallic, u_pbrData.roughness, u_alphaCutoff, \n";
+      source +=
+        "var material = getPhysicalMaterial(u_pbrBaseData.baseColor, u_pbrData.metallic, u_pbrData.roughness, u_alphaCutoff, \n";
     } else {
-      source += "var material = getPhysicalMaterial(u_pbrBaseData.baseColor, u_pbrSpecularData.specularColor, u_pbrSpecularData.glossiness, u_alphaCutoff, \n";
+      source +=
+        "var material = getPhysicalMaterial(u_pbrBaseData.baseColor, u_pbrSpecularData.specularColor, u_pbrSpecularData.glossiness, u_alphaCutoff, \n";
     }
     if (macros.isEnable("HAS_BASE_COLORMAP")) {
       source += `${input}.v_uv, u_baseColorTexture, u_baseColorSampler,\n`;
@@ -40,7 +42,8 @@ export class WGSLPbrFrag {
     }
     source += ");\n";
 
-    source += "var reflectedLight = ReflectedLight( vec3<f32>(0.0, 0.0, 0.0), vec3<f32>(0.0, 0.0, 0.0), vec3<f32>(0.0, 0.0, 0.0), vec3<f32>(0.0, 0.0, 0.0) );\n";
+    source +=
+      "var reflectedLight = ReflectedLight( vec3<f32>(0.0, 0.0, 0.0), vec3<f32>(0.0, 0.0, 0.0), vec3<f32>(0.0, 0.0, 0.0), vec3<f32>(0.0, 0.0, 0.0) );\n";
     source += "var dotNV = saturate( dot( geometry.normal, geometry.viewDir ) );\n";
 
     // Direct Light
@@ -57,18 +60,22 @@ export class WGSLPbrFrag {
       source += "var irradiance = u_envMapLight.diffuse * u_envMapLight.diffuseIntensity;\n";
       source += "irradiance = irradiance * PI;\n";
     }
-    source += "reflectedLight.indirectDiffuse = reflectedLight.indirectDiffuse + irradiance * BRDF_Diffuse_Lambert( material.diffuseColor );\n";
+    source +=
+      "reflectedLight.indirectDiffuse = reflectedLight.indirectDiffuse + irradiance * BRDF_Diffuse_Lambert( material.diffuseColor );\n";
 
     // IBL specular
-    source += "var radiance = getLightProbeRadiance( geometry, material.roughness, i32(u_envMapLight.mipMapLevel), u_envMapLight.specularIntensity);\n";
-    source += "reflectedLight.indirectSpecular = reflectedLight.indirectSpecular + radiance * envBRDFApprox(material.specularColor, material.roughness, dotNV );\n";
+    source +=
+      "var radiance = getLightProbeRadiance( geometry, material.roughness, i32(u_envMapLight.mipMapLevel), u_envMapLight.specularIntensity);\n";
+    source +=
+      "reflectedLight.indirectSpecular = reflectedLight.indirectSpecular + radiance * envBRDFApprox(material.specularColor, material.roughness, dotNV );\n";
 
     // Occlusion
     if (macros.isEnable("HAS_OCCLUSIONMAP")) {
       source += `var ambientOcclusion = (textureSample(u_occlusionTexture, u_occlusionSampler, ${input}.v_uv).r - 1.0) * u_occlusionStrength + 1.0;\n`;
       source += "reflectedLight.indirectDiffuse = reflectedLight.indirectDiffuse * ambientOcclusion;\n";
       if (macros.isEnable("HAS_SPECULAR_ENV")) {
-        source += "reflectedLight.indirectSpecular = reflectedLight.indirectSpecular * computeSpecularOcclusion(ambientOcclusion, material.roughness, dotNV);\n";
+        source +=
+          "reflectedLight.indirectSpecular = reflectedLight.indirectSpecular * computeSpecularOcclusion(ambientOcclusion, material.roughness, dotNV);\n";
       }
     }
 

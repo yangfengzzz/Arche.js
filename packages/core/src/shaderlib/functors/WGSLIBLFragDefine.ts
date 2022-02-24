@@ -57,13 +57,15 @@ export class WGSLIBLFragDefine {
     func += "}\n";
     encoder.addFunction(func);
 
-    func = "fn getLightProbeRadiance(geometry:GeometricContext, roughness:f32, maxMIPLevel:i32, specularIntensity:f32)->vec3<f32> {\n";
+    func =
+      "fn getLightProbeRadiance(geometry:GeometricContext, roughness:f32, maxMIPLevel:i32, specularIntensity:f32)->vec3<f32> {\n";
     if (!macros.isEnable("HAS_SPECULAR_ENV")) {
       func += "return vec3<f32>(0.0, 0.0, 0.0);\n";
     } else {
       func += "var reflectVec = reflect( -geometry.viewDir, geometry.normal );\n";
       func += "var specularMIPLevel = getSpecularMIPLevel(roughness, maxMIPLevel );\n";
-      func += "var envMapColor =  textureSampleLevel(u_env_specularTexture, u_env_specularSampler, reflectVec, specularMIPLevel );\n";
+      func +=
+        "var envMapColor =  textureSampleLevel(u_env_specularTexture, u_env_specularSampler, reflectVec, specularMIPLevel );\n";
       func += "return envMapColor.rgb * specularIntensity;\n";
     }
     func += "}\n";

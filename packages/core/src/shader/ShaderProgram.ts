@@ -26,15 +26,19 @@ export class ShaderProgram {
     return this._bindGroupLayoutDescriptorMap;
   }
 
-  constructor(device: GPUDevice, vertexSource: string, fragmentSource: string,
-              bindGroupLayoutDescriptorMap?: BindGroupLayoutDescriptorMap) {
+  constructor(
+    device: GPUDevice,
+    vertexSource: string,
+    fragmentSource: string,
+    bindGroupLayoutDescriptorMap?: BindGroupLayoutDescriptorMap
+  ) {
     if (bindGroupLayoutDescriptorMap) {
       this._bindGroupLayoutDescriptorMap = new Map<number, BindGroupLayoutDescriptor>();
-      bindGroupLayoutDescriptorMap.forEach(((descriptor, group) => {
+      bindGroupLayoutDescriptorMap.forEach((descriptor, group) => {
         const bindGroupLayoutDescriptor = new BindGroupLayoutDescriptor();
         descriptor.cloneTo(bindGroupLayoutDescriptor);
         this._bindGroupLayoutDescriptorMap.set(group, bindGroupLayoutDescriptor);
-      }));
+      });
     }
 
     // console.log(vertexSource);

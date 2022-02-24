@@ -10,8 +10,7 @@ export class WGSLWorldPosShare {
 
   execute(encoder: WGSLEncoder, macros: ShaderMacroCollection, counterIndex: number) {
     if (macros.isEnable("NEED_WORLDPOS")) {
-      encoder.addInoutType(this._outputStructName, WGSLEncoder.getCounterNumber(counterIndex),
-        "v_pos", "vec3<f32>");
+      encoder.addInoutType(this._outputStructName, WGSLEncoder.getCounterNumber(counterIndex), "v_pos", "vec3<f32>");
     }
   }
 }

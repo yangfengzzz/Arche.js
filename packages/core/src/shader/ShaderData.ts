@@ -1,20 +1,18 @@
 import { IClone } from "../clone/IClone";
 import { Color, Matrix, Vector2, Vector3, Vector4 } from "@arche-engine/math";
-import { IRefObject } from "../asset/IRefObject";
+import { IRefObject } from "../asset";
 import { ShaderDataGroup } from "./ShaderDataGroup";
 import { Shader } from "./Shader";
 import { ShaderMacro } from "./ShaderMacro";
 import { ShaderMacroCollection } from "./ShaderMacroCollection";
 import { ShaderProperty } from "./ShaderProperty";
-import { SampledTexture2D } from "../texture/SampledTexture2D";
+import { SampledTexture2D } from "../texture";
 import { SampledTexture } from "../texture/SampledTexture";
-import { Buffer } from "../graphic/Buffer";
+import { Buffer } from "../graphic";
 import { Engine } from "../Engine";
 import { MacroName } from "./InternalMacroName";
 
-export type ShaderPropertyResourceType =
-  | Buffer
-  | SampledTexture
+export type ShaderPropertyResourceType = Buffer | SampledTexture;
 
 /**
  * Shader data collection,Correspondence includes shader properties data and macros data.
@@ -538,7 +536,11 @@ export class ShaderData implements IRefObject, IClone {
    */
   setSampledTexture(textureProperty: ShaderProperty, samplerProperty: ShaderProperty, value: SampledTexture): void;
 
-  setSampledTexture(textureProperty: string | ShaderProperty, samplerProperty: string | ShaderProperty, value: SampledTexture): void {
+  setSampledTexture(
+    textureProperty: string | ShaderProperty,
+    samplerProperty: string | ShaderProperty,
+    value: SampledTexture
+  ): void {
     this._setSampledTexture(textureProperty, samplerProperty, value);
   }
 
@@ -650,7 +652,11 @@ export class ShaderData implements IRefObject, IClone {
     }
 
     if (this._propertyResources[property._uniqueId] == undefined) {
-      this._propertyResources[property._uniqueId] = new Buffer(this._engine, value.byteLength, GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST);
+      this._propertyResources[property._uniqueId] = new Buffer(
+        this._engine,
+        value.byteLength,
+        GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST
+      );
     }
     (<Buffer>this._propertyResources[property._uniqueId]).uploadData(value, 0, 0, value.length);
   }
@@ -658,9 +664,11 @@ export class ShaderData implements IRefObject, IClone {
   /**
    * @internal
    */
-  _setSampledTexture(texProperty: string | ShaderProperty,
-                     sampleProperty: string | ShaderProperty,
-                     value: SampledTexture): void {
+  _setSampledTexture(
+    texProperty: string | ShaderProperty,
+    sampleProperty: string | ShaderProperty,
+    value: SampledTexture
+  ): void {
     // texture
     {
       if (typeof texProperty === "string") {
@@ -689,7 +697,9 @@ export class ShaderData implements IRefObject, IClone {
         if (sampleProperty._group === undefined) {
           sampleProperty._group = this._group;
         } else {
-          throw `Shader property ${sampleProperty.name} has been used as ${ShaderDataGroup[sampleProperty._group]} property.`;
+          throw `Shader property ${sampleProperty.name} has been used as ${
+            ShaderDataGroup[sampleProperty._group]
+          } property.`;
         }
       }
 

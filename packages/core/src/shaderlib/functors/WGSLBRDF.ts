@@ -54,7 +54,8 @@ export class WGSLBRDF {
     encoder.addFunction(func);
 
     // GGX Distribution, Schlick Fresnel, GGX-Smith Visibility
-    func = "fn BRDF_Specular_GGX(incidentDirection:vec3<f32>, geometry:GeometricContext, specularColor:vec3<f32>, roughness:f32)->vec3<f32> {\n";
+    func =
+      "fn BRDF_Specular_GGX(incidentDirection:vec3<f32>, geometry:GeometricContext, specularColor:vec3<f32>, roughness:f32)->vec3<f32> {\n";
     func += "\n";
     func += "    var alpha = pow2( roughness ); // UE4's roughness\n";
     func += "\n";

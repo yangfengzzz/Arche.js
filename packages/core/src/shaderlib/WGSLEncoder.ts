@@ -1,8 +1,15 @@
 import {
-  Attributes, attributesString, bindingType, BuiltInType, isMultisampled,
-  SamplerType, sampleType,
-  StorageTextureType, storageTextureViewDimension,
-  TextureType, textureViewDimension,
+  Attributes,
+  attributesString,
+  bindingType,
+  BuiltInType,
+  isMultisampled,
+  SamplerType,
+  sampleType,
+  StorageTextureType,
+  storageTextureViewDimension,
+  TextureType,
+  textureViewDimension,
   UniformType
 } from "./WGSLCommon";
 import { BindGroupInfo, BindGroupLayoutEntryMap, WGSL } from "./WGSL";
@@ -72,7 +79,7 @@ export class WGSLEncoder {
     if (property !== null) {
       this.addManualUniformBinding(uniformName, type, property._uniqueId, group);
     } else {
-      throw  "Unknown Uniform Name";
+      throw "Unknown Uniform Name";
     }
   }
 
@@ -100,9 +107,13 @@ export class WGSLEncoder {
     this._needFlush = true;
   }
 
-  addSampledTextureBinding(texName: string, texType: TextureType,
-                           samplerName: string, samplerType: SamplerType,
-                           group: number = 0) {
+  addSampledTextureBinding(
+    texName: string,
+    texType: TextureType,
+    samplerName: string,
+    samplerType: SamplerType,
+    group: number = 0
+  ): void {
     const texProperty = Shader.getPropertyByName(texName);
     const samplerProperty = Shader.getPropertyByName(samplerName);
     if (texProperty != undefined && samplerProperty != undefined) {
@@ -112,7 +123,7 @@ export class WGSLEncoder {
       const samplerBinding = samplerProperty._uniqueId;
       this.addManualSamplerBinding(samplerName, samplerType, samplerBinding, group);
     } else {
-      throw  "Unknown Uniform Name";
+      throw "Unknown Uniform Name";
     }
   }
 
@@ -174,8 +185,12 @@ export class WGSLEncoder {
     this._needFlush = true;
   }
 
-  addStorageTextureBinding(texName: string, texType: StorageTextureType,
-                           texelFormat: GPUTextureFormat, group: number = 0) {
+  addStorageTextureBinding(
+    texName: string,
+    texType: StorageTextureType,
+    texelFormat: GPUTextureFormat,
+    group: number = 0
+  ): void {
     const property = Shader.getPropertyByName(texName);
     if (property !== null) {
       const binding = property._uniqueId;
@@ -205,7 +220,7 @@ export class WGSLEncoder {
       this._bindGroupInfo.get(group).add(binding);
       this._needFlush = true;
     } else {
-      throw  "Unknown Uniform Name";
+      throw "Unknown Uniform Name";
     }
   }
 
@@ -245,7 +260,7 @@ export class WGSLEncoder {
     } else if (this._currentStage == GPUShaderStage.FRAGMENT) {
       this._entryBlock += "@stage(fragment)\n";
     } else {
-      throw  "Use Begin at first";
+      throw "Use Begin at first";
     }
 
     this._entryBlock += "fn main(";

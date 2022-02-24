@@ -40,33 +40,37 @@ export class WGSLPbrFragDefine {
     }
 
     if (macros.isEnable("HAS_BASE_COLORMAP")) {
-      encoder.addSampledTextureBinding("u_baseColorTexture", "texture_2d<f32>",
-        "u_baseColorSampler", "sampler");
+      encoder.addSampledTextureBinding("u_baseColorTexture", "texture_2d<f32>", "u_baseColorSampler", "sampler");
     }
 
     if (macros.isEnable("HAS_NORMAL_TEXTURE")) {
-      encoder.addSampledTextureBinding("u_normalTexture", "texture_2d<f32>",
-        "u_normalSampler", "sampler");
+      encoder.addSampledTextureBinding("u_normalTexture", "texture_2d<f32>", "u_normalSampler", "sampler");
     }
 
     if (macros.isEnable("HAS_EMISSIVE_TEXTURE")) {
-      encoder.addSampledTextureBinding("u_emissiveTexture", "texture_2d<f32>",
-        "u_emissiveSampler", "sampler");
+      encoder.addSampledTextureBinding("u_emissiveTexture", "texture_2d<f32>", "u_emissiveSampler", "sampler");
     }
 
     if (macros.isEnable("HAS_METALROUGHNESSMAP") && this._is_metallic_workflow) {
-      encoder.addSampledTextureBinding("u_metallicRoughnessTexture", "texture_2d<f32>",
-        "u_metallicRoughnessSampler", "sampler");
+      encoder.addSampledTextureBinding(
+        "u_metallicRoughnessTexture",
+        "texture_2d<f32>",
+        "u_metallicRoughnessSampler",
+        "sampler"
+      );
     }
 
     if (macros.isEnable("HAS_SPECULARGLOSSINESSMAP") && !this._is_metallic_workflow) {
-      encoder.addSampledTextureBinding("u_specularGlossinessTexture", "texture_2d<f32>",
-        "u_specularGlossinessSampler", "sampler");
+      encoder.addSampledTextureBinding(
+        "u_specularGlossinessTexture",
+        "texture_2d<f32>",
+        "u_specularGlossinessSampler",
+        "sampler"
+      );
     }
 
     if (macros.isEnable("HAS_OCCLUSIONMAP")) {
-      encoder.addSampledTextureBinding("u_occlusionTexture", "texture_2d<f32>",
-        "u_occlusionSampler", "sampler");
+      encoder.addSampledTextureBinding("u_occlusionTexture", "texture_2d<f32>", "u_occlusionSampler", "sampler");
     }
 
     let structType = "struct ReflectedLight {\n";

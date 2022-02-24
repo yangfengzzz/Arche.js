@@ -20,13 +20,13 @@ export class ForwardRenderPass extends RenderPass {
     renderPassDescriptor.colorAttachments.push(this._renderPassColorAttachment);
     renderPassDescriptor.depthStencilAttachment = this._renderPassDepthStencilAttachment;
     renderPassColorAttachment.storeOp = "store";
-    renderPassColorAttachment.loadOp = 'clear';
+    renderPassColorAttachment.loadOp = "clear";
     renderPassColorAttachment.clearValue = { r: 0.4, g: 0.4, b: 0.4, a: 1.0 };
-    renderPassDepthStencilAttachment.depthLoadOp = 'clear';
+    renderPassDepthStencilAttachment.depthLoadOp = "clear";
     renderPassDepthStencilAttachment.depthClearValue = 1.0;
     renderPassDepthStencilAttachment.depthStoreOp = "store";
-    renderPassDepthStencilAttachment.stencilLoadOp = 'clear';
-    renderPassDepthStencilAttachment.stencilClearValue= 0.0;
+    renderPassDepthStencilAttachment.stencilLoadOp = "clear";
+    renderPassDepthStencilAttachment.stencilClearValue = 0.0;
     renderPassDepthStencilAttachment.stencilStoreOp = "store";
     renderPassDepthStencilAttachment.view = engine.renderContext.depthStencilTexture();
 

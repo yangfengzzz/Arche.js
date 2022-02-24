@@ -24,23 +24,19 @@ export class WGSLMobileMaterialShare {
     encoder.addUniformBinding("u_alphaCutoff", "f32", 0);
 
     if (macros.isEnable("HAS_EMISSIVE_TEXTURE")) {
-      encoder.addSampledTextureBinding("u_emissiveTexture", "texture_2d<f32>",
-        "u_emissiveSampler", "sampler");
+      encoder.addSampledTextureBinding("u_emissiveTexture", "texture_2d<f32>", "u_emissiveSampler", "sampler");
     }
 
     if (macros.isEnable("HAS_DIFFUSE_TEXTURE")) {
-      encoder.addSampledTextureBinding("u_diffuseTexture", "texture_2d<f32>",
-        "u_diffuseSampler", "sampler");
+      encoder.addSampledTextureBinding("u_diffuseTexture", "texture_2d<f32>", "u_diffuseSampler", "sampler");
     }
 
     if (macros.isEnable("HAS_SPECULAR_TEXTURE")) {
-      encoder.addSampledTextureBinding("u_specularTexture", "texture_2d<f32>",
-        "u_specularSampler", "sampler");
+      encoder.addSampledTextureBinding("u_specularTexture", "texture_2d<f32>", "u_specularSampler", "sampler");
     }
 
     if (macros.isEnable("HAS_NORMAL_TEXTURE")) {
-      encoder.addSampledTextureBinding("u_normalTexture", "texture_2d<f32>",
-        "u_normalSampler", "sampler");
+      encoder.addSampledTextureBinding("u_normalTexture", "texture_2d<f32>", "u_normalSampler", "sampler");
     }
   }
 }

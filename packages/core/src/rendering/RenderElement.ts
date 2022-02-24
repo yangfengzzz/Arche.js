@@ -1,5 +1,5 @@
-import { Mesh } from "../graphic/Mesh";
-import { SubMesh } from "../graphic/SubMesh";
+import { Mesh } from "../graphic";
+import { SubMesh } from "../graphic";
 import { Material } from "../material";
 import { Renderer } from "../Renderer";
 

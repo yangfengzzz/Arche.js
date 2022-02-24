@@ -10,8 +10,7 @@ export class WGSLColorShare {
 
   execute(encoder: WGSLEncoder, macros: ShaderMacroCollection, counterIndex: number) {
     if (macros.isEnable("HAS_VERTEXCOLOR")) {
-      encoder.addInoutType(this._outputStructName, WGSLEncoder.getCounterNumber(counterIndex),
-        "v_color", "vec4<f32>");
+      encoder.addInoutType(this._outputStructName, WGSLEncoder.getCounterNumber(counterIndex), "v_color", "vec4<f32>");
     }
   }
 }

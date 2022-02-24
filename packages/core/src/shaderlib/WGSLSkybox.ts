@@ -1,8 +1,5 @@
 import { BindGroupInfo, WGSL } from "./WGSL";
-import {
-  WGSLCommon,
-  WGSLCommonVert
-} from "./functors";
+import { WGSLCommon, WGSLCommonVert } from "./functors";
 import { ShaderMacroCollection } from "../shader/ShaderMacroCollection";
 
 export class WGSLSkyboxVertex extends WGSL {

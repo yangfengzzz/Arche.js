@@ -1,38 +1,32 @@
-import { Subpass } from "../Subpass";
-import { Scene } from "../../Scene";
-import { Camera } from "../../Camera";
+import { Subpass } from "../rendering";
+import { Engine } from "../Engine";
+import { Scene } from "../Scene";
+import { Camera } from "../Camera";
+import { ShadowMaterial } from "./ShadowMaterial";
+import { Vector4 } from "@arche-engine/math";
+import { ShaderMacroCollection } from "../shader/ShaderMacroCollection";
+import { RenderElement } from "../rendering/RenderElement";
 import {
   BindGroupDescriptor,
   BindGroupEntry,
   BindGroupLayout,
-  ColorTargetState,
   DepthStencilState,
-  FragmentState,
   MultisampleState,
   PipelineLayoutDescriptor,
   PrimitiveState,
   RenderPipelineDescriptor,
   VertexState
-} from "../../webgpu";
-import { Engine } from "../../Engine";
-import { RenderElement } from "../RenderElement";
-import { Shader } from "../../shader";
-import { ShaderMacroCollection } from "../../shader/ShaderMacroCollection";
-import { UnlitMaterial } from "../../material";
-import { Renderer } from "../../Renderer";
-import { ShaderDataGroup } from "../../shader/ShaderDataGroup";
-import { Buffer } from "../../graphic";
-import { Mesh } from "../../graphic";
-import { Logger } from "../../base";
+} from "../webgpu";
+import { Material } from "../material";
+import { Renderer } from "../Renderer";
+import { Shader } from "../shader";
+import { ShaderDataGroup } from "../shader/ShaderDataGroup";
 
-export class ColorPickerSubpass extends Subpass {
-  static _color: Float32Array = new Float32Array(4);
+export class ShadowSubpass extends Subpass {
   static readonly _compileMacros: ShaderMacroCollection = new ShaderMacroCollection();
 
-  private _material: UnlitMaterial;
-  private _bufferPool: Buffer[] = [];
-  private _currentId: number = 0;
-  private _primitivesMap: Record<number, [Renderer, Mesh]> = [];
+  private _viewport?: Vector4 = undefined;
+  private _material: ShadowMaterial;
 
   private _scene: Scene;
   private _camera: Camera;
@@ -40,9 +34,8 @@ export class ColorPickerSubpass extends Subpass {
   private _alphaTestQueue: RenderElement[] = [];
   private _transparentQueue: RenderElement[] = [];
 
-  private _forwardPipelineDescriptor: RenderPipelineDescriptor = new RenderPipelineDescriptor();
+  private _shadowGenDescriptor: RenderPipelineDescriptor = new RenderPipelineDescriptor();
   private _depthStencilState = new DepthStencilState();
-  private _fragment = new FragmentState();
   private _primitive = new PrimitiveState();
   private _multisample = new MultisampleState();
   private _vertex = new VertexState();
@@ -53,40 +46,39 @@ export class ColorPickerSubpass extends Subpass {
   private _pipelineLayoutDescriptor = new PipelineLayoutDescriptor();
   private _pipelineLayout: GPUPipelineLayout;
 
+  set shadowMaterial(mat: ShadowMaterial) {
+    this._material = mat;
+  }
+
+  set viewport(viewport: Vector4) {
+    this._viewport = viewport;
+  }
+
   constructor(engine: Engine) {
     super(engine);
-    this._material = new UnlitMaterial(engine);
   }
 
   prepare(): void {
-    this._forwardPipelineDescriptor.depthStencil = this._depthStencilState;
-    this._forwardPipelineDescriptor.fragment = this._fragment;
-    this._forwardPipelineDescriptor.primitive = this._primitive;
-    this._forwardPipelineDescriptor.multisample = this._multisample;
-    this._forwardPipelineDescriptor.vertex = this._vertex;
-    this._forwardPipelineDescriptor.label = "Forward Pipeline";
+    this._shadowGenDescriptor.depthStencil = this._depthStencilState;
+    this._shadowGenDescriptor.primitive = this._primitive;
+    this._shadowGenDescriptor.multisample = this._multisample;
+    this._shadowGenDescriptor.vertex = this._vertex;
+    this._shadowGenDescriptor.label = "Forward Pipeline";
     {
       this._depthStencilState.format = this._engine.renderContext.depthStencilTextureFormat();
-
-      this._fragment.targets.length = 1;
-      const colorTargetState = new ColorTargetState();
-      colorTargetState.format = this._engine.renderContext.drawableTextureFormat();
-      this._fragment.targets[0] = colorTargetState;
-
       this._vertex.entryPoint = "main";
-      this._fragment.entryPoint = "main";
     }
   }
 
-  draw(scene: Scene, camera: Camera, renderPassEncoder: GPURenderPassEncoder): void {
-    this._currentId = 0;
-    this._primitivesMap = [];
-
+  draw(scene: Scene, camera: Camera, renderPassEncoder: GPURenderPassEncoder) {
     this._scene = scene;
     this._camera = camera;
 
     renderPassEncoder.pushDebugGroup("Draw Element");
-    renderPassEncoder.setViewport(0, 0, this._engine.canvas.width, this._engine.canvas.height, 0, 1);
+    const viewport = this._viewport;
+    if (this._viewport) {
+      renderPassEncoder.setViewport(viewport.x, viewport.y, viewport.z, viewport.w, 0, 1);
+    }
     this._drawMeshes(renderPassEncoder);
     renderPassEncoder.popDebugGroup();
   }
@@ -105,22 +97,15 @@ export class ColorPickerSubpass extends Subpass {
     this._alphaTestQueue.sort(Subpass._compareFromNearToFar);
     this._transparentQueue.sort(Subpass._compareFromFarToNear);
 
-    const total = this._opaqueQueue.length + this._alphaTestQueue.length + this._transparentQueue.length;
-    const bufferPool = this._bufferPool;
-    const oldTotal = bufferPool.length;
-    bufferPool.length = total;
-    for (let i = oldTotal; i < total; i++) {
-      bufferPool[i] = new Buffer(this.engine, 16, GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST);
-    }
-
     this._drawElement(renderPassEncoder, this._opaqueQueue);
     this._drawElement(renderPassEncoder, this._alphaTestQueue);
     this._drawElement(renderPassEncoder, this._transparentQueue);
   }
 
   private _drawElement(renderPassEncoder: GPURenderPassEncoder, items: RenderElement[]) {
-    const compileMacros = ColorPickerSubpass._compileMacros;
+    const compileMacros = ShadowSubpass._compileMacros;
 
+    const material = this._material;
     for (let i = 0, n = items.length; i < n; i++) {
       const { mesh, subMesh, renderer } = items[i];
       // union render global macro and material self macro.
@@ -130,20 +115,14 @@ export class ColorPickerSubpass extends Subpass {
         compileMacros
       );
 
-      this._primitivesMap[this._currentId] = [renderer, mesh];
-      const color = this.id2Color(this._currentId);
-      const buffer = this._bufferPool[this._currentId];
-      buffer.uploadData(color, 0, 0, 4);
-      this._currentId += 1;
+      ShaderMacroCollection.unionCollection(compileMacros, material.shaderData._macroCollection, compileMacros);
 
-      const material = this._material;
       const device = this._engine.device;
       // PSO
       {
         const shader = material.shader;
         const program = shader.getShaderProgram(this._engine, compileMacros);
         this._vertex.module = program.vertexShader;
-        this._fragment.module = program.fragmentShader;
 
         const bindGroupDescriptor = this._bindGroupDescriptor;
         const bindGroupEntries = this._bindGroupEntries;
@@ -159,7 +138,7 @@ export class ColorPickerSubpass extends Subpass {
             bindGroupEntries[i] = new BindGroupEntry(); // cache
             bindGroupEntries[i].binding = entry.binding;
             if (entry.buffer !== undefined) {
-              this._bindingData(bindGroupEntries[i], buffer, renderer);
+              this._bindingData(bindGroupEntries[i], material, renderer);
             }
           }
           bindGroupDescriptor.layout = bindGroupLayout;
@@ -172,17 +151,17 @@ export class ColorPickerSubpass extends Subpass {
 
         this._pipelineLayoutDescriptor.bindGroupLayouts = bindGroupLayouts;
         this._pipelineLayout = device.createPipelineLayout(this._pipelineLayoutDescriptor);
-        this._forwardPipelineDescriptor.layout = this._pipelineLayout;
+        this._shadowGenDescriptor.layout = this._pipelineLayout;
 
-        material.renderState._apply(this._forwardPipelineDescriptor, renderPassEncoder, false);
+        material.renderState._apply(this._shadowGenDescriptor, renderPassEncoder, false);
 
         this._vertex.buffers.length = mesh._vertexBufferLayouts.length;
         for (let j = 0, m = mesh._vertexBufferLayouts.length; j < m; j++) {
           this._vertex.buffers[j] = mesh._vertexBufferLayouts[j];
         }
-        this._forwardPipelineDescriptor.primitive.topology = subMesh.topology;
+        this._shadowGenDescriptor.primitive.topology = subMesh.topology;
 
-        const renderPipeline = device.createRenderPipeline(this._forwardPipelineDescriptor);
+        const renderPipeline = device.createRenderPipeline(this._shadowGenDescriptor);
         renderPassEncoder.setPipeline(renderPipeline);
       }
 
@@ -194,7 +173,7 @@ export class ColorPickerSubpass extends Subpass {
     }
   }
 
-  _bindingData(entry: BindGroupEntry, buffer: Buffer, renderer: Renderer) {
+  _bindingData(entry: BindGroupEntry, mat: Material, renderer: Renderer) {
     const group = Shader.getShaderPropertyGroup(entry.binding);
     if (group != null) {
       switch (group) {
@@ -211,49 +190,12 @@ export class ColorPickerSubpass extends Subpass {
           break;
 
         case ShaderDataGroup.Material:
-          entry.resource = buffer;
+          entry.resource = mat.shaderData._getDataBuffer(entry.binding);
           break;
 
         default:
           break;
       }
-    }
-  }
-
-  /**
-   * Convert id to RGB color value, 0 and 0xffffff are illegal values.
-   */
-  id2Color(id: number): Float32Array {
-    const color = ColorPickerSubpass._color;
-    if (id >= 0xffffff) {
-      Logger.warn("Framebuffer Picker encounter primitive's id greater than " + 0xffffff);
-      color.fill(0);
-      return color;
-    }
-
-    color[2] = (id & 0xff) / 255;
-    color[1] = ((id & 0xff00) >> 8) / 255;
-    color[0] = ((id & 0xff0000) >> 16) / 255;
-    return color;
-  }
-
-  /**
-   * Convert RGB color to id.
-   * @param color - Color
-   */
-  color2Id(color: Uint8Array): number {
-    return color[0] | (color[1] << 8) | (color[2] << 16);
-  }
-
-  /**
-   * Get renderer element by color.
-   */
-  getObjectByColor(color: Uint8Array): [Renderer, Mesh] {
-    const result = this._primitivesMap[this.color2Id(color)];
-    if (result === undefined) {
-      return [undefined, undefined];
-    } else {
-      return result;
     }
   }
 }

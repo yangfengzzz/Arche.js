@@ -5,7 +5,7 @@
 // IS_ : Shader control flow
 // _COUNT: type int constant
 export type MacroName =
-  "HAS_UV"
+  | "HAS_UV"
   | "HAS_NORMAL"
   | "HAS_TANGENT"
   | "HAS_VERTEXCOLOR"

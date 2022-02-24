@@ -9,7 +9,6 @@ export class WGSLUVShare {
   }
 
   execute(encoder: WGSLEncoder, macros: ShaderMacroCollection, counterIndex: number) {
-    encoder.addInoutType(this._outputStructName, WGSLEncoder.getCounterNumber(counterIndex),
-      "v_uv", "vec2<f32>");
+    encoder.addInoutType(this._outputStructName, WGSLEncoder.getCounterNumber(counterIndex), "v_uv", "vec2<f32>");
   }
 }

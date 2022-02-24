@@ -40,12 +40,12 @@ export class ShaderMacroCollection {
     out._length = maxSize;
 
     const variableMacros = out._variableMacros;
-    left._variableMacros.forEach(((variable, name) => {
+    left._variableMacros.forEach((variable, name) => {
       variableMacros.set(name, variable);
-    }));
-    right._variableMacros.forEach(((variable, name) => {
+    });
+    right._variableMacros.forEach((variable, name) => {
       variableMacros.set(name, variable);
-    }));
+    });
   }
 
   /** @internal */

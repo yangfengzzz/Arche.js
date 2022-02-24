@@ -12,7 +12,10 @@ import {
   WGSLCommonVert,
   WGSLLightFragDefine,
   WGSLNormalShare,
-  WGSLNormalVert, WGSLPbrFrag, WGSLPbrFragDefine, WGSLPbrHelper,
+  WGSLNormalVert,
+  WGSLPbrFrag,
+  WGSLPbrFragDefine,
+  WGSLPbrHelper,
   WGSLPositionVert,
   WGSLSkinningVert,
   WGSLUVShare,
@@ -21,7 +24,6 @@ import {
   WGSLWorldPosVert
 } from "./functors";
 import { WGSLEncoder } from "./WGSLEncoder";
-import { BuiltInType, UniformType } from "./WGSLCommon";
 
 export class WGSLPbrVertex extends WGSL {
   private _common: WGSLCommon;

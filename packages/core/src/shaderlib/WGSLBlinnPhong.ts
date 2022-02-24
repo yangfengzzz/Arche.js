@@ -84,7 +84,7 @@ export class WGSLBlinnPhongVertex extends WGSL {
       this._worldPosShare.execute(encoder, macros, outputStructCounter);
       encoder.addBuiltInoutType("VertexOut", "position", "position", "vec4<f32>");
 
-      encoder.addEntry([["in", "VertexIn"]], ["out", "VertexOut"], (() => {
+      encoder.addEntry([["in", "VertexIn"]], ["out", "VertexOut"], () => {
         let source: string = "";
         source += this._beginPositionVert.execute(macros);
         source += this._beginNormalVert.execute(macros);
@@ -96,7 +96,7 @@ export class WGSLBlinnPhongVertex extends WGSL {
         source += this._worldPosVert.execute(macros);
         source += this._positionVert.execute(macros);
         return source;
-      }));
+      });
       encoder.flush();
     }
     WGSLEncoder.endCounter(inputStructCounter);
@@ -154,7 +154,7 @@ export class WGSLBlinnPhongFragment extends WGSL {
       this._normalGet.execute(encoder, macros, inputStructCounter);
       encoder.addInoutType("Output", 0, "finalColor", "vec4<f32>");
 
-      encoder.addEntry([["in", "VertexOut"]], ["out", "Output"], (() => {
+      encoder.addEntry([["in", "VertexOut"]], ["out", "Output"], () => {
         let source: string = "";
         source += this._beginMobileFrag.execute(macros);
         source += this._beginViewDirFrag.execute(macros);
@@ -162,7 +162,7 @@ export class WGSLBlinnPhongFragment extends WGSL {
         source += "out.finalColor = emission + ambient + diffuse + specular;\n";
         source += "out.finalColor.a = diffuse.a;\n";
         return source;
-      }));
+      });
       encoder.flush();
     }
     WGSLEncoder.endCounter(inputStructCounter);
