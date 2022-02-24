@@ -8,6 +8,7 @@ export class TextureUtils {
   // n -> 1
   static buildTextureArray(
     textures: GPUTexture[],
+    length: number,
     width: number,
     height: number,
     textureArray: GPUTexture,
@@ -22,7 +23,7 @@ export class TextureUtils {
     this.copySize.height = height;
     this.copySize.depthOrArrayLayers = 1;
 
-    for (let i = 0, n = textures.length; i < n; i++) {
+    for (let i = 0; i < length; i++) {
       this.destination.origin.z = i;
       this.source.texture = textures[i];
       commandEncoder.copyTextureToTexture(this.source, this.destination, this.copySize);
@@ -32,6 +33,7 @@ export class TextureUtils {
   // 6n -> 1
   static buildCubeTextureArray(
     textures: GPUTexture[],
+    length: number,
     width: number,
     height: number,
     textureArray: GPUTexture,
@@ -46,7 +48,7 @@ export class TextureUtils {
     this.copySize.height = height;
     this.copySize.depthOrArrayLayers = 6;
 
-    for (let i = 0, n = textures.length; i < n; i++) {
+    for (let i = 0; i < length; i++) {
       this.destination.origin.z = 6 * i;
       this.source.texture = textures[i];
       commandEncoder.copyTextureToTexture(this.source, this.destination, this.copySize);

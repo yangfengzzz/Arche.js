@@ -1,21 +1,46 @@
-import { RenderPassDepthStencilAttachment, RenderPassDescriptor } from "../webgpu";
+import {
+  RenderPassDepthStencilAttachment,
+  RenderPassDescriptor,
+  TextureDescriptor,
+  TextureViewDescriptor
+} from "../webgpu";
 import { RenderPass } from "../rendering";
 import { ShadowSubpass } from "./ShadowSubpass";
 import { SampledTexture } from "../texture/SampledTexture";
 import { ShaderProperty } from "../shader/ShaderProperty";
 import { ShadowMaterial } from "./ShadowMaterial";
-import { Vector3, Vector4 } from "@arche-engine/math";
+import { Matrix, Vector3, Vector4 } from "@arche-engine/math";
 import { Engine } from "../Engine";
 import { Shader } from "../shader";
 import { Scene } from "../Scene";
 import { Camera } from "../Camera";
+import { DirectLight, PointLight, SpotLight } from "../lighting";
+import { SampledTexture2D, SampledTextureCube, TextureUtils } from "../texture";
 
 export class ShadowManager extends RenderPass {
+  private static _tempProjMatrix = new Matrix();
+  private static _tempViewMatrix = new Matrix();
+
+  private static _tempVector = new Vector3();
+  private static _cascadeSplits = new Float32Array(4);
+  private static _frustumCorners = [
+    new Vector3(-1.0, 1.0, 0.0),
+    new Vector3(1.0, 1.0, 0.0),
+    new Vector3(1.0, -1.0, 0.0),
+    new Vector3(-1.0, -1.0, 0.0),
+    new Vector3(-1.0, 1.0, 1.0),
+    new Vector3(1.0, 1.0, 1.0),
+    new Vector3(1.0, -1.0, 1.0),
+    new Vector3(-1.0, -1.0, 1.0)
+  ];
+
   static SHADOW_MAP_CASCADE_COUNT = 4;
   static MAX_SHADOW = 10;
   static MAX_CUBE_SHADOW = 5;
   static SHADOW_MAP_RESOLUTION = 4000;
   static SHADOW_MAP_FORMAT: GPUTextureFormat = "depth32float";
+
+  cascadeSplitLambda: number = 0.5;
 
   private _engine: Engine;
 
@@ -23,8 +48,6 @@ export class ShadowManager extends RenderPass {
   private _depthStencilAttachment: RenderPassDepthStencilAttachment;
 
   private _shadowSubpass: ShadowSubpass;
-
-  _cascadeSplitLambda: number = 0.5;
 
   private static _shadowCount: number;
   private static _shadowMapProp: ShaderProperty = Shader.getPropertyByName("u_shadowMap");
@@ -102,6 +125,457 @@ export class ShadowManager extends RenderPass {
   }
 
   draw(scene: Scene, camera: Camera, commandEncoder: GPUCommandEncoder) {
-    super.draw(scene, camera, commandEncoder);
+    this._numOfdrawCall = 0;
+    ShadowManager._shadowCount = 0;
+    this._drawSpotShadowMap(scene, camera, commandEncoder);
+    this._drawDirectShadowMap(scene, camera, commandEncoder);
+    if (ShadowManager._shadowCount) {
+      if (!this._packedTexture || this._packedTexture.depthOrArrayLayers != ShadowManager._shadowCount) {
+        this._packedTexture = new SampledTexture2D(
+          this._engine,
+          ShadowManager.SHADOW_MAP_RESOLUTION,
+          ShadowManager.SHADOW_MAP_RESOLUTION,
+          ShadowManager._shadowCount,
+          ShadowManager.SHADOW_MAP_FORMAT,
+          GPUTextureUsage.TEXTURE_BINDING | GPUTextureUsage.COPY_DST,
+          false
+        );
+        if (ShadowManager._shadowCount == 1) {
+          this._packedTexture.textureViewDimension = "2d";
+        } else {
+          this._packedTexture.textureViewDimension = "2d-array";
+        }
+        this._packedTexture.compareFunction = "less";
+        this._packedTexture.addressModeU = "clamp-to-edge";
+        this._packedTexture.addressModeV = "clamp-to-edge";
+      }
+      TextureUtils.buildTextureArray(
+        this._shadowMaps,
+        ShadowManager._shadowCount,
+        ShadowManager.SHADOW_MAP_RESOLUTION,
+        ShadowManager.SHADOW_MAP_RESOLUTION,
+        this._packedTexture.texture,
+        commandEncoder
+      );
+
+      scene.shaderData.setSampledTexture(
+        ShadowManager._shadowMapProp,
+        ShadowManager._shadowSamplerProp,
+        this._packedTexture
+      );
+      scene.shaderData.setFloatArray(ShadowManager._shadowDataProp, this._shadowDatas);
+    }
+
+    ShadowManager._cubeShadowCount = 0;
+    this._drawPointShadowMap(scene, camera, commandEncoder);
+    if (ShadowManager._cubeShadowCount) {
+      if (!this._packedCubeTexture) {
+        this._packedCubeTexture = new SampledTextureCube(
+          this._engine,
+          ShadowManager.SHADOW_MAP_RESOLUTION,
+          ShadowManager.SHADOW_MAP_RESOLUTION,
+          ShadowManager._cubeShadowCount,
+          ShadowManager.SHADOW_MAP_FORMAT,
+          GPUTextureUsage.TEXTURE_BINDING | GPUTextureUsage.COPY_DST,
+          false
+        );
+        this._packedCubeTexture.textureViewDimension = "cube-array";
+        this._packedCubeTexture.compareFunction = "less";
+        this._packedCubeTexture.addressModeU = "clamp-to-edge";
+        this._packedCubeTexture.addressModeV = "clamp-to-edge";
+      }
+      TextureUtils.buildCubeTextureArray(
+        this._cubeShadowMaps,
+        ShadowManager._cubeShadowCount,
+        ShadowManager.SHADOW_MAP_RESOLUTION,
+        ShadowManager.SHADOW_MAP_RESOLUTION,
+        this._packedCubeTexture.texture,
+        commandEncoder
+      );
+
+      scene.shaderData.setSampledTexture(
+        ShadowManager._cubeShadowMapProp,
+        ShadowManager._cubeShadowSamplerProp,
+        this._packedCubeTexture
+      );
+      scene.shaderData.setData(ShadowManager._cubeShadowDataProp, this._cubeShadowDatas);
+    }
+  }
+
+  private _drawSpotShadowMap(scene: Scene, camera: Camera, commandEncoder: GPUCommandEncoder) {
+    let shadowCount = ShadowManager._shadowCount;
+    let numOfdrawCall = this._numOfdrawCall;
+    const shadowMaps = this._shadowMaps;
+    const materialPool = this._materialPool;
+    const shadowDatas = this._shadowDatas;
+    const engine = this._engine;
+
+    const lights = engine._lightManager.spotLights;
+    for (let i = 0, n = lights.length; i < n; i++) {
+      const light = lights[i];
+      if (light.enableShadow && shadowCount < ShadowManager.MAX_SHADOW) {
+        ShadowManager._updateSpotShadow(light, shadowDatas[shadowCount]);
+
+        let texture: GPUTexture;
+        if (shadowCount < shadowMaps.length) {
+          texture = shadowMaps[shadowCount];
+        } else {
+          const descriptor = new TextureDescriptor();
+          descriptor.size.width = ShadowManager.SHADOW_MAP_RESOLUTION;
+          descriptor.size.height = ShadowManager.SHADOW_MAP_RESOLUTION;
+          descriptor.format = ShadowManager.SHADOW_MAP_FORMAT;
+          descriptor.usage = GPUTextureUsage.RENDER_ATTACHMENT | GPUTextureUsage.COPY_DST | GPUTextureUsage.COPY_SRC;
+          texture = engine.device.createTexture(descriptor);
+          shadowMaps.push(texture);
+        }
+
+        this._depthStencilAttachment.view = texture.createView();
+        {
+          let material: ShadowMaterial;
+          if (numOfdrawCall < materialPool.length) {
+            material = materialPool[numOfdrawCall];
+          } else {
+            material = new ShadowMaterial(engine);
+            materialPool.push(material);
+          }
+          const viewProjectionMatrix = material.viewProjectionMatrix;
+          const shadowData = shadowDatas[ShadowManager._shadowCount];
+          viewProjectionMatrix.setValue(
+            shadowData[4],
+            shadowData[5],
+            shadowData[6],
+            shadowData[7],
+            shadowData[8],
+            shadowData[9],
+            shadowData[10],
+            shadowData[11],
+            shadowData[12],
+            shadowData[13],
+            shadowData[14],
+            shadowData[15],
+            shadowData[16],
+            shadowData[17],
+            shadowData[18],
+            shadowData[19]
+          );
+          material.viewProjectionMatrix = viewProjectionMatrix;
+          this._shadowSubpass.shadowMaterial = material;
+          super.draw(scene, camera, commandEncoder);
+          numOfdrawCall++;
+        }
+        shadowCount++;
+      }
+    }
+  }
+
+  private _drawDirectShadowMap(scene: Scene, camera: Camera, commandEncoder: GPUCommandEncoder) {
+    let shadowCount = ShadowManager._shadowCount;
+    let numOfdrawCall = this._numOfdrawCall;
+    const shadowMaps = this._shadowMaps;
+    const materialPool = this._materialPool;
+    const shadowDatas = this._shadowDatas;
+    const engine = this._engine;
+
+    const lights = engine._lightManager.directLights;
+    for (let i = 0, n = lights.length; i < n; i++) {
+      const light = lights[i];
+      if (light.enableShadow && shadowCount < ShadowManager.MAX_SHADOW) {
+        this._updateCascadesShadow(camera, light, shadowDatas[shadowCount]);
+
+        let texture: GPUTexture;
+        if (shadowCount < shadowMaps.length) {
+          texture = shadowMaps[shadowCount];
+        } else {
+          const descriptor = new TextureDescriptor();
+          descriptor.size.width = ShadowManager.SHADOW_MAP_RESOLUTION;
+          descriptor.size.height = ShadowManager.SHADOW_MAP_RESOLUTION;
+          descriptor.format = ShadowManager.SHADOW_MAP_FORMAT;
+          descriptor.usage = GPUTextureUsage.RENDER_ATTACHMENT | GPUTextureUsage.COPY_DST | GPUTextureUsage.COPY_SRC;
+          texture = engine.device.createTexture(descriptor);
+          shadowMaps.push(texture);
+        }
+        this._depthStencilAttachment.view = texture.createView();
+
+        for (let i = 0; i < ShadowManager.SHADOW_MAP_CASCADE_COUNT; i++) {
+          let material: ShadowMaterial;
+          if (numOfdrawCall < materialPool.length) {
+            material = materialPool[numOfdrawCall];
+          } else {
+            material = new ShadowMaterial(engine);
+            materialPool.push(material);
+          }
+          const stride = i * 16;
+          const viewProjectionMatrix = material.viewProjectionMatrix;
+          const shadowData = shadowDatas[ShadowManager._shadowCount];
+          viewProjectionMatrix.setValue(
+            shadowData[4 + stride],
+            shadowData[5 + stride],
+            shadowData[6 + stride],
+            shadowData[7 + stride],
+            shadowData[8 + stride],
+            shadowData[9 + stride],
+            shadowData[10 + stride],
+            shadowData[11 + stride],
+            shadowData[12 + stride],
+            shadowData[13 + stride],
+            shadowData[14 + stride],
+            shadowData[15 + stride],
+            shadowData[16 + stride],
+            shadowData[17 + stride],
+            shadowData[18 + stride],
+            shadowData[19 + stride]
+          );
+          material.viewProjectionMatrix = viewProjectionMatrix;
+
+          this._shadowSubpass.shadowMaterial = material;
+
+          this._shadowSubpass.viewport = this._viewport[i];
+          if (i == 0) {
+            this._depthStencilAttachment.depthLoadOp = "clear";
+          } else {
+            this._depthStencilAttachment.depthLoadOp = "load";
+          }
+          super.draw(scene, camera, commandEncoder);
+          numOfdrawCall++;
+        }
+        shadowCount++;
+      }
+    }
+    this._depthStencilAttachment.depthLoadOp = "clear";
+    this._shadowSubpass.viewport = null;
+  }
+
+  private _drawPointShadowMap(scene: Scene, camera: Camera, commandEncoder: GPUCommandEncoder) {
+    let cubeShadowCount = ShadowManager._cubeShadowCount;
+    let numOfdrawCall = this._numOfdrawCall;
+    const cubeShadowMaps = this._cubeShadowMaps;
+    const materialPool = this._materialPool;
+    const cubeShadowDatas = this._cubeShadowDatas;
+    const engine = this._engine;
+    const lights = engine._lightManager.pointLights;
+    for (let i = 0, n = lights.length; i < n; i++) {
+      const light = lights[i];
+      if (light.enableShadow && cubeShadowCount < ShadowManager.MAX_CUBE_SHADOW) {
+        let texture: GPUTexture;
+        if (cubeShadowCount < cubeShadowMaps.length) {
+          texture = cubeShadowMaps[cubeShadowCount];
+        } else {
+          const descriptor = new TextureDescriptor();
+          descriptor.size.width = ShadowManager.SHADOW_MAP_RESOLUTION;
+          descriptor.size.height = ShadowManager.SHADOW_MAP_RESOLUTION;
+          descriptor.size.depthOrArrayLayers = 6;
+          descriptor.format = ShadowManager.SHADOW_MAP_FORMAT;
+          descriptor.usage = GPUTextureUsage.RENDER_ATTACHMENT | GPUTextureUsage.COPY_DST | GPUTextureUsage.COPY_SRC;
+          texture = engine.device.createTexture(descriptor);
+          cubeShadowMaps.push(texture);
+        }
+
+        this._updatePointShadow(light, cubeShadowDatas[cubeShadowCount]);
+        const descriptor = new TextureViewDescriptor();
+        descriptor.format = ShadowManager.SHADOW_MAP_FORMAT;
+        descriptor.dimension = "2d";
+        descriptor.arrayLayerCount = 1;
+        for (let i = 0; i < 6; i++) {
+          descriptor.baseArrayLayer = i;
+          this._depthStencilAttachment.view = texture.createView(descriptor);
+
+          let material: ShadowMaterial;
+          if (numOfdrawCall < materialPool.length) {
+            material = materialPool[numOfdrawCall];
+          } else {
+            material = new ShadowMaterial(engine);
+            materialPool.push(material);
+          }
+          const stride = i * 16;
+          const viewProjectionMatrix = material.viewProjectionMatrix;
+          const shadowData = cubeShadowDatas[cubeShadowCount];
+          viewProjectionMatrix.setValue(
+            shadowData[4 + stride],
+            shadowData[5 + stride],
+            shadowData[6 + stride],
+            shadowData[7 + stride],
+            shadowData[8 + stride],
+            shadowData[9 + stride],
+            shadowData[10 + stride],
+            shadowData[11 + stride],
+            shadowData[12 + stride],
+            shadowData[13 + stride],
+            shadowData[14 + stride],
+            shadowData[15 + stride],
+            shadowData[16 + stride],
+            shadowData[17 + stride],
+            shadowData[18 + stride],
+            shadowData[19 + stride]
+          );
+          material.viewProjectionMatrix = viewProjectionMatrix;
+
+          this._shadowSubpass.shadowMaterial = material;
+          super.draw(scene, camera, commandEncoder);
+          numOfdrawCall++;
+        }
+        cubeShadowCount++;
+      }
+    }
+  }
+
+  private static _updateSpotShadow(light: SpotLight, shadowData: Float32Array) {
+    const viewMatrix = ShadowManager._tempViewMatrix;
+    shadowData[0] = light.shadowRadius;
+    shadowData[1] = light.shadowBias;
+    shadowData[2] = light.shadowIntensity;
+
+    const projMatrix = light.shadowProjectionMatrix();
+    Matrix.invert(light.entity.transform.worldMatrix, viewMatrix);
+    Matrix.multiply(projMatrix, viewMatrix, viewMatrix);
+    shadowData.set(viewMatrix.elements, 4);
+    shadowData[20] = 1;
+    shadowData[21] = -1; // mark cascade with negative sign
+  }
+
+  private _updatePointShadow(light: PointLight, shadowData: Float32Array) {
+    const viewMatrix = ShadowManager._tempViewMatrix;
+    const vector = ShadowManager._tempVector;
+    const cubeMapDirection = this._cubeMapDirection;
+    shadowData[0] = light.shadowRadius;
+    shadowData[1] = light.shadowBias;
+    shadowData[2] = light.shadowIntensity;
+
+    const worldPos = light.entity.transform.worldPosition;
+    const projMatrix = light.shadowProjectionMatrix();
+    for (let i = 0; i < 6; i++) {
+      Vector3.add(worldPos, cubeMapDirection[i][0], vector);
+      light.entity.transform.lookAt(vector, cubeMapDirection[i][1]);
+      Matrix.invert(light.entity.transform.worldMatrix, viewMatrix);
+      Matrix.multiply(projMatrix, viewMatrix, viewMatrix);
+      shadowData.set(viewMatrix.elements, 4 + 16 * i);
+    }
+    shadowData[100] = worldPos.x;
+    shadowData[101] = worldPos.y;
+    shadowData[102] = worldPos.z;
+    shadowData[103] = 1.0;
+  }
+
+  private _updateCascadesShadow(camera: Camera, light: DirectLight, shadowData: Float32Array) {
+    const viewMatrix = ShadowManager._tempViewMatrix;
+    const projMatrix = ShadowManager._tempProjMatrix;
+    const vector = ShadowManager._tempVector;
+    const { SHADOW_MAP_CASCADE_COUNT } = ShadowManager;
+    const cascadeSplits = ShadowManager._cascadeSplits;
+    const cascadeSplitLambda = this.cascadeSplitLambda;
+
+    shadowData[0] = light.shadowRadius;
+    shadowData[1] = light.shadowBias;
+    shadowData[2] = light.shadowIntensity;
+
+    const worldPos = light.entity.transform.worldPosition;
+
+    const nearClip = camera.nearClipPlane;
+    const farClip = camera.farClipPlane;
+    const clipRange = farClip - nearClip;
+
+    const minZ = nearClip;
+    const maxZ = nearClip + clipRange;
+
+    const range = maxZ - minZ;
+    const ratio = maxZ / minZ;
+
+    // Calculate split depths based on view camera frustum
+    // Based on method presented in https://developer.nvidia.com/gpugems/GPUGems3/gpugems3_ch10.html
+    for (let i = 0; i < SHADOW_MAP_CASCADE_COUNT; i++) {
+      const p = (i + 1) / SHADOW_MAP_CASCADE_COUNT;
+      const log = minZ * Math.pow(ratio, p);
+      const uniform = minZ + range * p;
+      const d = cascadeSplitLambda * (log - uniform) + uniform;
+      cascadeSplits[i] = (d - nearClip) / clipRange;
+    }
+
+    const frustumCorners = [
+      new Vector3(-1.0, 1.0, 0.0),
+      new Vector3(1.0, 1.0, 0.0),
+      new Vector3(1.0, -1.0, 0.0),
+      new Vector3(-1.0, -1.0, 0.0),
+      new Vector3(-1.0, 1.0, 1.0),
+      new Vector3(1.0, 1.0, 1.0),
+      new Vector3(1.0, -1.0, 1.0),
+      new Vector3(-1.0, -1.0, 1.0)
+    ];
+
+    // Project frustum corners into world space
+    Matrix.multiply(camera.projectionMatrix, camera.viewMatrix, viewMatrix);
+    const invCam = viewMatrix.invert();
+    for (let i = 0; i < 8; i++) {
+      Vector3.transformCoordinate(frustumCorners[i], invCam, frustumCorners[i]);
+    }
+
+    // Calculate orthographic projection matrix for each cascade
+    let lastSplitDist = 0.0;
+    for (let i = 0; i < SHADOW_MAP_CASCADE_COUNT; i++) {
+      const splitDist = cascadeSplits[i];
+      const _frustumCorners = ShadowManager._frustumCorners;
+      for (let i = 0; i < 4; i++) {
+        Vector3.subtract(frustumCorners[i + 4], frustumCorners[i], vector);
+        frustumCorners[i].cloneTo(_frustumCorners[i + 4]);
+        _frustumCorners[i + 4].add(vector.scale(splitDist));
+
+        frustumCorners[i].cloneTo(_frustumCorners[i]);
+        _frustumCorners[i].add(vector.scale(lastSplitDist / splitDist));
+      }
+
+      const lightMat = light.entity.transform.worldMatrix;
+      Matrix.invert(lightMat, viewMatrix);
+      for (let i = 0; i < 8; i++) {
+        Vector3.transformCoordinate(_frustumCorners[i], viewMatrix, _frustumCorners[i]);
+      }
+      const farDist = Vector3.distance(_frustumCorners[7], _frustumCorners[5]);
+      const crossDist = Vector3.distance(_frustumCorners[7], _frustumCorners[1]);
+      const maxDist = farDist > crossDist ? farDist : crossDist;
+
+      let minX = Number.MAX_VALUE;
+      let maxX = Number.MIN_VALUE;
+      let minY = Number.MAX_VALUE;
+      let maxY = Number.MIN_VALUE;
+      let minZ = Number.MAX_VALUE;
+      let maxZ = Number.MIN_VALUE;
+      for (let i = 0; i < 8; i++) {
+        minX = Math.min(minX, _frustumCorners[i].x);
+        maxX = Math.max(maxX, _frustumCorners[i].x);
+        minY = Math.min(minY, _frustumCorners[i].y);
+        maxY = Math.max(maxY, _frustumCorners[i].y);
+        minZ = Math.min(minZ, _frustumCorners[i].z);
+        maxZ = Math.max(maxZ, _frustumCorners[i].z);
+      }
+
+      // texel tile
+      const fWorldUnitsPerTexel = maxDist / 1000;
+      let posX = (minX + maxX) * 0.5;
+      posX /= fWorldUnitsPerTexel;
+      posX = Math.floor(posX);
+      posX *= fWorldUnitsPerTexel;
+
+      let posY = (minY + maxY) * 0.5;
+      posY /= fWorldUnitsPerTexel;
+      posY = Math.floor(posY);
+      posY *= fWorldUnitsPerTexel;
+
+      let posZ = maxZ;
+      posZ /= fWorldUnitsPerTexel;
+      posZ = Math.floor(posZ);
+      posZ *= fWorldUnitsPerTexel;
+
+      vector.setValue(posX, posY, posZ);
+      Vector3.transformCoordinate(vector, lightMat, vector);
+      light.entity.transform.worldPosition = vector;
+
+      const radius = maxDist / 2.0;
+      Matrix.ortho(-radius, radius, -radius, radius, 0, maxZ - minZ, projMatrix);
+
+      // Store split distance and matrix in cascade
+      Matrix.invert(light.entity.transform.worldMatrix, viewMatrix);
+      Matrix.multiply(projMatrix, viewMatrix, viewMatrix);
+      shadowData.set(viewMatrix.elements, 4 + 16 * i);
+      shadowData[68 + i] = (camera.nearClipPlane + splitDist * clipRange) * -1.0;
+      light.entity.transform.worldPosition = worldPos;
+      lastSplitDist = cascadeSplits[i];
+    }
   }
 }

@@ -28,6 +28,7 @@ export class SampledTextureCube extends SampledTexture {
    * @param engine - Define the engine to use to render this texture
    * @param width - Texture width
    * @param height - Texture height
+   @param depthOrArrayLayers - Texture depth or arrayLayers
    * @param format - Texture format. default  `TextureFormat.R8G8B8A8`
    * @param usage - Texture usage. default  `TEXTURE_BINDING | COPY_DST`
    * @param mipmap - Whether to use multi-level texture
@@ -36,6 +37,7 @@ export class SampledTextureCube extends SampledTexture {
     engine: Engine,
     width: number = 0,
     height: number = 0,
+    depthOrArrayLayers: number = 1,
     format: GPUTextureFormat = "rgba8unorm",
     usage: GPUTextureUsageFlags = GPUTextureUsage.RENDER_ATTACHMENT |
       GPUTextureUsage.TEXTURE_BINDING |
@@ -47,7 +49,7 @@ export class SampledTextureCube extends SampledTexture {
     textureDesc.size = new Extent3DDict();
     textureDesc.size.width = width;
     textureDesc.size.height = height;
-    textureDesc.size.depthOrArrayLayers = 6;
+    textureDesc.size.depthOrArrayLayers = 6 * depthOrArrayLayers;
     textureDesc.format = format;
     textureDesc.usage = usage;
     textureDesc.mipLevelCount = this._getMipmapCount(mipmap);
