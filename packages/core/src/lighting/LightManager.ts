@@ -1,8 +1,7 @@
 import { PointLight } from "./PointLight";
 import { SpotLight } from "./SpotLight";
-import { ShaderProperty } from "../shader/ShaderProperty";
 import { DirectLight } from "./DirectLight";
-import { Shader, ShaderData } from "../shader";
+import { Shader, ShaderData, ShaderProperty } from "../shader";
 import { DisorderedArray } from "../DisorderedArray";
 
 export class LightManager {

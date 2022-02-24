@@ -1,8 +1,7 @@
 import { Color, SphericalHarmonics3 } from "@arche-engine/math";
 import { Scene } from "../Scene";
-import { Shader } from "../shader";
+import { Shader, ShaderProperty } from "../shader";
 import { ShaderMacro } from "../shader/ShaderMacro";
-import { ShaderProperty } from "../shader/ShaderProperty";
 import { DiffuseMode } from "./enums/DiffuseMode";
 import { SampledTexture } from "../texture/SampledTexture";
 
@@ -106,6 +105,32 @@ export class AmbientLight {
         AmbientLight._diffuseSHProperty,
         AmbientLight._preComputeSH(value, this._shArray)
       );
+    }
+  }
+
+  /**
+   * Diffuse reflection texture.
+   * @remarks This texture must be baked from MetalLoader::createIrradianceTexture
+   */
+  get diffuseTexture(): SampledTexture {
+    return this._diffuseTexture;
+  }
+
+  set diffuseTexture(value: SampledTexture) {
+    this._diffuseTexture = value;
+    if (!this._scene) return;
+
+    const shaderData = this._scene.shaderData;
+
+    if (value) {
+      shaderData.setSampledTexture(
+        AmbientLight._diffuseTextureProperty,
+        AmbientLight._diffuseSamplerProperty,
+        this._diffuseTexture
+      );
+      shaderData.enableMacro(AmbientLight._diffuseMacro);
+    } else {
+      shaderData.disableMacro(AmbientLight._diffuseMacro);
     }
   }
 
