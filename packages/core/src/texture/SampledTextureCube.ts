@@ -2,11 +2,14 @@ import { SampledTexture } from "./SampledTexture";
 import { Engine } from "../Engine";
 import { SampledTexture2DView } from "./SampledTexture2DView";
 import {
-  BufferDescriptor, bytesPerPixel,
+  BufferDescriptor,
+  bytesPerPixel,
   Extent3DDict,
   Extent3DDictStrict,
   ImageCopyExternalImage,
   ImageCopyTextureTagged,
+  Origin2DDict,
+  Origin3DDict,
   TextureViewDescriptor
 } from "../webgpu";
 import { TextureCubeFace } from "./enums/TextureCubeFace";
@@ -17,7 +20,8 @@ export class SampledTextureCube extends SampledTexture {
   private static _imageCopyTextureTagged = new ImageCopyTextureTagged();
   private static _extent3DDictStrict = new Extent3DDictStrict();
   private static _bufferDescriptor = new BufferDescriptor();
-  private static _integerCoordinate: GPUIntegerCoordinate[] = [];
+  private static _origin3DDict = new Origin3DDict();
+  private static _origin2DDict = new Origin2DDict();
 
   /**
    * Create TextureCube.
@@ -33,7 +37,9 @@ export class SampledTextureCube extends SampledTexture {
     width: number = 0,
     height: number = 0,
     format: GPUTextureFormat = "rgba8unorm",
-    usage: GPUTextureUsageFlags = GPUTextureUsage.RENDER_ATTACHMENT | GPUTextureUsage.TEXTURE_BINDING | GPUTextureUsage.COPY_DST,
+    usage: GPUTextureUsageFlags = GPUTextureUsage.RENDER_ATTACHMENT |
+      GPUTextureUsage.TEXTURE_BINDING |
+      GPUTextureUsage.COPY_DST,
     mipmap: boolean = true
   ) {
     super(engine);
@@ -45,6 +51,8 @@ export class SampledTextureCube extends SampledTexture {
     textureDesc.format = format;
     textureDesc.usage = usage;
     textureDesc.mipLevelCount = this._getMipmapCount(mipmap);
+
+    this._dimension = "cube";
     this._platformTexture = engine.device.createTexture(textureDesc);
   }
 
@@ -101,13 +109,16 @@ export class SampledTextureCube extends SampledTexture {
     const stagingBuffer = device.createBuffer(descriptor);
     device.queue.writeBuffer(stagingBuffer, 0, colorBuffer, 0, colorBuffer.byteLength);
 
-    const imageCopyBuffer = this._createImageCopyBuffer(stagingBuffer, 0, bytesPerPixel(this._platformTextureDesc.format) * width);
-    const integerCoordinate = SampledTextureCube._integerCoordinate;
-    integerCoordinate.length = 3;
-    integerCoordinate[0] = x;
-    integerCoordinate[1] = y;
-    integerCoordinate[2] = face;
-    const imageCopyTexture = this._createImageCopyTexture(mipLevel, integerCoordinate);
+    const imageCopyBuffer = this._createImageCopyBuffer(
+      stagingBuffer,
+      0,
+      bytesPerPixel(this._platformTextureDesc.format) * width
+    );
+    const origin3DDict = SampledTextureCube._origin3DDict;
+    origin3DDict.x = x;
+    origin3DDict.y = y;
+    origin3DDict.z = face;
+    const imageCopyTexture = this._createImageCopyTexture(mipLevel, origin3DDict);
 
     const extent3DDictStrict = SampledTextureCube._extent3DDictStrict;
     const size = this._platformTextureDesc.size;
@@ -138,13 +149,20 @@ export class SampledTextureCube extends SampledTexture {
   ): void {
     const imageCopyExternalImage = SampledTextureCube._imageCopyExternalImage;
     imageCopyExternalImage.source = imageSource;
-    imageCopyExternalImage.origin = [x, y];
+    const origin2DDict = SampledTextureCube._origin2DDict;
+    origin2DDict.x = x;
+    origin2DDict.y = y;
+    imageCopyExternalImage.origin = origin2DDict;
 
     const imageCopyTextureTagged = SampledTextureCube._imageCopyTextureTagged;
     imageCopyTextureTagged.texture = this._platformTexture;
     imageCopyTextureTagged.aspect = "all";
     imageCopyTextureTagged.mipLevel = mipLevel;
-    imageCopyTextureTagged.origin = [x, y, face];
+    const origin3DDict = SampledTextureCube._origin3DDict;
+    origin3DDict.x = x;
+    origin3DDict.y = y;
+    origin3DDict.z = face;
+    imageCopyTextureTagged.origin = origin3DDict;
     imageCopyTextureTagged.premultipliedAlpha = premultiplyAlpha;
 
     const extent3DDictStrict = SampledTextureCube._extent3DDictStrict;
@@ -152,7 +170,10 @@ export class SampledTextureCube extends SampledTexture {
     extent3DDictStrict.width = Math.max(1, size.width / Math.pow(2, mipLevel));
     extent3DDictStrict.height = Math.max(1, size.height / Math.pow(2, mipLevel));
 
-    this._engine.device.queue.copyExternalImageToTexture(imageCopyExternalImage, imageCopyTextureTagged, extent3DDictStrict);
+    this._engine.device.queue.copyExternalImageToTexture(
+      imageCopyExternalImage,
+      imageCopyTextureTagged,
+      extent3DDictStrict
+    );
   }
-
 }

@@ -1,10 +1,12 @@
 import { SampledTexture } from "./SampledTexture";
 import { Engine } from "../Engine";
 import {
-  BufferDescriptor, bytesPerPixel,
+  BufferDescriptor,
+  bytesPerPixel,
   Extent3DDictStrict,
   ImageCopyExternalImage,
   ImageCopyTextureTagged,
+  Origin3DDict,
   TextureViewDescriptor
 } from "../webgpu";
 import { Extent3DDict } from "../webgpu";
@@ -40,7 +42,9 @@ export class SampledTexture2D extends SampledTexture {
     width: number = 0,
     height: number = 0,
     format: GPUTextureFormat = "rgba8unorm",
-    usage: GPUTextureUsageFlags = GPUTextureUsage.RENDER_ATTACHMENT | GPUTextureUsage.TEXTURE_BINDING | GPUTextureUsage.COPY_DST,
+    usage: GPUTextureUsageFlags = GPUTextureUsage.RENDER_ATTACHMENT |
+      GPUTextureUsage.TEXTURE_BINDING |
+      GPUTextureUsage.COPY_DST,
     mipmap: boolean = true
   ) {
     super(engine);
@@ -51,6 +55,8 @@ export class SampledTexture2D extends SampledTexture {
     textureDesc.format = format;
     textureDesc.usage = usage;
     textureDesc.mipLevelCount = this._getMipmapCount(mipmap);
+
+    this._dimension = "2d";
     this._platformTexture = engine.device.createTexture(textureDesc);
   }
 
@@ -72,8 +78,10 @@ export class SampledTexture2D extends SampledTexture {
    * @param mipLevel - Texture mipmapping level
    * @param x - X coordinate of area start
    * @param y - Y coordinate of area start
-   * @param width - Data width. if it's empty, width is the width corresponding to mipLevel minus x , width corresponding to mipLevel is Math.max(1, this.width >> mipLevel)
-   * @param height - Data height. if it's empty, height is the height corresponding to mipLevel minus y , height corresponding to mipLevel is Math.max(1, this.height >> mipLevel)
+   * @param width - Data width. if it's empty, width is the width corresponding to mipLevel minus x ,
+   * width corresponding to mipLevel is Math.max(1, this.width >> mipLevel)
+   * @param height - Data height. if it's empty, height is the height corresponding to mipLevel minus y ,
+   * height corresponding to mipLevel is Math.max(1, this.height >> mipLevel)
    */
   setPixelBuffer(
     colorBuffer: ArrayBufferView,
@@ -91,7 +99,11 @@ export class SampledTexture2D extends SampledTexture {
     const stagingBuffer = device.createBuffer(descriptor);
     device.queue.writeBuffer(stagingBuffer, 0, colorBuffer, 0, colorBuffer.byteLength);
 
-    const imageCopyBuffer = this._createImageCopyBuffer(stagingBuffer, 0, bytesPerPixel(this._platformTextureDesc.format) * width);
+    const imageCopyBuffer = this._createImageCopyBuffer(
+      stagingBuffer,
+      0,
+      bytesPerPixel(this._platformTextureDesc.format) * width
+    );
     const imageCopyTexture = this._createImageCopyTexture(mipLevel, { x, y });
 
     const extent3DDictStrict = SampledTexture2D._extent3DDictStrict;
@@ -121,7 +133,11 @@ export class SampledTexture2D extends SampledTexture {
   ): void {
     const imageCopyExternalImage = SampledTexture2D._imageCopyExternalImage;
     imageCopyExternalImage.source = imageSource;
-    imageCopyExternalImage.origin = [x, y];
+    if (imageCopyExternalImage.origin == undefined) {
+      imageCopyExternalImage.origin = new Origin3DDict();
+    }
+    imageCopyExternalImage.origin.x = x;
+    imageCopyExternalImage.origin.y = y;
 
     const imageCopyTextureTagged = SampledTexture2D._imageCopyTextureTagged;
     imageCopyTextureTagged.texture = this._platformTexture;
@@ -134,6 +150,10 @@ export class SampledTexture2D extends SampledTexture {
     extent3DDictStrict.width = Math.max(1, size.width / Math.pow(2, mipLevel));
     extent3DDictStrict.height = Math.max(1, size.height / Math.pow(2, mipLevel));
 
-    this._engine.device.queue.copyExternalImageToTexture(imageCopyExternalImage, imageCopyTextureTagged, extent3DDictStrict);
+    this._engine.device.queue.copyExternalImageToTexture(
+      imageCopyExternalImage,
+      imageCopyTextureTagged,
+      extent3DDictStrict
+    );
   }
 }

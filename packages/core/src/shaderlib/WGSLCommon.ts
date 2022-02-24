@@ -56,7 +56,7 @@ export function attributesString(attr: Attributes): string {
 }
 
 export type UniformType =
-  "f32"
+  | "f32"
   | "i32"
   | "u32"
   | "vec2<f32>"
@@ -76,37 +76,30 @@ export type UniformType =
   | "mat4x3<f32>"
   | "mat2x4<f32>"
   | "mat3x4<f32>"
-  | "mat4x4<f32>"
+  | "mat4x4<f32>";
 
 export type TextureType =
-  "texture_1d<f32>"
+  | "texture_1d<f32>"
   | "texture_1d<i32>"
   | "texture_1d<u32>"
-
   | "texture_2d<f32>"
   | "texture_2d<i32>"
   | "texture_2d<u32>"
-
   | "texture_2d_array<f32>"
   | "texture_2d_array<i32>"
   | "texture_2d_array<u32>"
-
   | "texture_3d<f32>"
   | "texture_3d<i32>"
   | "texture_3d<u32>"
-
   | "texture_cube<f32>"
   | "texture_cube<i32>"
   | "texture_cube<u32>"
-
   | "texture_cube_array<f32>"
   | "texture_cube_array<i32>"
   | "texture_cube_array<u32>"
-
   | "texture_multisampled_2d<f32>"
   | "texture_multisampled_2d<i32>"
   | "texture_multisampled_2d<u32>"
-
   | "texture_depth_2d"
   | "texture_depth_2d_array"
   | "texture_depth_cube"
@@ -114,10 +107,11 @@ export type TextureType =
   | "texture_depth_multisampled_2d";
 
 export function isMultisampled(type: TextureType): boolean {
-  return type == "texture_multisampled_2d<f32>" ||
+  return (
+    type == "texture_multisampled_2d<f32>" ||
     type == "texture_multisampled_2d<i32>" ||
-    type == "texture_multisampled_2d<u32>";
-
+    type == "texture_multisampled_2d<u32>"
+  );
 }
 
 export function textureViewDimension(type: TextureType): GPUTextureViewDimension {
@@ -206,10 +200,7 @@ export function sampleType(type: TextureType): GPUTextureSampleType {
   }
 }
 
-export type SamplerType =
-  "sampler"
-  | "sampler_comparison";
-
+export type SamplerType = "sampler" | "sampler_comparison";
 
 export function bindingType(type: SamplerType): GPUSamplerBindingType {
   switch (type) {
@@ -225,10 +216,10 @@ export function bindingType(type: SamplerType): GPUSamplerBindingType {
 }
 
 export type StorageTextureType =
-  "texture_storage_1d"
+  | "texture_storage_1d"
   | "texture_storage_2d"
   | "texture_storage_2d_array"
-  | "texture_storage_3d"
+  | "texture_storage_3d";
 
 export function storageTextureViewDimension(type: StorageTextureType): GPUTextureViewDimension {
   switch (type) {
@@ -247,7 +238,7 @@ export function storageTextureViewDimension(type: StorageTextureType): GPUTextur
 }
 
 export type BuiltInType =
-  "vertex_index"
+  | "vertex_index"
   | "instance_index"
   | "position"
   | "front_facing"
@@ -258,5 +249,4 @@ export type BuiltInType =
   | "workgroup_id"
   | "num_workgroups"
   | "sample_index"
-  | "sample_mask"
-
+  | "sample_mask";

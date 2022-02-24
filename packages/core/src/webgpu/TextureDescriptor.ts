@@ -49,7 +49,7 @@ export class ImageCopyTexture implements GPUImageCopyTexture {
   texture: GPUTexture;
   aspect?: GPUTextureAspect;
   mipLevel?: GPUIntegerCoordinate;
-  origin?: GPUOrigin3D;
+  origin?: Origin3DDict;
 }
 
 export class ImageCopyTextureTagged implements GPUImageCopyTextureTagged {
@@ -57,13 +57,24 @@ export class ImageCopyTextureTagged implements GPUImageCopyTextureTagged {
   aspect?: GPUTextureAspect;
   colorSpace?: GPUPredefinedColorSpace;
   mipLevel?: GPUIntegerCoordinate;
-  origin?: GPUOrigin3D;
+  origin?: Origin3DDict;
   premultipliedAlpha?: boolean;
 }
 
 export class ImageCopyExternalImage implements GPUImageCopyExternalImage {
   source: ImageBitmap | HTMLCanvasElement | OffscreenCanvas;
-  origin?: GPUOrigin2D;
+  origin?: Origin2DDict;
+}
+
+export class Origin3DDict implements GPUOrigin3DDict {
+  x?: GPUIntegerCoordinate;
+  y?: GPUIntegerCoordinate;
+  z?: GPUIntegerCoordinate;
+}
+
+export class Origin2DDict implements GPUOrigin2DDict {
+  x?: GPUIntegerCoordinate;
+  y?: GPUIntegerCoordinate;
 }
 
 export function bytesPerPixel(format: GPUTextureFormat): number {

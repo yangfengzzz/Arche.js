@@ -1,5 +1,5 @@
 import { RefObject } from "../asset";
-import { ImageCopyBuffer, ImageCopyTexture, TextureDescriptor, SamplerDescriptor } from "../webgpu";
+import { ImageCopyBuffer, ImageCopyTexture, TextureDescriptor, SamplerDescriptor, Origin3DDict } from "../webgpu";
 import { Engine } from "../Engine";
 
 /**
@@ -15,6 +15,8 @@ export abstract class SampledTexture extends RefObject {
   protected _platformTextureDesc: TextureDescriptor = new TextureDescriptor();
   protected _platformSampler: GPUSampler;
   protected _platformSamplerDesc: SamplerDescriptor = new SamplerDescriptor();
+  protected _dimension: GPUTextureViewDimension;
+
   protected _isDirty: boolean = false;
 
   /**
@@ -29,6 +31,13 @@ export abstract class SampledTexture extends RefObject {
    */
   get height(): number {
     return this._platformTextureDesc.size.height;
+  }
+
+  /**
+   * The depthOrArrayLayers of the texture.
+   */
+  get depthOrArrayLayers(): number {
+    return this._platformTextureDesc.size.depthOrArrayLayers;
   }
 
   /**
@@ -59,6 +68,14 @@ export abstract class SampledTexture extends RefObject {
 
   abstract get textureView(): GPUTextureView;
 
+  get textureViewDimension(): GPUTextureViewDimension {
+    return this._dimension;
+  }
+
+  set textureViewDimension(dim: GPUTextureViewDimension) {
+    this._dimension = dim;
+  }
+
   /**
    * Wrapping mode for texture coordinate S.
    */
@@ -84,7 +101,6 @@ export abstract class SampledTexture extends RefObject {
     this._platformSamplerDesc.addressModeV = value;
     this._isDirty = true;
   }
-
 
   /**
    * Filter mode for texture.
@@ -174,13 +190,17 @@ export abstract class SampledTexture extends RefObject {
   }
 
   protected _getMipmapCount(mipmap: boolean): number {
-    return mipmap ? Math.floor(Math.log2(Math.max(this._platformTextureDesc.size.width, this._platformTextureDesc.size.height))) + 1 : 1;
+    return mipmap
+      ? Math.floor(Math.log2(Math.max(this._platformTextureDesc.size.width, this._platformTextureDesc.size.height))) + 1
+      : 1;
   }
 
-  protected _createImageCopyBuffer(buffer: GPUBuffer,
-                                   offset?: number,
-                                   bytesPerRow?: number,
-                                   rowsPerImage?: number): ImageCopyBuffer {
+  protected _createImageCopyBuffer(
+    buffer: GPUBuffer,
+    offset?: number,
+    bytesPerRow?: number,
+    rowsPerImage?: number
+  ): ImageCopyBuffer {
     const imageCopyBuffer = SampledTexture._imageCopyBuffer;
     imageCopyBuffer.buffer = buffer;
     if (offset) {
@@ -195,8 +215,11 @@ export abstract class SampledTexture extends RefObject {
     return imageCopyBuffer;
   }
 
-  protected _createImageCopyTexture(mipLevel: number, origin: GPUOrigin3D,
-                                    aspect: GPUTextureAspect = "all"): ImageCopyTexture {
+  protected _createImageCopyTexture(
+    mipLevel: number,
+    origin: Origin3DDict,
+    aspect: GPUTextureAspect = "all"
+  ): ImageCopyTexture {
     const imageCopyTexture = SampledTexture._imageCopyTexture;
     imageCopyTexture.texture = this._platformTexture;
     imageCopyTexture.mipLevel = mipLevel;
