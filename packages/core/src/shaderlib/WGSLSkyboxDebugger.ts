@@ -86,6 +86,7 @@ export class WGSLSkyboxDebuggerFragment extends WGSL {
         source += "out.finalColor = vec4<f32>(baseColor.rgb, 1.0);\n";
         return source;
       });
+      encoder.flush();
     }
     WGSLEncoder.endCounter(inputStructCounter);
     return [this._source, this._bindGroupInfo];

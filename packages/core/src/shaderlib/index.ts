@@ -6,3 +6,4 @@ export * from "./WGSLUnlit";
 export * from "./WGSLBlinnPhong";
 export * from "./WGSLPbr";
 export * from "./WGSLSkybox";
+export * from "./WGSLSkyboxDebugger";
