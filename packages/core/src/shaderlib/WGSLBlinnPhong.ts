@@ -26,6 +26,13 @@ import {
   WGSLWorldPosVert
 } from "./functors";
 import { WGSLEncoder } from "./WGSLEncoder";
+import {
+  WGSLShadowCommon,
+  WGSLShadowFrag,
+  WGSLShadowFragDefine,
+  WGSLShadowShare,
+  WGSLShadowVert
+} from "../shadow/wgsl";
 
 export class WGSLBlinnPhongVertex extends WGSL {
   private _common: WGSLCommon;
@@ -46,6 +53,9 @@ export class WGSLBlinnPhongVertex extends WGSL {
   private _worldPosVert: WGSLWorldPosVert;
   private _positionVert: WGSLPositionVert;
 
+  private _shadowShare: WGSLShadowShare;
+  private _shadowVert: WGSLShadowVert;
+
   constructor() {
     super();
     this._common = new WGSLCommon();
@@ -65,6 +75,9 @@ export class WGSLBlinnPhongVertex extends WGSL {
     this._normalVert = new WGSLNormalVert("in", "out");
     this._worldPosVert = new WGSLWorldPosVert("in", "out");
     this._positionVert = new WGSLPositionVert("in", "out");
+
+    this._shadowShare = new WGSLShadowShare("VertexOut");
+    this._shadowVert = new WGSLShadowVert("out");
   }
 
   compile(macros: ShaderMacroCollection): [string, BindGroupInfo] {
@@ -81,6 +94,8 @@ export class WGSLBlinnPhongVertex extends WGSL {
       this._colorShare.execute(encoder, macros, outputStructCounter);
       this._normalShare.execute(encoder, macros, outputStructCounter);
       this._worldPosShare.execute(encoder, macros, outputStructCounter);
+      this._shadowShare.execute(encoder, macros, outputStructCounter);
+
       encoder.addBuiltInoutType("VertexOut", "position", "position", "vec4<f32>");
 
       encoder.addEntry([["in", "VertexIn"]], ["out", "VertexOut"], () => {
@@ -94,6 +109,9 @@ export class WGSLBlinnPhongVertex extends WGSL {
         source += this._normalVert.execute(macros);
         source += this._worldPosVert.execute(macros);
         source += this._positionVert.execute(macros);
+
+        source += this._shadowVert.execute(macros);
+
         return source;
       });
       encoder.flush();
@@ -119,6 +137,11 @@ export class WGSLBlinnPhongFragment extends WGSL {
   private _beginViewDirFrag: WGSLBeginViewDirFrag;
   private _mobileBlinnphoneFrag: WGSLMobileBlinnphongFrag;
 
+  private _shadowShare: WGSLShadowShare;
+  private _shadowCommon: WGSLShadowCommon;
+  private _shadowFrag: WGSLShadowFrag;
+  private _shadowFragDefine: WGSLShadowFragDefine;
+
   constructor() {
     super();
     this._common = new WGSLCommon();
@@ -134,6 +157,11 @@ export class WGSLBlinnPhongFragment extends WGSL {
     this._beginMobileFrag = new WGSLBeginMobileFrag("in", "out");
     this._beginViewDirFrag = new WGSLBeginViewDirFrag("in", "out");
     this._mobileBlinnphoneFrag = new WGSLMobileBlinnphongFrag("in", "out");
+
+    this._shadowShare = new WGSLShadowShare("VertexOut");
+    this._shadowFrag = new WGSLShadowFrag();
+    this._shadowFragDefine = new WGSLShadowFragDefine();
+    this._shadowCommon = new WGSLShadowCommon();
   }
 
   compile(macros: ShaderMacroCollection): [string, BindGroupInfo] {
@@ -143,11 +171,17 @@ export class WGSLBlinnPhongFragment extends WGSL {
     {
       const encoder = this.createSourceEncoder(GPUShaderStage.FRAGMENT);
       this._common.execute(encoder, macros);
+      this._shadowCommon.execute(encoder, macros);
+
       this._commonFrag.execute(encoder, macros);
+      this._shadowFragDefine.execute(encoder, macros);
+
       this._uvShare.execute(encoder, macros, inputStructCounter);
       this._colorShare.execute(encoder, macros, inputStructCounter);
       this._normalShare.execute(encoder, macros, inputStructCounter);
       this._worldPosShare.execute(encoder, macros, inputStructCounter);
+      this._shadowShare.execute(encoder, macros, inputStructCounter);
+
       this._lightFragDefine.execute(encoder, macros, inputStructCounter);
       this._mobileMaterialShare.execute(encoder, macros, inputStructCounter);
       this._normalGet.execute(encoder, macros, inputStructCounter);
@@ -158,6 +192,12 @@ export class WGSLBlinnPhongFragment extends WGSL {
         source += this._beginMobileFrag.execute(macros);
         source += this._beginViewDirFrag.execute(macros);
         source += this._mobileBlinnphoneFrag.execute(macros);
+        source += this._shadowFrag.execute(macros);
+        if (macros.isEnable("SHADOW_MAP_COUNT") || macros.isEnable("CUBE_SHADOW_MAP_COUNT")) {
+          source += "diffuse = diffuse * shadow;\n";
+          source += "specular = specular * shadow;\n";
+        }
+
         source += "out.finalColor = emission + ambient + diffuse + specular;\n";
         source += "out.finalColor.a = diffuse.a;\n";
         return source;

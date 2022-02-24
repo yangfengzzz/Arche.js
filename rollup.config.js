@@ -38,7 +38,7 @@ const mainFields = NODE_ENV === "development" ? ["debug", "module", "main"] : un
 const commonPlugins = [
   resolve({ extensions, preferBuiltins: true, mainFields }),
   glslify({
-    include: [/\.glsl$/]
+    include: [/\.wgsl$/]
   }),
   babel({
     extensions,
