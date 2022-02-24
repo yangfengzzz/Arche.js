@@ -194,8 +194,8 @@ export class WGSLBlinnPhongFragment extends WGSL {
         source += this._mobileBlinnphoneFrag.execute(macros);
         source += this._shadowFrag.execute(macros);
         if (macros.isEnable("SHADOW_MAP_COUNT") || macros.isEnable("CUBE_SHADOW_MAP_COUNT")) {
-          source += "diffuse = diffuse * shadow;\n";
-          source += "specular = specular * shadow;\n";
+          source += "diffuse = vec4<f32>(diffuse.x * shadow, diffuse.y * shadow, diffuse.z * shadow, diffuse.w);\n";
+          source += "specular = vec4<f32>(specular.x * shadow, specular.y * shadow, specular.z * shadow, specular.w);\n";
         }
 
         source += "out.finalColor = emission + ambient + diffuse + specular;\n";

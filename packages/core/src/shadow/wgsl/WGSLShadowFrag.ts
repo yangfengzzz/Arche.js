@@ -52,6 +52,10 @@ export class WGSLShadowFrag {
       source += `totalShadow = totalShadow + ${count}.0;\n`;
     }
 
+    if (macros.isEnable("SHADOW_MAP_COUNT") || macros.isEnable("CUBE_SHADOW_MAP_COUNT")) {
+      source += "shadow = shadow / totalShadow;\n";
+    }
+
     return source;
   }
 }

@@ -54,7 +54,7 @@ export class Camera extends Component {
   private _isOrthographic: boolean = false;
   private _isProjMatSetting = false;
   private _nearClipPlane: number = 0.1;
-  private _farClipPlane: number = 100;
+  private _farClipPlane: number = 500;
   private _fieldOfView: number = 45;
   private _orthographicSize: number = 10;
   private _isProjectionDirty = true;
