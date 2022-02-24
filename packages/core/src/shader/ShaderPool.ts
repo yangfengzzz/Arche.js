@@ -7,6 +7,7 @@ import {
   WGSLUnlitFragment,
   WGSLUnlitVertex
 } from "../shaderlib";
+import { WGSLShadowVertex } from "../shadow/WGSLShadowVertex";
 
 /**
  * Internal shader pool.
@@ -18,5 +19,7 @@ export class ShaderPool {
     Shader.create("blinn-phong", new WGSLBlinnPhongVertex(), new WGSLBlinnPhongFragment());
     Shader.create("pbr", new WGSLPbrVertex(), new WGSLPbrFragment(true));
     Shader.create("pbr-specular", new WGSLPbrVertex(), new WGSLPbrFragment(false));
+
+    Shader.create("shadow", new WGSLShadowVertex(), null);
   }
 }
