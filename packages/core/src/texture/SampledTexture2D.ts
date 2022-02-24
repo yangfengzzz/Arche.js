@@ -69,7 +69,7 @@ export class SampledTexture2D extends SampledTexture {
     const textureViewDescriptor = SampledTexture2D._textureViewDescriptor;
     const platformTextureDesc = this._platformTextureDesc;
     textureViewDescriptor.format = platformTextureDesc.format;
-    textureViewDescriptor.dimension = "2d";
+    textureViewDescriptor.dimension = this._dimension;
     textureViewDescriptor.mipLevelCount = platformTextureDesc.mipLevelCount;
     textureViewDescriptor.arrayLayerCount = platformTextureDesc.size.depthOrArrayLayers;
     textureViewDescriptor.aspect = "all";

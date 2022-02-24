@@ -62,7 +62,7 @@ export class SampledTextureCube extends SampledTexture {
     const textureViewDescriptor = SampledTextureCube._textureViewDescriptor;
     const platformTextureDesc = this._platformTextureDesc;
     textureViewDescriptor.format = platformTextureDesc.format;
-    textureViewDescriptor.dimension = "cube";
+    textureViewDescriptor.dimension = this._dimension;
     textureViewDescriptor.mipLevelCount = platformTextureDesc.mipLevelCount;
     textureViewDescriptor.arrayLayerCount = platformTextureDesc.size.depthOrArrayLayers;
     textureViewDescriptor.aspect = "all";

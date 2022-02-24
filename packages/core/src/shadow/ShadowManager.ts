@@ -168,7 +168,6 @@ export class ShadowManager extends RenderPass {
 
     ShadowManager._cubeShadowCount = 0;
     this._drawPointShadowMap(scene, camera, commandEncoder);
-    debugger;
 
     if (ShadowManager._cubeShadowCount) {
       if (!this._packedCubeTexture) {

@@ -21,7 +21,7 @@ export class WGSLShadowFragDefine {
     if (macros.isEnable("CUBE_SHADOW_MAP_COUNT")) {
       encoder.addUniformBinding(
         "u_cubeShadowData",
-        `array<CubeShadowData, {macros.variableMacros("CUBE_SHADOW_MAP_COUNT")}>`,
+        `array<CubeShadowData, ${macros.variableMacros("CUBE_SHADOW_MAP_COUNT")}>`,
         0
       );
       encoder.addSampledTextureBinding(
