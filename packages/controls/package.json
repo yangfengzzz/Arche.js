@@ -1,6 +1,6 @@
 {
   "name": "@arche-engine/controls",
-  "version": "0.0.4",
+  "version": "0.0.5",
   "license": "MIT",
   "scripts": {
     "b:types": "tsc",
@@ -15,6 +15,6 @@
     "types/**/*"
   ],
   "dependencies": {
-    "arche-engine": "0.0.4"
+    "arche-engine": "0.0.5"
   }
 }
