@@ -18,7 +18,7 @@ export abstract class Mesh extends RefObject {
   readonly bounds: BoundingBox = new BoundingBox();
 
   /** @internal */
-  _instanceCount: number = 0;
+  _instanceCount: number = 1;
   /** @internal */
   _vertexBufferBindings: Buffer[] = [];
   /** @internal */
@@ -28,6 +28,13 @@ export abstract class Mesh extends RefObject {
 
   private _subMeshes: SubMesh[] = [];
   private _updateFlagManager: UpdateFlagManager = new UpdateFlagManager();
+
+  /**
+   * Instanced count, disable instanced drawing when set zero.
+   */
+  get instanceCount(): number {
+    return this._instanceCount;
+  }
 
   /**
    * First sub-mesh. Rendered using the first material.

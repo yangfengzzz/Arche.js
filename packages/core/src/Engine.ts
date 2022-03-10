@@ -3,7 +3,7 @@ import { WebCanvas } from "./WebCanvas";
 import { EngineSettings } from "./EngineSettings";
 import { ColorSpace } from "./enums/ColorSpace";
 import { Entity } from "./Entity";
-import { RenderContext, RenderPass } from "./rendering";
+import { ComputePass, RenderContext, RenderPass } from "./rendering";
 import { ComponentsManager } from "./ComponentsManager";
 import { ResourceManager } from "./asset";
 import { SceneManager } from "./SceneManager";
@@ -53,6 +53,7 @@ export class Engine {
   private _renderContext: RenderContext;
 
   private _renderPasses: RenderPass[] = [];
+  private _computePass: ComputePass[] = [];
 
   get device(): GPUDevice {
     return this._device;
@@ -60,6 +61,10 @@ export class Engine {
 
   get renderContext(): RenderContext {
     return this._renderContext;
+  }
+
+  get computePasses(): ComputePass[] {
+    return this._computePass;
   }
 
   get renderPasses(): RenderPass[] {
@@ -275,12 +280,21 @@ export class Engine {
           componentsManager.callCameraOnBeginRender(camera);
 
           camera._updateShaderData();
+
           const commandEncoder = this._device.createCommandEncoder();
+          const computePass = commandEncoder.beginComputePass();
+          for (let j = 0, n = this._computePass.length; j < n; j++) {
+            const pass = this._computePass[j];
+            pass.compute(computePass);
+          }
+          computePass.end();
+
           this._shadowManager.draw(scene, camera, commandEncoder);
           for (let j = 0, n = this._renderPasses.length; j < n; j++) {
             const renderPass = this._renderPasses[j];
             renderPass.draw(scene, camera, commandEncoder);
           }
+
           this._device.queue.submit([commandEncoder.finish()]);
 
           componentsManager.callCameraOnEndRender(camera);

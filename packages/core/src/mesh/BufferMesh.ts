@@ -5,13 +5,6 @@ import { VertexBufferLayout } from "../webgpu";
  * BufferMesh.
  */
 export class BufferMesh extends Mesh {
-  /**
-   * Instanced count, disable instanced drawing when set zero.
-   */
-  get instanceCount(): number {
-    return this._instanceCount;
-  }
-
   set instanceCount(value: number) {
     this._instanceCount = value;
   }

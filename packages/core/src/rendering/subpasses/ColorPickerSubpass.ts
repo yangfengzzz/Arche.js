@@ -16,11 +16,10 @@ import {
 } from "../../webgpu";
 import { Engine } from "../../Engine";
 import { RenderElement } from "../RenderElement";
-import { Shader } from "../../shader";
+import { Shader, ShaderDataGroup } from "../../shader";
 import { ShaderMacroCollection } from "../../shader/ShaderMacroCollection";
 import { UnlitMaterial } from "../../material";
 import { Renderer } from "../../Renderer";
-import { ShaderDataGroup } from "../../shader/ShaderDataGroup";
 import { Buffer } from "../../graphic";
 import { Mesh } from "../../graphic";
 import { Logger } from "../../base";
@@ -192,8 +191,13 @@ export class ColorPickerSubpass extends Subpass {
       for (let j = 0, m = mesh._vertexBufferBindings.length; j < m; j++) {
         renderPassEncoder.setVertexBuffer(j, mesh._vertexBufferBindings[j].buffer);
       }
-      renderPassEncoder.setIndexBuffer(mesh._indexBufferBinding.buffer.buffer, mesh._indexBufferBinding.format);
-      renderPassEncoder.drawIndexed(subMesh.count, 1, subMesh.start, 0, 0);
+      const indexBufferBinding = mesh._indexBufferBinding;
+      if (indexBufferBinding) {
+        renderPassEncoder.setIndexBuffer(indexBufferBinding.buffer.buffer, indexBufferBinding.format);
+        renderPassEncoder.drawIndexed(subMesh.count, mesh.instanceCount, subMesh.start, 0, 0);
+      } else {
+        renderPassEncoder.draw(subMesh.count, mesh.instanceCount);
+      }
     }
   }
 
