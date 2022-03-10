@@ -41,10 +41,9 @@ export class WGSLShadowDebug extends WGSL {
   compile(macros: ShaderMacroCollection): [string, BindGroupInfo] {
     this._source = "";
     this._bindGroupInfo.clear();
-    const inputStructCounter = WGSLEncoder.startCounter();
-    const outputStructCounter = WGSLEncoder.startCounter(0);
+    const inputStructCounter = WGSLEncoder.startCounter(0);
     {
-      const encoder = this.createSourceEncoder(ShaderStage.VERTEX);
+      const encoder = this.createSourceEncoder(ShaderStage.FRAGMENT);
       encoder.addBuiltInoutType("VertexOut", "position", "position", "vec4<f32>");
 
       this._shadowCommon.execute(encoder, macros);
@@ -93,7 +92,6 @@ export class WGSLShadowDebug extends WGSL {
       encoder.flush();
     }
     WGSLEncoder.endCounter(inputStructCounter);
-    WGSLEncoder.endCounter(outputStructCounter);
     return [this._source, this._bindGroupInfo];
   }
 }
