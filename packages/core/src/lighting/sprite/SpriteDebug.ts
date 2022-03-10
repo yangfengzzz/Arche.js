@@ -39,7 +39,7 @@ export class SpriteDebug extends Script {
     this._pointEntity = entity.createChild();
     const pointRenderer = this._pointEntity.addComponent(MeshRenderer);
     pointRenderer.setMaterial(new SpriteDebugMaterial(entity.engine, false));
-    pointRenderer.mesh = this._spotLightMesh;
+    pointRenderer.mesh = this._pointLightMesh;
   }
 
   onUpdate(deltaTime: number) {
@@ -56,6 +56,7 @@ export class SpriteDebug extends Script {
     const pointLightCount = lightManager.pointLights.length;
     if (pointLightCount > 0) {
       this._pointLightMesh.instanceCount = pointLightCount;
+      debugger;
       this._pointEntity.isActive = true;
     } else {
       this._pointEntity.isActive = false;

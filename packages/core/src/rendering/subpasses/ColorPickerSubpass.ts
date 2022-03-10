@@ -194,9 +194,9 @@ export class ColorPickerSubpass extends Subpass {
       const indexBufferBinding = mesh._indexBufferBinding;
       if (indexBufferBinding) {
         renderPassEncoder.setIndexBuffer(indexBufferBinding.buffer.buffer, indexBufferBinding.format);
-        renderPassEncoder.drawIndexed(subMesh.count, mesh.instanceCount, subMesh.start, 0, 0);
+        renderPassEncoder.drawIndexed(subMesh.count, mesh._instanceCount, subMesh.start, 0, 0);
       } else {
-        renderPassEncoder.draw(subMesh.count, mesh.instanceCount);
+        renderPassEncoder.draw(subMesh.count, mesh._instanceCount);
       }
     }
   }
