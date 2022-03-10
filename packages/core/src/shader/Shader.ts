@@ -5,7 +5,7 @@ import { ShaderProperty } from "./ShaderProperty";
 import { BindGroupInfo, WGSL } from "../shaderlib";
 import { Engine } from "../Engine";
 import { ShaderProgram } from "./ShaderProgram";
-import { BindGroupLayoutDescriptor, BindGroupLayoutEntry } from "../webgpu";
+import { BindGroupLayoutDescriptor, BindGroupLayoutEntry, ShaderStage } from "../webgpu";
 import { MacroName } from "./InternalMacroName";
 
 type BindGroupLayoutEntryVecMap = Map<number, BindGroupLayoutEntry[]>;
@@ -28,15 +28,16 @@ export class Shader {
   /**
    * Create a shader.
    * @param name - Name of the shader
-   * @param vertexSource - Vertex source code
+   * @param source - Vertex source code
+   * @param stage - Shader Stage
    * @param fragmentSource - Fragment source code
    */
-  static create(name: string, vertexSource: WGSL, fragmentSource?: WGSL): Shader {
+  static create(name: string, source: WGSL, stage: ShaderStage, fragmentSource?: WGSL): Shader {
     const shaderMap = Shader._shaderMap;
     if (shaderMap[name]) {
       throw `Shader named "${name}" already exists.`;
     }
-    return (shaderMap[name] = new Shader(name, vertexSource, fragmentSource));
+    return (shaderMap[name] = new Shader(name, source, stage, fragmentSource));
   }
 
   /**
@@ -103,16 +104,18 @@ export class Shader {
   /** @internal */
   _shaderId: number = 0;
 
-  private _vertexSource: WGSL;
+  private _source: WGSL;
+  private readonly _stage: ShaderStage;
   private readonly _fragmentSource?: WGSL;
   private _bindGroupInfo: BindGroupInfo = new Map<number, Set<number>>();
   private _bindGroupLayoutEntryVecMap: BindGroupLayoutEntryVecMap = new Map<number, BindGroupLayoutEntry[]>();
   private _bindGroupLayoutDescriptorMap: BindGroupLayoutDescriptorMap = new Map<number, BindGroupLayoutDescriptor>();
 
-  private constructor(name: string, vertexSource: WGSL, fragmentSource?: WGSL) {
+  private constructor(name: string, source: WGSL, stage: ShaderStage, fragmentSource?: WGSL) {
     this._shaderId = Shader._shaderCounter++;
     this.name = name;
-    this._vertexSource = vertexSource;
+    this._source = source;
+    this._stage = stage;
     this._fragmentSource = fragmentSource;
   }
 
@@ -133,7 +136,7 @@ export class Shader {
     }
 
     // merge info
-    const vertexCode = this._vertexSource.compile(macroCollection);
+    const vertexCode = this._source.compile(macroCollection);
     vertexCode[1].forEach((bindings, group) => {
       bindings.forEach((binding) => {
         if (!this._bindGroupInfo.has(group)) {
@@ -182,7 +185,7 @@ export class Shader {
     shaderProgram = new ShaderProgram(
       engine.device,
       vertexCode[0],
-      GPUShaderStage.VERTEX,
+      this._stage,
       this._bindGroupLayoutDescriptorMap,
       fragmentCode ? fragmentCode[0] : null
     );
@@ -199,7 +202,7 @@ export class Shader {
   _findEntry(group: number, binding: number): BindGroupLayoutEntry {
     let entry: BindGroupLayoutEntry = undefined;
 
-    const entryMap = this._vertexSource.bindGroupLayoutEntryMap;
+    const entryMap = this._source.bindGroupLayoutEntryMap;
     if (entryMap.has(group) && entryMap.get(group).has(binding)) {
       entry = entryMap.get(group).get(binding);
     }

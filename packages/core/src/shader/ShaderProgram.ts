@@ -1,4 +1,4 @@
-import { BindGroupLayoutDescriptor, ShaderModuleDescriptor } from "../webgpu";
+import { BindGroupLayoutDescriptor, ShaderModuleDescriptor, ShaderStage } from "../webgpu";
 
 type BindGroupLayoutDescriptorMap = Map<number, BindGroupLayoutDescriptor>;
 
@@ -10,7 +10,7 @@ export class ShaderProgram {
   private static _shaderModuleDescriptor: ShaderModuleDescriptor = new ShaderModuleDescriptor();
 
   private readonly _bindGroupLayoutDescriptorMap: BindGroupLayoutDescriptorMap;
-  private readonly _stage: number;
+  private readonly _stage: ShaderStage;
   private _shader: GPUShaderModule;
   private _fragmentShader: GPUShaderModule;
   private _device: GPUDevice;
@@ -42,7 +42,7 @@ export class ShaderProgram {
   constructor(
     device: GPUDevice,
     source: string,
-    stage: number,
+    stage: ShaderStage,
     bindGroupLayoutDescriptorMap: BindGroupLayoutDescriptorMap = null,
     fragmentSource: string = null
   ) {

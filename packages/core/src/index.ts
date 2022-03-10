@@ -43,3 +43,4 @@ export * from "./shader/index";
 export * from "./Layer";
 export * from "./clone/CloneManager";
 export * from "./shadow";
+export * from "./webgpu";

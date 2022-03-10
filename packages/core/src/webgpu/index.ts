@@ -1,3 +1,4 @@
+export * from "./enum";
 export * from "./state";
 export * from "./RenderPipelineDescriptor";
 export * from "./ComputePipelineDescriptor";

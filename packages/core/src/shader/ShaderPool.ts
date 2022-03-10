@@ -8,6 +8,7 @@ import {
   WGSLUnlitVertex
 } from "../shaderlib";
 import { WGSLShadowVertex } from "../shadow/WGSLShadowVertex";
+import { ShaderStage } from "../webgpu";
 
 /**
  * Internal shader pool.
@@ -15,11 +16,11 @@ import { WGSLShadowVertex } from "../shadow/WGSLShadowVertex";
  */
 export class ShaderPool {
   static init(): void {
-    Shader.create("unlit", new WGSLUnlitVertex(), new WGSLUnlitFragment());
-    Shader.create("blinn-phong", new WGSLBlinnPhongVertex(), new WGSLBlinnPhongFragment());
-    Shader.create("pbr", new WGSLPbrVertex(), new WGSLPbrFragment(true));
-    Shader.create("pbr-specular", new WGSLPbrVertex(), new WGSLPbrFragment(false));
+    Shader.create("unlit", new WGSLUnlitVertex(), ShaderStage.VERTEX, new WGSLUnlitFragment());
+    Shader.create("blinn-phong", new WGSLBlinnPhongVertex(), ShaderStage.VERTEX, new WGSLBlinnPhongFragment());
+    Shader.create("pbr", new WGSLPbrVertex(), ShaderStage.VERTEX, new WGSLPbrFragment(true));
+    Shader.create("pbr-specular", new WGSLPbrVertex(), ShaderStage.VERTEX, new WGSLPbrFragment(false));
 
-    Shader.create("shadow", new WGSLShadowVertex(), null);
+    Shader.create("shadow", new WGSLShadowVertex(), ShaderStage.VERTEX);
   }
 }
