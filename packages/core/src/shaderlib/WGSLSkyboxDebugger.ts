@@ -7,7 +7,7 @@ import {
   WGSLUVShare,
   WGSLUVVert
 } from "./functors";
-import { ShaderMacroCollection } from "../shader/ShaderMacroCollection";
+import { ShaderMacroCollection } from "../shader";
 import { WGSLEncoder } from "./WGSLEncoder";
 
 export class WGSLSkyboxDebuggerVertex extends WGSL {

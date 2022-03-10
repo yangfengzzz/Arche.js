@@ -4,7 +4,7 @@ import { Scene } from "../Scene";
 import { Camera } from "../Camera";
 import { ShadowMaterial } from "./ShadowMaterial";
 import { BoundingFrustum, Vector4 } from "@arche-engine/math";
-import { ShaderMacroCollection } from "../shader/ShaderMacroCollection";
+import { ShaderMacroCollection } from "../shader";
 import { RenderElement } from "../rendering/RenderElement";
 import {
   BindGroupDescriptor,

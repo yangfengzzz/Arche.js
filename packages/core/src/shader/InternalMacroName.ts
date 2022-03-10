@@ -41,7 +41,6 @@ export type MacroName =
   | "DIRECT_LIGHT_COUNT"
   | "POINT_LIGHT_COUNT"
   | "SPOT_LIGHT_COUNT"
-  | "NEED_FORWARD_PLUS"
 
   // Environment
   | "HAS_SH"

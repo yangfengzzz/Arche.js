@@ -1,5 +1,5 @@
 import { BindGroupLayoutEntry, ShaderStage } from "../webgpu";
-import { ShaderMacroCollection } from "../shader/ShaderMacroCollection";
+import { ShaderMacroCollection } from "../shader";
 import { WGSLEncoder } from "./WGSLEncoder";
 
 export type BindGroupInfo = Map<number, Set<number>>;

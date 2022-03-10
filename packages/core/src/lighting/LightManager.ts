@@ -37,6 +37,8 @@ export class LightManager {
   static CLUSTER_LIGHTS_SIZE =
     12 * LightManager.TOTAL_TILES + 4 * LightManager.MAX_LIGHTS_PER_CLUSTER * LightManager.TOTAL_TILES + 4;
 
+  private static _enableForwardPlus: boolean = false;
+
   // proj, inv_proj, outputSize, zNear, zFar, view
   private _forwardPlusUniforms = new Float32Array(16 + 16 + 4 + 16);
   private static _forwardPlusProp = Shader.getPropertyByName("u_cluster_uniform");
@@ -283,6 +285,10 @@ export class LightManager {
     }
   }
 
+  static get enableForwardPlus(): boolean {
+    return LightManager._enableForwardPlus;
+  }
+
   draw(encoder: GPUComputePassEncoder): void {
     const sceneShaderData = this._engine.sceneManager.activeScene.shaderData;
     const camera = this._camera;
@@ -290,7 +296,7 @@ export class LightManager {
     const pointLightCount = this._pointLights.length;
     const spotLightCount = this._spotLights.length;
     if (pointLightCount + spotLightCount > LightManager.FORWARD_PLUS_ENABLE_MIN_COUNT) {
-      sceneShaderData.enableMacro("NEED_FORWARD_PLUS");
+      LightManager._enableForwardPlus = true;
       let updateBounds = false;
 
       const projMat = camera.projectionMatrix;
@@ -323,7 +329,7 @@ export class LightManager {
       }
       this._clusterLightsCompute.compute(encoder);
     } else {
-      sceneShaderData.disableMacro("NEED_FORWARD_PLUS");
+      LightManager._enableForwardPlus = false;
     }
   }
 }

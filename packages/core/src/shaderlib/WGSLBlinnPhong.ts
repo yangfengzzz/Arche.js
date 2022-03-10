@@ -1,5 +1,5 @@
 import { BindGroupInfo, WGSL } from "./WGSL";
-import { ShaderMacroCollection } from "../shader/ShaderMacroCollection";
+import { ShaderMacroCollection } from "../shader";
 import {
   WGSLBeginMobileFrag,
   WGSLBeginNormalVert,
@@ -33,6 +33,9 @@ import {
   WGSLShadowShare,
   WGSLShadowVert
 } from "../shadow/wgsl";
+import { WGSLForwardPlusUniforms } from "../lighting/wgsl/WGSLClusterCommon";
+import { WGSLClusterLightsStructs, WGSLTileFunctions } from "../lighting/wgsl/WGSLClusterCompute";
+import { LightManager } from "../lighting";
 
 export class WGSLBlinnPhongVertex extends WGSL {
   private _common: WGSLCommon;
@@ -142,6 +145,10 @@ export class WGSLBlinnPhongFragment extends WGSL {
   private _shadowFrag: WGSLShadowFrag;
   private _shadowFragDefine: WGSLShadowFragDefine;
 
+  private _forwardPlusUniforms: WGSLForwardPlusUniforms;
+  private _tileFunctions: WGSLTileFunctions;
+  private _clusterLightsStructs: WGSLClusterLightsStructs;
+
   constructor() {
     super();
     this._common = new WGSLCommon();
@@ -162,6 +169,13 @@ export class WGSLBlinnPhongFragment extends WGSL {
     this._shadowFrag = new WGSLShadowFrag();
     this._shadowFragDefine = new WGSLShadowFragDefine();
     this._shadowCommon = new WGSLShadowCommon();
+
+    this._forwardPlusUniforms = new WGSLForwardPlusUniforms();
+    this._tileFunctions = new WGSLTileFunctions(LightManager.TILE_COUNT);
+    this._clusterLightsStructs = new WGSLClusterLightsStructs(
+      LightManager.TILE_COUNT[0] * LightManager.TILE_COUNT[1] * LightManager.TILE_COUNT[2],
+      LightManager.MAX_LIGHTS_PER_CLUSTER
+    );
   }
 
   compile(macros: ShaderMacroCollection): [string, BindGroupInfo] {
@@ -181,6 +195,12 @@ export class WGSLBlinnPhongFragment extends WGSL {
       this._normalShare.execute(encoder, macros, inputStructCounter);
       this._worldPosShare.execute(encoder, macros, inputStructCounter);
       this._shadowShare.execute(encoder, macros, inputStructCounter);
+
+      if (LightManager.enableForwardPlus) {
+        this._forwardPlusUniforms.execute(encoder, macros);
+        this._tileFunctions.execute(encoder, macros);
+        this._clusterLightsStructs.execute(encoder, macros);
+      }
 
       this._lightFragDefine.execute(encoder, macros);
       this._mobileMaterialShare.execute(encoder, macros, inputStructCounter);

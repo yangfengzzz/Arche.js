@@ -6,7 +6,7 @@ import {
   WGSLCommonVert,
   WGSLSkinningVert
 } from "../shaderlib/functors";
-import { ShaderMacroCollection } from "../shader/ShaderMacroCollection";
+import { ShaderMacroCollection } from "../shader";
 
 export class WGSLShadowVertex extends WGSL {
   private _commonVert: WGSLCommonVert;

@@ -10,7 +10,7 @@ import {
 import { Engine } from "../Engine";
 import { EngineObject } from "../base";
 import { DisorderedArray } from "../DisorderedArray";
-import { ShaderMacroCollection } from "../shader/ShaderMacroCollection";
+import { ShaderMacroCollection } from "../shader";
 
 export class ComputePass extends EngineObject {
   static readonly _compileMacros: ShaderMacroCollection = new ShaderMacroCollection();

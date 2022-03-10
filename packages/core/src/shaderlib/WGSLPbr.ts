@@ -1,5 +1,5 @@
 import { BindGroupInfo, WGSL } from "./WGSL";
-import { ShaderMacroCollection } from "../shader/ShaderMacroCollection";
+import { ShaderMacroCollection } from "../shader";
 import {
   WGSLBeginNormalVert,
   WGSLBeginPositionVert,
