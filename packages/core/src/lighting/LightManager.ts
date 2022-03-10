@@ -88,18 +88,7 @@ export class LightManager {
       return this._clusterLightsBuffer;
     });
 
-    this._clusterBoundsCompute = new ComputePass(
-      engine,
-      Shader.create(
-        "cluster_bounds",
-        new WGSLClusterBoundsSource(
-          LightManager.TILE_COUNT,
-          LightManager.MAX_LIGHTS_PER_CLUSTER,
-          LightManager.WORKGROUP_SIZE
-        ),
-        ShaderStage.COMPUTE
-      )
-    );
+    this._clusterBoundsCompute = new ComputePass(engine, Shader.find("cluster_bounds"));
     this._clusterBoundsCompute.attachShaderData(this._shaderData);
     this._clusterBoundsCompute.attachShaderData(sceneShaderData);
     this._clusterBoundsCompute.setDispatchCount(
@@ -108,18 +97,7 @@ export class LightManager {
       LightManager.DISPATCH_SIZE[2]
     );
 
-    this._clusterLightsCompute = new ComputePass(
-      engine,
-      Shader.create(
-        "cluster_lights",
-        new WGSLClusterLightsSource(
-          LightManager.TILE_COUNT,
-          LightManager.MAX_LIGHTS_PER_CLUSTER,
-          LightManager.WORKGROUP_SIZE
-        ),
-        ShaderStage.COMPUTE
-      )
-    );
+    this._clusterLightsCompute = new ComputePass(engine, Shader.find("cluster_lights"));
     this._clusterLightsCompute.attachShaderData(this._shaderData);
     this._clusterLightsCompute.attachShaderData(sceneShaderData);
     this._clusterLightsCompute.setDispatchCount(
