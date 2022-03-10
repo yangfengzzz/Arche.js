@@ -6,10 +6,6 @@ import { DisorderedArray } from "../DisorderedArray";
 import { Buffer } from "../graphic";
 import { ComputePass } from "../rendering";
 import { Engine } from "../Engine";
-import { WGSLUnlitVertex } from "../shaderlib";
-import { WGSLClusterDebug } from "./wgsl/WGSLClusterDebug";
-import { ShaderStage } from "../webgpu";
-import { WGSLClusterBoundsSource, WGSLClusterLightsSource } from "./wgsl/WGSLClusterCompute";
 import { Camera } from "../Camera";
 
 export class LightManager {

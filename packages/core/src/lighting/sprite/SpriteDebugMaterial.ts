@@ -1,11 +1,9 @@
 import {
   BindGroupInfo,
   WGSL,
-  WGSLCommon,
   WGSLCommonFrag,
   WGSLEncoder,
   WGSLLightFragDefine,
-  WGSLUVShare
 } from "../../shaderlib";
 import { Shader, ShaderMacroCollection } from "../../shader";
 import { Engine } from "../../Engine";

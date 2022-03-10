@@ -10,6 +10,7 @@ import {
 import { ShaderStage } from "../webgpu";
 import { WGSLShadowVertex } from "../shadow/WGSLShadowVertex";
 import { WGSLClusterBoundsSource, WGSLClusterLightsSource } from "../lighting/wgsl/WGSLClusterCompute";
+import { WGSLSpriteDebugFragment, WGSLSpriteDebugVertex } from "../lighting/sprite/SpriteDebugMaterial";
 import { LightManager } from "../lighting";
 
 /**
@@ -43,6 +44,19 @@ export class ShaderPool {
         LightManager.WORKGROUP_SIZE
       ),
       ShaderStage.COMPUTE
+    );
+
+    Shader.create(
+      "spotlight_sprite_debug",
+      new WGSLSpriteDebugVertex(true),
+      ShaderStage.VERTEX,
+      new WGSLSpriteDebugFragment()
+    );
+    Shader.create(
+      "pointlight_sprite_debug",
+      new WGSLSpriteDebugVertex(false),
+      ShaderStage.VERTEX,
+      new WGSLSpriteDebugFragment()
     );
   }
 }

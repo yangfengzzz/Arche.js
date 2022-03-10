@@ -1,9 +1,7 @@
 import { Script } from "../../Script";
 import { Entity } from "../../Entity";
 import { BufferMesh, MeshRenderer } from "../../mesh";
-import { SpriteDebugMaterial, WGSLSpriteDebugFragment, WGSLSpriteDebugVertex } from "./SpriteDebugMaterial";
-import { Shader } from "../../shader";
-import { ShaderStage } from "../../webgpu";
+import { SpriteDebugMaterial } from "./SpriteDebugMaterial";
 
 export class SpriteDebug extends Script {
   private _spotEntity: Entity;
@@ -14,18 +12,6 @@ export class SpriteDebug extends Script {
 
   constructor(entity: Entity) {
     super(entity);
-    Shader.create(
-      "spotlight_sprite_debug",
-      new WGSLSpriteDebugVertex(true),
-      ShaderStage.VERTEX,
-      new WGSLSpriteDebugFragment()
-    );
-    Shader.create(
-      "pointlight_sprite_debug",
-      new WGSLSpriteDebugVertex(false),
-      ShaderStage.VERTEX,
-      new WGSLSpriteDebugFragment()
-    );
 
     this._spotLightMesh = new BufferMesh(entity.engine);
     this._spotLightMesh.addSubMesh(0, 4, "triangle-strip");

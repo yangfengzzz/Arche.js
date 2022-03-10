@@ -1,5 +1,5 @@
 export enum ShaderStage {
-  VERTEX = GPUShaderStage.VERTEX,
-  FRAGMENT = GPUShaderStage.FRAGMENT,
-  COMPUTE = GPUShaderStage.COMPUTE
+  VERTEX = 1,
+  FRAGMENT = 2,
+  COMPUTE = 4
 }

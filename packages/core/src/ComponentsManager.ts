@@ -3,7 +3,7 @@ import { DisorderedArray } from "./DisorderedArray";
 import { Component } from "./Component";
 import { Renderer } from "./Renderer";
 import { Script } from "./Script";
-import { ShaderMacroCollection } from "./shader/ShaderMacroCollection";
+import { ShaderMacroCollection } from "./shader";
 import { BoundingFrustum, Vector3 } from "@arche-engine/math";
 import { RenderElement } from "./rendering/RenderElement";
 
