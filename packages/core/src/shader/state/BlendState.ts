@@ -1,6 +1,6 @@
 import { RenderTargetBlendState } from "./RenderTargetBlendState";
 import { Color } from "@arche-engine/math";
-import { BlendState as WGPUBlendState } from "../../webgpu/state/FragmentState";
+import { BlendComponent, BlendState as WGPUBlendState } from "../../webgpu/state/FragmentState";
 import { RenderPipelineDescriptor } from "../../webgpu";
 
 /**
@@ -15,6 +15,11 @@ export class BlendState {
   alphaToCoverage: boolean = false;
 
   private _blendState: WGPUBlendState = new WGPUBlendState();
+
+  constructor() {
+    this._blendState.color = new BlendComponent();
+    this._blendState.alpha = new BlendComponent();
+  }
 
   platformApply(pipelineDescriptor: RenderPipelineDescriptor, encoder: GPURenderPassEncoder): void {
     const {

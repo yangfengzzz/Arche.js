@@ -17,7 +17,7 @@ export class SpotLight extends Light {
   /** Light intensity. */
   intensity: number = 1.0;
   /** Defines a distance cutoff at which the light's intensity must be considered zero. */
-  distance: number = 100;
+  distance: number = 5;
   /** Angle, in radians, from centre of spotlight where falloff begins. */
   angle: number = Math.PI / 6;
   /** Angle, in radians, from falloff begins to ends. */

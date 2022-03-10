@@ -5,7 +5,7 @@ import { SpriteDebugMaterial, WGSLSpriteDebugFragment, WGSLSpriteDebugVertex } f
 import { Shader } from "../../shader";
 import { ShaderStage } from "../../webgpu";
 
-class SpriteDebug extends Script {
+export class SpriteDebug extends Script {
   private _spotEntity: Entity;
   private _spotLightMesh: BufferMesh;
 

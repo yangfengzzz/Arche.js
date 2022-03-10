@@ -46,7 +46,7 @@ export class WGSLSpriteDebugVertex extends WGSL {
       encoder.addInoutType("VertexOut", 0, "localPos", "vec2<f32>");
       encoder.addInoutType("VertexOut", 1, "color", "vec3<f32>");
 
-      encoder.addRenderEntry([["in", "VertexIn"]], ["out", "VertexOut"], () => {
+      encoder.addRenderEntry([["input", "VertexIn"]], ["output", "VertexOut"], () => {
         let source: string = "";
         source += "output.localPos = pos[input.vertexIndex];\n";
         source += `output.color = ${this._isSpotLight ? "u_spotLight" : "u_pointLight"}[input.instanceIndex].color;\n`;

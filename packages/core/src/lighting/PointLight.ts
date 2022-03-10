@@ -15,7 +15,7 @@ export class PointLight extends Light {
   /** Light intensity. */
   intensity: number = 1.0;
   /** Defines a distance cutoff at which the light's intensity must be considered zero. */
-  distance: number = 100;
+  distance: number = 5;
 
   constructor(entity: Entity) {
     super(entity);
