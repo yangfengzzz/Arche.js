@@ -37,7 +37,7 @@ export class WGSLSkyboxDebuggerVertex extends WGSL {
       this._uvShare.execute(encoder, macros, outputStructCounter);
       encoder.addBuiltInoutType("VertexOut", "position", "position", "vec4<f32>");
 
-      encoder.addEntry([["in", "VertexIn"]], ["out", "VertexOut"], () => {
+      encoder.addRenderEntry([["in", "VertexIn"]], ["out", "VertexOut"], () => {
         let source: string = "";
         source += this._beginPositionVert.execute(macros);
         source += this._uvVert.execute(macros);
@@ -75,7 +75,7 @@ export class WGSLSkyboxDebuggerFragment extends WGSL {
       encoder.addSampledTextureBinding("u_baseTexture", "texture_2d<f32>", "u_baseSampler", "sampler");
       encoder.addUniformBinding("u_faceIndex", "i32", 0);
 
-      encoder.addEntry([["in", "VertexOut"]], ["out", "Output"], () => {
+      encoder.addRenderEntry([["in", "VertexOut"]], ["out", "Output"], () => {
         let source: string = "";
         source += "var uv = in.v_uv;\n";
         source += "if (u_faceIndex == 2 || u_faceIndex == 3) {\n";

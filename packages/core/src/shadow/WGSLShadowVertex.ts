@@ -36,7 +36,7 @@ export class WGSLShadowVertex extends WGSL {
 
       encoder.addBuiltInoutType("VertexOut", "position", "position", "vec4<f32>");
 
-      encoder.addEntry([["in", "VertexIn"]], ["out", "VertexOut"], () => {
+      encoder.addRenderEntry([["in", "VertexIn"]], ["out", "VertexOut"], () => {
         let source: string = "";
         source += this._beginPositionVert.execute(macros);
         source += this._blendShapeVert.execute(macros);

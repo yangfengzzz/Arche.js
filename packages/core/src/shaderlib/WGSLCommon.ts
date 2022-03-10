@@ -250,3 +250,34 @@ export type BuiltInType =
   | "num_workgroups"
   | "sample_index"
   | "sample_mask";
+
+export function builtInToType(builtin: BuiltInType): string {
+  switch (builtin) {
+    case "vertex_index":
+      return "u32";
+    case "instance_index":
+      return "u32";
+    case "position":
+      return "vec4<f32>";
+    case "front_facing":
+      return "bool";
+    case "frag_depth":
+      return "f32";
+    case "local_invocation_id":
+      return "vec3<u32>";
+    case "local_invocation_index":
+      return "u32";
+    case "global_invocation_id":
+      return "vec3<u32>";
+    case "workgroup_id":
+      return "vec3<u32>";
+    case "num_workgroups":
+      return "vec3<u32>";
+    case "sample_index":
+      return "u32";
+    case "sample_mask":
+      return "u32";
+    default:
+      break;
+  }
+}

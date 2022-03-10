@@ -21,7 +21,7 @@ export class WGSLSkyboxVertex extends WGSL {
       encoder.addInoutType("VertexOut", 0, "v_cubeUV", "vec3<f32>");
       encoder.addBuiltInoutType("VertexOut", "position", "position", "vec4<f32>");
 
-      encoder.addEntry([["in", "VertexIn"]], ["out", "VertexOut"], () => {
+      encoder.addRenderEntry([["in", "VertexIn"]], ["out", "VertexOut"], () => {
         let source: string = "";
         source += "out.v_cubeUV = in.Position.xyz;\n";
         source += "out.position = u_mvpNoscale * vec4<f32>( in.Position, 1.0 );\n";
@@ -53,7 +53,7 @@ export class WGSLSkyboxFragment extends WGSL {
       encoder.addInoutType("VertexOut", 0, "v_cubeUV", "vec3<f32>");
       encoder.addInoutType("Output", 0, "finalColor", "vec4<f32>");
 
-      encoder.addEntry([["in", "VertexOut"]], ["out", "Output"], () => {
+      encoder.addRenderEntry([["in", "VertexOut"]], ["out", "Output"], () => {
         let source: string = "";
         source += "var textureColor = textureSample( u_cubeTexture, u_cubeSampler, in.v_cubeUV );\n";
         source += "out.finalColor = textureColor;\n";

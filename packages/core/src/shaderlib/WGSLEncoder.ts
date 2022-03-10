@@ -2,6 +2,7 @@ import {
   Attributes,
   attributesString,
   bindingType,
+  builtInToType,
   BuiltInType,
   isMultisampled,
   SamplerType,
@@ -60,6 +61,7 @@ export class WGSLEncoder {
     this._counters[index] = -1;
   }
 
+  //----------------------------------------------------------------------------
   addStruct(code: string) {
     this._structBlock += code;
     this._needFlush = true;
@@ -70,7 +72,12 @@ export class WGSLEncoder {
     this._needFlush = true;
   }
 
+  //----------------------------------------------------------------------------
+  addUniformBinding(uniformName: string, type: string);
+
   addUniformBinding(uniformName: string, type: string, group: number);
+
+  addUniformBinding(uniformName: string, type: UniformType);
 
   addUniformBinding(uniformName: string, type: UniformType, group: number);
 
@@ -107,6 +114,7 @@ export class WGSLEncoder {
     this._needFlush = true;
   }
 
+  //----------------------------------------------------------------------------
   addSampledTextureBinding(
     texName: string,
     texType: TextureType,
@@ -185,6 +193,50 @@ export class WGSLEncoder {
     this._needFlush = true;
   }
 
+  //----------------------------------------------------------------------------
+  addStorageBufferBinding(bufferName: string, type: string, isRead: boolean);
+
+  addStorageBufferBinding(bufferName: string, type: string, isRead: boolean, group: number);
+
+  addStorageBufferBinding(bufferName: string, type: UniformType, isRead: boolean);
+
+  addStorageBufferBinding(bufferName: string, type: UniformType, isRead: boolean, group: number);
+
+  addStorageBufferBinding(bufferName: string, type: string, isRead: boolean, group: number = 0) {
+    const property = Shader.getPropertyByName(bufferName);
+    if (property !== null) {
+      this.addManualStorageBufferBinding(bufferName, type, isRead, property._uniqueId, group);
+    } else {
+      throw "Unknown Uniform Name";
+    }
+  }
+
+  addManualStorageBufferBinding(bufferName: string, type: string, isRead: boolean, binding: number, group: number = 0) {
+    this._uniformBlock += `@group(${group.toString()}) @binding(${binding.toString()})\n var<storage, ${
+      isRead ? "read" : "read_write"
+    }> ${bufferName}: ${type};\n `;
+    const entry = new BindGroupLayoutEntry();
+    entry.binding = binding;
+    entry.visibility = this._currentStage;
+    entry.buffer = new BufferBindingLayout();
+    entry.buffer.type = isRead ? "read-only-storage" : "storage";
+
+    const bindGroupLayoutEntryMap = this._bindGroupLayoutEntryMap;
+    if (!bindGroupLayoutEntryMap.has(group)) {
+      bindGroupLayoutEntryMap.set(group, new Map<number, BindGroupLayoutEntry>());
+      bindGroupLayoutEntryMap.get(group).set(binding, entry);
+    } else {
+      if (!bindGroupLayoutEntryMap.get(group).has(binding)) {
+        bindGroupLayoutEntryMap.get(group).set(binding, entry);
+      }
+    }
+    if (!this._bindGroupInfo.has(group)) {
+      this._bindGroupInfo.set(group, new Set<number>());
+    }
+    this._bindGroupInfo.get(group).add(binding);
+    this._needFlush = true;
+  }
+
   addStorageTextureBinding(
     texName: string,
     texType: StorageTextureType,
@@ -224,6 +276,7 @@ export class WGSLEncoder {
     }
   }
 
+  //----------------------------------------------------------------------------
   addInoutType(structName: string, location: number, attributes: string, type: string);
 
   addInoutType(structName: string, location: number, attributes: string, type: UniformType);
@@ -254,7 +307,8 @@ export class WGSLEncoder {
     this.addInoutType(structName, attributes, attributesString(attributes), type);
   }
 
-  addEntry(inParam: [string, string][], outType: [string, string], code: () => string) {
+  //----------------------------------------------------------------------------
+  addRenderEntry(inParam: [string, string][], outType: [string, string], code: () => string) {
     if (this._currentStage == GPUShaderStage.VERTEX) {
       this._entryBlock += "@stage(vertex)\n";
     } else if (this._currentStage == GPUShaderStage.FRAGMENT) {
@@ -280,6 +334,25 @@ export class WGSLEncoder {
     this._entryBlock += code();
 
     this._entryBlock += `return ${outType[0]};\n`;
+    this._entryBlock += "}\n";
+
+    this._needFlush = true;
+  }
+
+  addComputeEntry(workgroupSize: number[], code: () => string, builtIn: [string, BuiltInType][] = []) {
+    if (this._currentStage == GPUShaderStage.COMPUTE) {
+      this._entryBlock += `@stage(compute) @workgroup_size(${workgroupSize[0]}, ${workgroupSize[1]}, ${workgroupSize[2]})\n`;
+    } else {
+      throw "Use Begin at first";
+    }
+
+    this._entryBlock += "fn main(";
+    for (let i = 0, n = builtIn.length; i < n; i++) {
+      const vars = builtIn[i];
+      this._entryBlock += `@builtin(${vars[1]}) ${vars[0]}: ${builtInToType(vars[1])},\n`;
+    }
+    this._entryBlock += ") {\n";
+    this._entryBlock += code();
     this._entryBlock += "}\n";
 
     this._needFlush = true;
