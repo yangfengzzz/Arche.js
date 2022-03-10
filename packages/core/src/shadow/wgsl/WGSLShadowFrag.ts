@@ -17,7 +17,7 @@ export class WGSLShadowFrag {
         source += "{\n";
         source += "var i:i32 = 0;\n";
         source += "loop {\n";
-        source += `if (i >= ${count}) {{ break; }}\n`;
+        source += `if (i >= ${count}) { break; }\n`;
 
         source +=
           "shadow = shadow + filterPCF(in.v_pos, in.view_pos, u_shadowData[i], i, u_shadowMap, u_shadowSampler);\n";
@@ -38,7 +38,7 @@ export class WGSLShadowFrag {
       source += "{\n";
       source += "var i:i32 = 0;\n";
       source += "loop {\n";
-      source += `if (i >= ${count}) {{ break; }}\n`;
+      source += `if (i >= ${count}) { break; }\n`;
 
       // source +=
       //   "shadow = shadow + cubeFilterPCF(in.v_pos, u_cubeShadowData[i], i, u_cubeShadowMap, u_cubeShadowSampler);\n"; // too expensive

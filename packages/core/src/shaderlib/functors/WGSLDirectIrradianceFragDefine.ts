@@ -78,7 +78,7 @@ export class WGSLDirectIrradianceFragDefine {
       func += "{\n";
       func += "var i:i32 = 0;\n";
       func += "loop {\n";
-      func += `if (i >= ${macros.variableMacros("DIRECT_LIGHT_COUNT")}) {{ break; }}\n`;
+      func += `if (i >= ${macros.variableMacros("DIRECT_LIGHT_COUNT")}) { break; }\n`;
 
       func += "addDirectionalDirectLightRadiance( u_directLight[i], geometry, material, reflectedLight );\n";
 
@@ -90,7 +90,7 @@ export class WGSLDirectIrradianceFragDefine {
       func += "{\n";
       func += "var i:i32 = 0;\n";
       func += "loop {\n";
-      func += `if (i >= ${macros.variableMacros("POINT_LIGHT_COUNT")}) {{ break; }}\n`;
+      func += `if (i >= ${macros.variableMacros("POINT_LIGHT_COUNT")}) { break; }\n`;
 
       func += "addPointDirectLightRadiance( u_pointLight[i], geometry, material, reflectedLight );\n";
 
@@ -102,7 +102,7 @@ export class WGSLDirectIrradianceFragDefine {
       func += "{\n";
       func += "var i:i32 = 0;\n";
       func += "loop {\n";
-      func += `if (i >= ${macros.variableMacros("SPOT_LIGHT_COUNT")}) {{ break; }}\n`;
+      func += `if (i >= ${macros.variableMacros("SPOT_LIGHT_COUNT")}) { break; }\n`;
 
       func += "addSpotDirectLightRadiance( u_spotLight[i], geometry, material, reflectedLight );\n";
 

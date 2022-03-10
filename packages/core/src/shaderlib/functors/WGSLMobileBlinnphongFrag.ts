@@ -25,7 +25,7 @@ export class WGSLMobileBlinnphongFrag {
       source += "{\n";
       source += "var i:i32 = 0;\n";
       source += "loop {\n";
-      source += `if (i >= ${macros.variableMacros("DIRECT_LIGHT_COUNT")}) {{ break; }}\n`;
+      source += `if (i >= ${macros.variableMacros("DIRECT_LIGHT_COUNT")}) { break; }\n`;
 
       source += "    var d:f32 = max(dot(N, -u_directLight[i].direction), 0.0);\n";
       source += "    lightDiffuse = lightDiffuse + u_directLight[i].color * d;\n";
@@ -43,7 +43,7 @@ export class WGSLMobileBlinnphongFrag {
       source += "{\n";
       source += "var i:i32 = 0;\n";
       source += "loop {\n";
-      source += `if (i >= ${macros.variableMacros("POINT_LIGHT_COUNT")}) {{ break; }}\n`;
+      source += `if (i >= ${macros.variableMacros("POINT_LIGHT_COUNT")}) { break; }\n`;
       source += `    var direction = ${input}.v_pos - u_pointLight[i].position;\n`;
       source += "    var dist = length( direction );\n";
       source += "    direction = direction / dist;\n";
@@ -65,7 +65,7 @@ export class WGSLMobileBlinnphongFrag {
       source += "{\n";
       source += "var i:i32 = 0;\n";
       source += "loop {\n";
-      source += `if (i >= ${macros.variableMacros("SPOT_LIGHT_COUNT")}) {{ break; }}\n`;
+      source += `if (i >= ${macros.variableMacros("SPOT_LIGHT_COUNT")}) { break; }\n`;
       source += `    var direction = u_spotLight[i].position - ${input}.v_pos;\n`;
       source += "    var lightDistance = length( direction );\n";
       source += "    direction = direction / lightDistance;\n";

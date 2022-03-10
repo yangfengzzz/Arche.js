@@ -762,8 +762,11 @@ export class ShaderData implements IRefObject, IClone {
     }
 
     let buffer = this._propertyResources[property] as Buffer;
-    if (!buffer) {
-      buffer = this._propertyFunctors[property]();
+    if (buffer === undefined || buffer === null) {
+      const functor = this._propertyFunctors[property];
+      if (functor !== undefined) {
+        buffer = functor();
+      }
     }
     return buffer;
   }

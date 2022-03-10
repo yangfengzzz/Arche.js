@@ -50,13 +50,13 @@ export class WGSLClusterStructs {
 
   execute(encoder: WGSLEncoder, macros: ShaderMacroCollection) {
     encoder.addStruct(
-      "struct ClusterBounds {{\n" +
+      "struct ClusterBounds {\n" +
         "  minAABB : vec3<f32>;\n" +
         "  maxAABB : vec3<f32>;\n" +
-        "}};\n" +
-        "struct Clusters {{\n" +
+        "};\n" +
+        "struct Clusters {\n" +
         `  bounds : array<ClusterBounds, ${this._totalTiles}>;\n` +
-        "}};\n"
+        "};\n"
     );
   }
 }
@@ -73,16 +73,16 @@ export class WGSLClusterLightsStructs {
 
   execute(encoder: WGSLEncoder, macros: ShaderMacroCollection) {
     encoder.addStruct(
-      "struct ClusterLights {{\n" +
+      "struct ClusterLights {\n" +
         "  offset : u32;\n" +
         "  point_count : u32;\n" +
         "  spot_count : u32;\n" +
-        "}};\n" +
-        "struct ClusterLightGroup {{\n" +
+        "};\n" +
+        "struct ClusterLightGroup {\n" +
         "  offset : atomic<u32>;\n" +
         `  lights : array<ClusterLights, ${this._totalTiles}>;\n` +
         `  indices : array<u32, ${this._totalTiles * this._maxLightsPerCluster}>;\n` +
-        "}};\n"
+        "};\n"
     );
     encoder.addStorageBufferBinding("u_clusterLights", "ClusterLightGroup", false);
   }
@@ -244,7 +244,7 @@ export class WGSLClusterLightsSource extends WGSL {
             "var clusterLightCount = 0u;\n";
           source += `var cluserLightIndices : array<u32, ${this._maxLightsPerCluster}>;\n`;
           if (macros.isEnable("POINT_LIGHT_COUNT")) {
-            source += `for (var i = 0u; i < ${macros.variableMacros("POINT_LIGHT_COUNT")}u; i = i + 1u) {{\n`;
+            source += `for (var i = 0u; i < ${macros.variableMacros("POINT_LIGHT_COUNT")}u; i = i + 1u) {\n`;
             source +=
               "  let range = u_pointLight[i].distance;\n" +
               "  // Lights without an explicit range affect every cluster, but this is a poor way to handle that.\n" +
@@ -262,14 +262,14 @@ export class WGSLClusterLightsSource extends WGSL {
               "    clusterLightCount = clusterLightCount + 1u;\n" +
               "  }\n" +
               "\n";
-            source += `  if (clusterLightCount == ${this._maxLightsPerCluster}u) {{\n`;
+            source += `  if (clusterLightCount == ${this._maxLightsPerCluster}u) {\n`;
             source += "    break;\n" + "  }\n" + "}\n";
           }
 
           source += "let pointLightCount = clusterLightCount;\n";
 
           if (macros.isEnable("SPOT_LIGHT_COUNT")) {
-            source += `for (var i = 0u; i < ${macros.variableMacros("SPOT_LIGHT_COUNT")}u; i = i + 1u) {{\n`;
+            source += `for (var i = 0u; i < ${macros.variableMacros("SPOT_LIGHT_COUNT")}u; i = i + 1u) {\n`;
             source +=
               "  let range = u_spotLight[i].distance;\n" +
               "  // Lights without an explicit range affect every cluster, but this is a poor way to handle that.\n" +
@@ -287,7 +287,7 @@ export class WGSLClusterLightsSource extends WGSL {
               "    clusterLightCount = clusterLightCount + 1u;\n" +
               "  }\n" +
               "\n";
-            source += `  if (clusterLightCount == ${this._maxLightsPerCluster}u) {{\n`;
+            source += `  if (clusterLightCount == ${this._maxLightsPerCluster}u) {\n`;
             source += "    break;\n" + "  }\n" + "}\n";
           }
           source +=
