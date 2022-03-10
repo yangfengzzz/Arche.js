@@ -1,10 +1,15 @@
 import { Mesh, IndexBufferBinding, Buffer } from "../graphic";
 import { VertexBufferLayout } from "../webgpu";
+import { Engine } from "../Engine";
 
 /**
  * BufferMesh.
  */
 export class BufferMesh extends Mesh {
+  constructor(engine: Engine, name?: string) {
+    super(engine, name);
+  }
+
   set instanceCount(value: number) {
     this._instanceCount = value;
   }
