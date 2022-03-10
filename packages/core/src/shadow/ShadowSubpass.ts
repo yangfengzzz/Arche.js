@@ -82,10 +82,10 @@ export class ShadowSubpass extends Subpass {
     const viewport = this._viewport;
     if (this._viewport) {
       renderPassEncoder.setViewport(
-        Math.ceil(viewport.x),
-        Math.ceil(viewport.y),
-        Math.ceil(viewport.z),
-        Math.ceil(viewport.w),
+        Math.floor(viewport.x),
+        Math.floor(viewport.y),
+        Math.floor(viewport.z),
+        Math.floor(viewport.w),
         0,
         1
       );

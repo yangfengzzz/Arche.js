@@ -1,6 +1,6 @@
 {
   "name": "@arche-engine/loader",
-  "version": "0.0.10",
+  "version": "0.0.11",
   "license": "MIT",
   "types": "types/index.d.ts",
   "scripts": {
@@ -14,8 +14,8 @@
     "types/**/*"
   ],
   "dependencies": {
-    "@arche-engine/core": "0.0.10",
-    "@arche-engine/math": "0.0.10",
+    "@arche-engine/core": "0.0.11",
+    "@arche-engine/math": "0.0.11",
     "@webgpu/types": "latest"
   }
 }
