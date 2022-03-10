@@ -85,7 +85,14 @@ export class ColorPickerSubpass extends Subpass {
     this._camera = camera;
 
     renderPassEncoder.pushDebugGroup("Draw Element");
-    renderPassEncoder.setViewport(0, 0, this._engine.canvas.width, this._engine.canvas.height, 0, 1);
+    renderPassEncoder.setViewport(
+      0,
+      0,
+      Math.ceil(this._engine.canvas.width),
+      Math.ceil(this._engine.canvas.height),
+      0,
+      1
+    );
     this._drawMeshes(renderPassEncoder);
     renderPassEncoder.popDebugGroup();
   }

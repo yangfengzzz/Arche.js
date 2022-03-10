@@ -1,6 +1,6 @@
 {
   "name": "@arche-engine/math",
-  "version": "0.0.9",
+  "version": "0.0.10",
   "license": "MIT",
   "main": "dist/main.js",
   "module": "dist/module.js",

@@ -1,6 +1,6 @@
 {
   "name": "arche-engine",
-  "version": "0.0.9",
+  "version": "0.0.10",
   "license": "MIT",
   "scripts": {
     "b:types": "tsc"
@@ -14,8 +14,8 @@
     "types/**/*"
   ],
   "dependencies": {
-    "@arche-engine/core": "0.0.9",
-    "@arche-engine/loader": "0.0.9",
-    "@arche-engine/math": "0.0.9"
+    "@arche-engine/core": "0.0.10",
+    "@arche-engine/loader": "0.0.10",
+    "@arche-engine/math": "0.0.10"
   }
 }

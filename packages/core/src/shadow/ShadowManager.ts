@@ -114,8 +114,6 @@ export class ShadowManager extends RenderPass {
     _depthStencilAttachment.depthLoadOp = "clear";
     _depthStencilAttachment.depthClearValue = 1.0;
     _depthStencilAttachment.depthStoreOp = "store";
-    _depthStencilAttachment.stencilLoadOp = "load";
-    _depthStencilAttachment.stencilStoreOp = "discard";
 
     this._shadowSubpass = new ShadowSubpass(this._engine);
     super.addSubpass(this._shadowSubpass);

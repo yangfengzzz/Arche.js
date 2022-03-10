@@ -81,7 +81,14 @@ export class ShadowSubpass extends Subpass {
     renderPassEncoder.pushDebugGroup("Draw Element");
     const viewport = this._viewport;
     if (this._viewport) {
-      renderPassEncoder.setViewport(viewport.x, viewport.y, viewport.z, viewport.w, 0, 1);
+      renderPassEncoder.setViewport(
+        Math.ceil(viewport.x),
+        Math.ceil(viewport.y),
+        Math.ceil(viewport.z),
+        Math.ceil(viewport.w),
+        0,
+        1
+      );
     }
     this._drawMeshes(renderPassEncoder);
     renderPassEncoder.popDebugGroup();
