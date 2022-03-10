@@ -300,11 +300,11 @@ export class LightManager {
 
       if (this._forwardPlusUniforms[32] != this._engine.canvas.width) {
         updateBounds = true;
-        this._forwardPlusUniforms[32] == this._engine.canvas.width;
+        this._forwardPlusUniforms[32] = this._engine.canvas.width;
       }
       if (this._forwardPlusUniforms[33] != this._engine.canvas.height) {
         updateBounds = true;
-        this._forwardPlusUniforms[33] == this._engine.canvas.height;
+        this._forwardPlusUniforms[33] = this._engine.canvas.height;
       }
       this._forwardPlusUniforms[34] = camera.nearClipPlane;
       this._forwardPlusUniforms[35] = camera.farClipPlane;
@@ -322,6 +322,8 @@ export class LightManager {
         this._clusterBoundsCompute.compute(encoder);
       }
       this._clusterLightsCompute.compute(encoder);
+    } else {
+      sceneShaderData.disableMacro("NEED_FORWARD_PLUS");
     }
   }
 }

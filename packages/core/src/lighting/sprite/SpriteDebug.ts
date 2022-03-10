@@ -56,7 +56,6 @@ export class SpriteDebug extends Script {
     const pointLightCount = lightManager.pointLights.length;
     if (pointLightCount > 0) {
       this._pointLightMesh.instanceCount = pointLightCount;
-      debugger;
       this._pointEntity.isActive = true;
     } else {
       this._pointEntity.isActive = false;
