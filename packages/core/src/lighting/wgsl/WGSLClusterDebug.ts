@@ -4,7 +4,7 @@ import { WGSLClusterLightsStructs, WGSLTileFunctions } from "./WGSLClusterComput
 import { ShaderMacroCollection } from "../../shader";
 import { ShaderStage } from "../../webgpu";
 
-class WGSLClusterDebug extends WGSL {
+export class WGSLClusterDebug extends WGSL {
   private _uvShare: WGSLUVShare;
   private _forwardPlusUniforms: WGSLForwardPlusUniforms;
   private _tileFunctions: WGSLTileFunctions;

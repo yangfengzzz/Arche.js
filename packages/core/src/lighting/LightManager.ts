@@ -3,6 +3,14 @@ import { SpotLight } from "./SpotLight";
 import { DirectLight } from "./DirectLight";
 import { Shader, ShaderData, ShaderProperty } from "../shader";
 import { DisorderedArray } from "../DisorderedArray";
+import { Buffer } from "../graphic";
+import { ComputePass } from "../rendering";
+import { Engine } from "../Engine";
+import { WGSLUnlitVertex } from "../shaderlib";
+import { WGSLClusterDebug } from "./wgsl/WGSLClusterDebug";
+import { ShaderStage } from "../webgpu";
+import { WGSLClusterBoundsSource, WGSLClusterLightsSource } from "./wgsl/WGSLClusterCompute";
+import { Camera } from "../Camera";
 
 export class LightManager {
   private static _pointLightProperty: ShaderProperty = Shader.getPropertyByName("u_pointLight");
@@ -12,6 +20,39 @@ export class LightManager {
   private static _spotLightData: Float32Array = new Float32Array(12);
   private static _directLightData: Float32Array = new Float32Array(8);
 
+  static FORWARD_PLUS_ENABLE_MIN_COUNT = 20;
+  static TILE_COUNT = [32, 18, 48];
+  static TOTAL_TILES = LightManager.TILE_COUNT[0] * LightManager.TILE_COUNT[1] * LightManager.TILE_COUNT[2];
+
+  static WORKGROUP_SIZE = [4, 2, 4];
+  static DISPATCH_SIZE = [
+    LightManager.TILE_COUNT[0] / LightManager.WORKGROUP_SIZE[0],
+    LightManager.TILE_COUNT[1] / LightManager.WORKGROUP_SIZE[1],
+    LightManager.TILE_COUNT[2] / LightManager.WORKGROUP_SIZE[2]
+  ];
+
+  // Each cluster tracks up to MAX_LIGHTS_PER_CLUSTER light indices (ints) and one light count.
+  // This limitation should be able to go away when we have atomic methods in WGSL.
+  static MAX_LIGHTS_PER_CLUSTER = 50;
+  static CLUSTER_LIGHTS_SIZE =
+    12 * LightManager.TOTAL_TILES + 4 * LightManager.MAX_LIGHTS_PER_CLUSTER * LightManager.TOTAL_TILES + 4;
+
+  // proj, inv_proj, outputSize, zNear, zFar, view
+  private _forwardPlusUniforms = new Float32Array(16 + 16 + 4 + 16);
+  private static _forwardPlusProp = Shader.getPropertyByName("u_cluster_uniform");
+
+  private _clustersBuffer: Buffer; // minAABB, pad, maxAABB, pad
+  private static _clustersProp = Shader.getPropertyByName("u_clusters");
+
+  private _clusterLightsBuffer: Buffer;
+  private static _clusterLightsProp = Shader.getPropertyByName("u_clusterLights");
+
+  private _shaderData: ShaderData;
+  private _clusterBoundsCompute: ComputePass;
+  private _clusterLightsCompute: ComputePass;
+  private _camera: Camera;
+  private _engine: Engine;
+
   private _pointLights: DisorderedArray<PointLight> = new DisorderedArray();
   private _pointLightDatas: Float32Array;
 
@@ -20,6 +61,80 @@ export class LightManager {
 
   private _directLights: DisorderedArray<DirectLight> = new DisorderedArray();
   private _directLightDatas: Float32Array;
+
+  constructor(engine: Engine) {
+    this._engine = engine;
+    Shader.create(
+      "cluster_debug",
+      new WGSLUnlitVertex(),
+      ShaderStage.VERTEX,
+      new WGSLClusterDebug(LightManager.TILE_COUNT, LightManager.MAX_LIGHTS_PER_CLUSTER)
+    );
+
+    const sceneShaderData = engine.sceneManager.activeScene.shaderData;
+    // Cluster x, y, z size * 32 bytes per cluster.
+    this._clustersBuffer = new Buffer(
+      engine,
+      LightManager.TOTAL_TILES * 32,
+      GPUBufferUsage.STORAGE | GPUBufferUsage.COPY_DST
+    );
+    this._shaderData.setBufferFunctor(LightManager._clustersProp, () => {
+      return this._clustersBuffer;
+    });
+
+    this._clusterLightsBuffer = new Buffer(
+      engine,
+      LightManager.CLUSTER_LIGHTS_SIZE,
+      GPUBufferUsage.STORAGE | GPUBufferUsage.COPY_DST
+    );
+    sceneShaderData.setBufferFunctor(LightManager._clusterLightsProp, () => {
+      return this._clusterLightsBuffer;
+    });
+
+    this._clusterBoundsCompute = new ComputePass(
+      engine,
+      Shader.create(
+        "cluster_bounds",
+        new WGSLClusterBoundsSource(
+          LightManager.TILE_COUNT,
+          LightManager.MAX_LIGHTS_PER_CLUSTER,
+          LightManager.WORKGROUP_SIZE
+        ),
+        ShaderStage.COMPUTE
+      )
+    );
+    this._clusterBoundsCompute.attachShaderData(this._shaderData);
+    this._clusterBoundsCompute.attachShaderData(sceneShaderData);
+    this._clusterBoundsCompute.setDispatchCount(
+      LightManager.DISPATCH_SIZE[0],
+      LightManager.DISPATCH_SIZE[1],
+      LightManager.DISPATCH_SIZE[2]
+    );
+
+    this._clusterLightsCompute = new ComputePass(
+      engine,
+      Shader.create(
+        "cluster_lights",
+        new WGSLClusterLightsSource(
+          LightManager.TILE_COUNT,
+          LightManager.MAX_LIGHTS_PER_CLUSTER,
+          LightManager.WORKGROUP_SIZE
+        ),
+        ShaderStage.COMPUTE
+      )
+    );
+    this._clusterLightsCompute.attachShaderData(this._shaderData);
+    this._clusterLightsCompute.attachShaderData(sceneShaderData);
+    this._clusterLightsCompute.setDispatchCount(
+      LightManager.DISPATCH_SIZE[0],
+      LightManager.DISPATCH_SIZE[1],
+      LightManager.DISPATCH_SIZE[2]
+    );
+  }
+
+  set camera(camera: Camera) {
+    this._camera = camera;
+  }
 
   /**
    * Register a light object to the current scene.
@@ -164,6 +279,48 @@ export class LightManager {
       shaderData.setFloatArray(LightManager._spotLightProperty, this._spotLightDatas);
     } else {
       shaderData.disableMacro("SPOT_LIGHT_COUNT");
+    }
+  }
+
+  draw(encoder: GPUComputePassEncoder): void {
+    const sceneShaderData = this._engine.sceneManager.activeScene.shaderData;
+    const camera = this._camera;
+
+    const pointLightCount = this._pointLights.length;
+    const spotLightCount = this._spotLights.length;
+    if (pointLightCount + spotLightCount > LightManager.FORWARD_PLUS_ENABLE_MIN_COUNT) {
+      sceneShaderData.enableMacro("NEED_FORWARD_PLUS");
+      let updateBounds = false;
+
+      const projMat = camera.projectionMatrix;
+      this._forwardPlusUniforms.set(projMat.elements, 0);
+      const invProjMat = camera._getInverseProjectionMatrix();
+      this._forwardPlusUniforms.set(invProjMat.elements, 16);
+
+      if (this._forwardPlusUniforms[32] != this._engine.canvas.width) {
+        updateBounds = true;
+        this._forwardPlusUniforms[32] == this._engine.canvas.width;
+      }
+      if (this._forwardPlusUniforms[33] != this._engine.canvas.height) {
+        updateBounds = true;
+        this._forwardPlusUniforms[33] == this._engine.canvas.height;
+      }
+      this._forwardPlusUniforms[34] = camera.nearClipPlane;
+      this._forwardPlusUniforms[35] = camera.farClipPlane;
+
+      const viewMatrix = camera.viewMatrix;
+      this._forwardPlusUniforms.set(viewMatrix.elements, 36);
+      sceneShaderData.setFloatArray(LightManager._forwardPlusProp, this._forwardPlusUniforms);
+
+      // Reset the light offset counter to 0 before populating the light clusters.
+      const empty = new Uint32Array(1);
+      empty[0] = 0;
+      this._clusterLightsBuffer.uploadData(empty, 0, 0, 1);
+
+      if (updateBounds) {
+        this._clusterBoundsCompute.compute(encoder);
+      }
+      this._clusterLightsCompute.compute(encoder);
     }
   }
 }

@@ -399,6 +399,18 @@ export class Camera extends Component {
   }
 
   /**
+   * The inverse of the projection matrix.
+   * @internal
+   */
+  _getInverseProjectionMatrix(): Readonly<Matrix> {
+    if (this._isInvProjMatDirty) {
+      this._isInvProjMatDirty = false;
+      Matrix.invert(this.projectionMatrix, this._inverseProjectionMatrix);
+    }
+    return this._inverseProjectionMatrix;
+  }
+
+  /**
    * @internal
    */
   _updateShaderData(): void {
@@ -488,16 +500,5 @@ export class Camera extends Component {
       Matrix.multiply(this._transform.worldMatrix, this._getInverseProjectionMatrix(), this._invViewProjMat);
     }
     return this._invViewProjMat;
-  }
-
-  /**
-   * The inverse of the projection matrix.
-   */
-  private _getInverseProjectionMatrix(): Readonly<Matrix> {
-    if (this._isInvProjMatDirty) {
-      this._isInvProjMatDirty = false;
-      Matrix.invert(this.projectionMatrix, this._inverseProjectionMatrix);
-    }
-    return this._inverseProjectionMatrix;
   }
 }

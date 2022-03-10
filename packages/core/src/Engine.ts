@@ -9,8 +9,7 @@ import { ResourceManager } from "./asset";
 import { SceneManager } from "./SceneManager";
 import { Scene } from "./Scene";
 import { ShaderMacro } from "./shader/ShaderMacro";
-import { Shader, ShaderPool } from "./shader";
-import { ShaderMacroCollection } from "./shader/ShaderMacroCollection";
+import { Shader, ShaderPool, ShaderMacroCollection } from "./shader";
 import { RenderElement } from "./rendering/RenderElement";
 import { ClassPool } from "./rendering/ClassPool";
 import { ShaderProgramPool } from "./shader/ShaderProgramPool";
@@ -25,7 +24,7 @@ export class Engine {
   static _gammaMacro: ShaderMacro = Shader.getMacroByName("OASIS_COLORSPACE_GAMMA");
 
   _shadowManager: ShadowManager;
-  _lightManager: LightManager = new LightManager();
+  _lightManager: LightManager;
   _componentsManager: ComponentsManager = new ComponentsManager();
   _renderElementPool: ClassPool<RenderElement> = new ClassPool(RenderElement);
 
@@ -161,6 +160,7 @@ export class Engine {
   constructor(canvas: WebCanvas, settings?: EngineSettings) {
     this._canvas = canvas;
     this._shadowManager = new ShadowManager(this);
+    this._lightManager = new LightManager(this);
 
     const colorSpace = settings?.colorSpace || ColorSpace.Linear;
     colorSpace === ColorSpace.Gamma && this._macroCollection.enable(Engine._gammaMacro);
@@ -283,6 +283,8 @@ export class Engine {
 
           const commandEncoder = this._device.createCommandEncoder();
           const computePass = commandEncoder.beginComputePass();
+          this._lightManager.camera = camera;
+          this._lightManager.draw(computePass);
           for (let j = 0, n = this._computePass.length; j < n; j++) {
             const pass = this._computePass[j];
             pass.compute(computePass);

@@ -42,5 +42,23 @@ class SpriteDebug extends Script {
     pointRenderer.mesh = this._spotLightMesh;
   }
 
-  onUpdate(deltaTime: number) {}
+  onUpdate(deltaTime: number) {
+    const lightManager = this.engine._lightManager;
+
+    const spotLightCount = lightManager.spotLights.length;
+    if (spotLightCount > 0) {
+      this._spotLightMesh.instanceCount = spotLightCount;
+      this._spotEntity.isActive = true;
+    } else {
+      this._spotEntity.isActive = false;
+    }
+
+    const pointLightCount = lightManager.pointLights.length;
+    if (pointLightCount > 0) {
+      this._pointLightMesh.instanceCount = pointLightCount;
+      this._pointEntity.isActive = true;
+    } else {
+      this._pointEntity.isActive = false;
+    }
+  }
 }
