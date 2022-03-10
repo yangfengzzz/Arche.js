@@ -150,7 +150,7 @@ export class WGSLBlinnPhongFragment extends WGSL {
     this._colorShare = new WGSLColorShare("VertexOut");
     this._normalShare = new WGSLNormalShare("VertexOut");
     this._worldPosShare = new WGSLWorldPosShare("VertexOut");
-    this._lightFragDefine = new WGSLLightFragDefine("VertexOut");
+    this._lightFragDefine = new WGSLLightFragDefine();
     this._mobileMaterialShare = new WGSLMobileMaterialShare("VertexOut");
     this._normalGet = new WGSLNormalGet("VertexOut");
 
@@ -182,7 +182,7 @@ export class WGSLBlinnPhongFragment extends WGSL {
       this._worldPosShare.execute(encoder, macros, inputStructCounter);
       this._shadowShare.execute(encoder, macros, inputStructCounter);
 
-      this._lightFragDefine.execute(encoder, macros, inputStructCounter);
+      this._lightFragDefine.execute(encoder, macros);
       this._mobileMaterialShare.execute(encoder, macros, inputStructCounter);
       this._normalGet.execute(encoder, macros, inputStructCounter);
       encoder.addInoutType("Output", 0, "finalColor", "vec4<f32>");
@@ -195,7 +195,8 @@ export class WGSLBlinnPhongFragment extends WGSL {
         source += this._shadowFrag.execute(macros);
         if (macros.isEnable("SHADOW_MAP_COUNT") || macros.isEnable("CUBE_SHADOW_MAP_COUNT")) {
           source += "diffuse = vec4<f32>(diffuse.x * shadow, diffuse.y * shadow, diffuse.z * shadow, diffuse.w);\n";
-          source += "specular = vec4<f32>(specular.x * shadow, specular.y * shadow, specular.z * shadow, specular.w);\n";
+          source +=
+            "specular = vec4<f32>(specular.x * shadow, specular.y * shadow, specular.z * shadow, specular.w);\n";
         }
 
         source += "out.finalColor = emission + ambient + diffuse + specular;\n";

@@ -122,7 +122,7 @@ export class WGSLPbrFragment extends WGSL {
     this._colorShare = new WGSLColorShare("VertexOut");
     this._normalShare = new WGSLNormalShare("VertexOut");
     this._worldPosShare = new WGSLWorldPosShare("VertexOut");
-    this._lightFragDefine = new WGSLLightFragDefine("VertexOut");
+    this._lightFragDefine = new WGSLLightFragDefine();
 
     this._pbrFragDefine = new WGSLPbrFragDefine("VertexOut", is_metallic_workflow);
     this._pbrHelper = new WGSLPbrHelper("VertexOut", is_metallic_workflow);
@@ -141,7 +141,7 @@ export class WGSLPbrFragment extends WGSL {
       this._colorShare.execute(encoder, macros, inputStructCounter);
       this._normalShare.execute(encoder, macros, inputStructCounter);
       this._worldPosShare.execute(encoder, macros, inputStructCounter);
-      this._lightFragDefine.execute(encoder, macros, inputStructCounter);
+      this._lightFragDefine.execute(encoder, macros);
       this._pbrFragDefine.execute(encoder, macros, inputStructCounter);
       this._pbrHelper.execute(encoder, macros, inputStructCounter);
       encoder.addInoutType("Output", 0, "finalColor", "vec4<f32>");
