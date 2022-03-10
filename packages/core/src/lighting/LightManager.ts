@@ -1,7 +1,7 @@
 import { PointLight } from "./PointLight";
 import { SpotLight } from "./SpotLight";
 import { DirectLight } from "./DirectLight";
-import { Shader, ShaderData, ShaderProperty } from "../shader";
+import { Shader, ShaderData, ShaderDataGroup, ShaderProperty } from "../shader";
 import { DisorderedArray } from "../DisorderedArray";
 import { Buffer } from "../graphic";
 import { ComputePass } from "../rendering";
@@ -71,6 +71,7 @@ export class LightManager {
       new WGSLClusterDebug(LightManager.TILE_COUNT, LightManager.MAX_LIGHTS_PER_CLUSTER)
     );
 
+    this._shaderData = new ShaderData(ShaderDataGroup.Compute, engine);
     const sceneShaderData = engine.sceneManager.activeScene.shaderData;
     // Cluster x, y, z size * 32 bytes per cluster.
     this._clustersBuffer = new Buffer(

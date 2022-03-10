@@ -159,8 +159,6 @@ export class Engine {
 
   constructor(canvas: WebCanvas, settings?: EngineSettings) {
     this._canvas = canvas;
-    this._shadowManager = new ShadowManager(this);
-    this._lightManager = new LightManager(this);
 
     const colorSpace = settings?.colorSpace || ColorSpace.Linear;
     colorSpace === ColorSpace.Gamma && this._macroCollection.enable(Engine._gammaMacro);
@@ -199,6 +197,9 @@ export class Engine {
             this._renderContext = this._canvas.createRenderContext(this._adapter, this._device);
             this._renderPasses.push(new ForwardRenderPass(this));
             this._sceneManager.activeScene = new Scene(this, "DefaultScene");
+
+            this._shadowManager = new ShadowManager(this);
+            this._lightManager = new LightManager(this);
             resolve();
           });
         });
