@@ -1,4 +1,4 @@
-import { ShaderMacroCollection } from "../../shader/ShaderMacroCollection";
+import { ShaderMacroCollection } from "../../shader";
 
 export class WGSLShadowVert {
   private readonly _output: string;

@@ -1,4 +1,4 @@
-import { ShaderMacroCollection } from "../../shader/ShaderMacroCollection";
+import { ShaderMacroCollection } from "../../shader";
 
 export class WGSLBlendShapeVert {
   private readonly _input: string;

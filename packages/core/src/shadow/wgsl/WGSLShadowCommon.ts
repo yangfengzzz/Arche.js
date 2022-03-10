@@ -1,5 +1,5 @@
 import { WGSLEncoder } from "../../shaderlib";
-import { ShaderMacroCollection } from "../../shader/ShaderMacroCollection";
+import { ShaderMacroCollection } from "../../shader";
 
 export class WGSLShadowCommon {
   execute(encoder: WGSLEncoder, macros: ShaderMacroCollection) {

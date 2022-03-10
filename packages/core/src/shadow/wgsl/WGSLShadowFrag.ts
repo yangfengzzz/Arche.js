@@ -1,4 +1,4 @@
-import { ShaderMacroCollection } from "../../shader/ShaderMacroCollection";
+import { ShaderMacroCollection } from "../../shader";
 
 export class WGSLShadowFrag {
   execute(macros: ShaderMacroCollection): string {

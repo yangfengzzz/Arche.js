@@ -1,4 +1,4 @@
-import { ShaderMacroCollection } from "../../shader/ShaderMacroCollection";
+import { ShaderMacroCollection } from "../../shader";
 
 export class WGSLPositionVert {
   private readonly _input: string;

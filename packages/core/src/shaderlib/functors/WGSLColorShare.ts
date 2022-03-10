@@ -1,5 +1,5 @@
 import { WGSLEncoder } from "../WGSLEncoder";
-import { ShaderMacroCollection } from "../../shader/ShaderMacroCollection";
+import { ShaderMacroCollection } from "../../shader";
 
 export class WGSLColorShare {
   private readonly _outputStructName: string;

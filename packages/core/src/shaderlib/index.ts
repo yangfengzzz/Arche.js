@@ -1,6 +1,7 @@
 export * from "./WGSLCommon";
 export * from "./WGSL";
 export * from "./WGSLEncoder";
+export * from "./functors";
 
 export * from "./WGSLUnlit";
 export * from "./WGSLBlinnPhong";

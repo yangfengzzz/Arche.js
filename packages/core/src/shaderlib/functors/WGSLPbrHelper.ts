@@ -3,7 +3,7 @@ import { WGSLNormalGet } from "./WGSLNormalGet";
 import { WGSLBRDF } from "./WGSLBRDF";
 import { WGSLDirectIrradianceFragDefine } from "./WGSLDirectIrradianceFragDefine";
 import { WGSLIBLFragDefine } from "./WGSLIBLFragDefine";
-import { ShaderMacroCollection } from "../../shader/ShaderMacroCollection";
+import { ShaderMacroCollection } from "../../shader";
 
 export class WGSLPbrHelper {
   private readonly _outputStructName: string;

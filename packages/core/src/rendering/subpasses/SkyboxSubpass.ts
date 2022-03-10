@@ -26,7 +26,7 @@ import {
 } from "../../webgpu";
 import { PrimitiveMesh } from "../../mesh";
 import { Matrix } from "@arche-engine/math";
-import { ShaderMacroCollection } from "../../shader/ShaderMacroCollection";
+import { ShaderMacroCollection } from "../../shader";
 import { ShaderProgram } from "../../shader/ShaderProgram";
 
 export class SkyboxSubpass extends Subpass {

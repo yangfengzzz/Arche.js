@@ -17,7 +17,7 @@ import {
 import { Engine } from "../../Engine";
 import { RenderElement } from "../RenderElement";
 import { Shader, ShaderDataGroup } from "../../shader";
-import { ShaderMacroCollection } from "../../shader/ShaderMacroCollection";
+import { ShaderMacroCollection } from "../../shader";
 import { UnlitMaterial } from "../../material";
 import { Renderer } from "../../Renderer";
 import { Buffer } from "../../graphic";

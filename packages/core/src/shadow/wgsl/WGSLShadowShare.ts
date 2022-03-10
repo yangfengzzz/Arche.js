@@ -1,4 +1,4 @@
-import { ShaderMacroCollection } from "../../shader/ShaderMacroCollection";
+import { ShaderMacroCollection } from "../../shader";
 import { WGSLEncoder } from "../../shaderlib";
 
 export class WGSLShadowShare {

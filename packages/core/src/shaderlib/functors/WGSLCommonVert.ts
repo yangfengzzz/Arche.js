@@ -1,6 +1,6 @@
 import { WGSLEncoder } from "../WGSLEncoder";
 import { Attributes } from "../WGSLCommon";
-import { ShaderMacroCollection } from "../../shader/ShaderMacroCollection";
+import { ShaderMacroCollection } from "../../shader";
 
 export class WGSLCommonVert {
   private _inputStructName: string;
