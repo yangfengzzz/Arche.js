@@ -102,6 +102,8 @@ export class SkyboxSubpass extends Subpass {
       const program = new ShaderProgram(
         this.engine.device,
         this._vertexSource.compile(macros)[0],
+        GPUShaderStage.VERTEX,
+        null,
         this._fragmentSource.compile(macros)[0]
       );
       this._vertex.entryPoint = "main";

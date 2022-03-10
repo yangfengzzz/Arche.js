@@ -182,8 +182,9 @@ export class Shader {
     shaderProgram = new ShaderProgram(
       engine.device,
       vertexCode[0],
-      fragmentCode ? fragmentCode[0] : null,
-      this._bindGroupLayoutDescriptorMap
+      GPUShaderStage.VERTEX,
+      this._bindGroupLayoutDescriptorMap,
+      fragmentCode ? fragmentCode[0] : null
     );
     shaderProgramPool.cache(shaderProgram);
     return shaderProgram;

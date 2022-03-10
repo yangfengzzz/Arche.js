@@ -10,12 +10,25 @@ export class ShaderProgram {
   private static _shaderModuleDescriptor: ShaderModuleDescriptor = new ShaderModuleDescriptor();
 
   private readonly _bindGroupLayoutDescriptorMap: BindGroupLayoutDescriptorMap;
-  private _vertexShader: GPUShaderModule;
+  private readonly _stage: number;
+  private _shader: GPUShaderModule;
   private _fragmentShader: GPUShaderModule;
   private _device: GPUDevice;
 
   get vertexShader(): GPUShaderModule {
-    return this._vertexShader;
+    if (this._stage === GPUShaderStage.VERTEX) {
+      return this._shader;
+    } else {
+      return null;
+    }
+  }
+
+  get computeShader(): GPUShaderModule {
+    if (this._stage === GPUShaderStage.COMPUTE) {
+      return this._shader;
+    } else {
+      return null;
+    }
   }
 
   get fragmentShader(): GPUShaderModule {
@@ -28,9 +41,10 @@ export class ShaderProgram {
 
   constructor(
     device: GPUDevice,
-    vertexSource: string,
-    fragmentSource?: string,
-    bindGroupLayoutDescriptorMap?: BindGroupLayoutDescriptorMap
+    source: string,
+    stage: number,
+    bindGroupLayoutDescriptorMap: BindGroupLayoutDescriptorMap = null,
+    fragmentSource: string = null
   ) {
     if (bindGroupLayoutDescriptorMap) {
       this._bindGroupLayoutDescriptorMap = new Map<number, BindGroupLayoutDescriptor>();
@@ -41,20 +55,21 @@ export class ShaderProgram {
       });
     }
 
-    // console.log(vertexSource);
+    // console.log(source);
     // console.log(fragmentSource);
     // debugger;
 
+    this._stage = stage;
     this._device = device;
-    this._createProgram(vertexSource, fragmentSource);
+    this._createProgram(source, fragmentSource);
   }
 
   /**
    * init and link program with shader.
    */
-  private _createProgram(vertexSource: string, fragmentSource?: string) {
-    ShaderProgram._shaderModuleDescriptor.code = vertexSource;
-    this._vertexShader = this._device.createShaderModule(ShaderProgram._shaderModuleDescriptor);
+  private _createProgram(source: string, fragmentSource: string = null) {
+    ShaderProgram._shaderModuleDescriptor.code = source;
+    this._shader = this._device.createShaderModule(ShaderProgram._shaderModuleDescriptor);
 
     if (fragmentSource) {
       ShaderProgram._shaderModuleDescriptor.code = fragmentSource;
