@@ -66,12 +66,6 @@ export class LightManager {
 
   constructor(engine: Engine) {
     this._engine = engine;
-    Shader.create(
-      "cluster_debug",
-      new WGSLUnlitVertex(),
-      ShaderStage.VERTEX,
-      new WGSLClusterDebug(LightManager.TILE_COUNT, LightManager.MAX_LIGHTS_PER_CLUSTER)
-    );
 
     this._shaderData = new ShaderData(ShaderDataGroup.Compute, engine);
     const sceneShaderData = engine.sceneManager.activeScene.shaderData;
