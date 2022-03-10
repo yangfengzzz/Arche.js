@@ -184,6 +184,8 @@ export class WGSLBlinnPhongFragment extends WGSL {
     const inputStructCounter = WGSLEncoder.startCounter(0);
     {
       const encoder = this.createSourceEncoder(GPUShaderStage.FRAGMENT);
+      encoder.addBuiltInoutType("VertexOut", "position", "position", "vec4<f32>");
+
       this._common.execute(encoder, macros);
       this._shadowCommon.execute(encoder, macros);
 

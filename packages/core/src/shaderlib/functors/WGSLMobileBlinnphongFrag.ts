@@ -54,7 +54,7 @@ export class WGSLMobileBlinnphongFrag {
         source += `let lightCount = ${macros.variableMacros("POINT_LIGHT_COUNT")}u;\n`;
       }
 
-      source += "var i:u32 = 0;\n";
+      source += "var i:u32 = 0u;\n";
       source += "loop {\n";
       source += "if (i >= lightCount) { break; }\n";
 
@@ -91,7 +91,7 @@ export class WGSLMobileBlinnphongFrag {
         source += `let spotlightCount = ${macros.variableMacros("SPOT_LIGHT_COUNT")}u;\n`;
       }
 
-      source += "var i:u32 = 0;\n";
+      source += "var i:u32 = 0u;\n";
       source += "loop {\n";
       source += "if (i >= spotlightCount) { break; }\n";
 
