@@ -11,6 +11,7 @@ import { SampledTexture } from "../texture/SampledTexture";
 import { Buffer } from "../graphic";
 import { Engine } from "../Engine";
 import { MacroName } from "./InternalMacroName";
+import { ignoreClone } from "../clone/CloneManager";
 
 export type ShaderPropertyResourceType = Buffer | SampledTexture;
 
@@ -24,6 +25,9 @@ export class ShaderData implements IRefObject, IClone {
   private static _floatArray3: Float32Array = new Float32Array(3);
   private static _floatArray4: Float32Array = new Float32Array(4);
 
+  /** @internal */
+  @ignoreClone
+  _index: number = -1;
   /** @internal */
   _group: ShaderDataGroup;
   /** @internal */

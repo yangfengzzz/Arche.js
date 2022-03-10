@@ -31,7 +31,7 @@ export class Shader {
    * @param vertexSource - Vertex source code
    * @param fragmentSource - Fragment source code
    */
-  static create(name: string, vertexSource: WGSL, fragmentSource: WGSL): Shader {
+  static create(name: string, vertexSource: WGSL, fragmentSource?: WGSL): Shader {
     const shaderMap = Shader._shaderMap;
     if (shaderMap[name]) {
       throw `Shader named "${name}" already exists.`;

@@ -16,11 +16,10 @@ import {
 } from "../../webgpu";
 import { Engine } from "../../Engine";
 import { RenderElement } from "../RenderElement";
-import { Shader } from "../../shader";
+import { Shader, ShaderDataGroup } from "../../shader";
 import { ShaderMacroCollection } from "../../shader/ShaderMacroCollection";
 import { Material } from "../../material";
 import { Renderer } from "../../Renderer";
-import { ShaderDataGroup } from "../../shader/ShaderDataGroup";
 import { ShadowManager } from "../../shadow";
 
 export class ForwardSubpass extends Subpass {
