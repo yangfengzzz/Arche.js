@@ -33,8 +33,10 @@ export class ShaderData implements IRefObject, IClone {
   /** @internal */
   _propertyResources: Record<number, ShaderPropertyResourceType> = Object.create(null);
   /** @internal */
+  _propertyFunctors: Record<number, () => Buffer> = Object.create(null);
+  /** @internal */
   _macroCollection: ShaderMacroCollection = new ShaderMacroCollection();
-  private _engine: Engine;
+  private readonly _engine: Engine;
   private _refCount: number = 0;
 
   /**
@@ -45,6 +47,41 @@ export class ShaderData implements IRefObject, IClone {
     this._group = group;
   }
 
+  /**
+   * Set float by shader property name.
+   * @remarks Corresponding float shader property type.
+   * @param propertyName - Shader property name
+   * @param value - Float
+   */
+  setBufferFunctor(propertyName: string, value: () => Buffer): void;
+
+  /**
+   * Set float by shader property.
+   * @remarks Corresponding float shader property type.
+   * @param property - Shader property
+   * @param value - Float
+   */
+  setBufferFunctor(property: ShaderProperty, value: () => Buffer): void;
+
+  setBufferFunctor(property: string | ShaderProperty, value: () => Buffer): void {
+    if (typeof property === "string") {
+      property = Shader.getPropertyByName(property);
+    }
+
+    if (property._group !== this._group) {
+      if (property._group === undefined) {
+        property._group = this._group;
+      } else {
+        throw `Shader property ${property.name} has been used as ${ShaderDataGroup[property._group]} property.`;
+      }
+    }
+
+    if (this._propertyResources[property._uniqueId] == undefined) {
+      this._propertyFunctors[property._uniqueId] = value;
+    }
+  }
+
+  //--------------------------------------------------------------------------------------------------------------------
   /**
    * Get float by shader property name.
    * @param propertyID - Shader property name
@@ -723,7 +760,12 @@ export class ShaderData implements IRefObject, IClone {
     if (typeof property !== "string" && typeof property !== "number") {
       property = property._uniqueId;
     }
-    return this._propertyResources[property] as Buffer;
+
+    let buffer = this._propertyResources[property] as Buffer;
+    if (!buffer) {
+      buffer = this._propertyFunctors[property]();
+    }
+    return buffer;
   }
 
   /**
