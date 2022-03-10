@@ -22,13 +22,6 @@ export class SampledTexture2D extends SampledTexture {
   private static _bufferDescriptor = new BufferDescriptor();
 
   /**
-   * Texture format.
-   */
-  get format(): GPUTextureFormat {
-    return this._platformTextureDesc.format;
-  }
-
-  /**
    * Create Texture2D.
    * @param engine - Define the engine to use to render this texture
    * @param width - Texture width

@@ -1,4 +1,4 @@
-import { BindGroupLayoutEntry } from "../webgpu";
+import { BindGroupLayoutEntry, ShaderStage } from "../webgpu";
 import { ShaderMacroCollection } from "../shader/ShaderMacroCollection";
 import { WGSLEncoder } from "./WGSLEncoder";
 
@@ -20,7 +20,7 @@ export class WGSL {
     return [this._source, this._bindGroupInfo];
   }
 
-  createSourceEncoder(currentStage: number): WGSLEncoder {
+  createSourceEncoder(currentStage: ShaderStage): WGSLEncoder {
     return new WGSLEncoder(this, currentStage);
   }
 

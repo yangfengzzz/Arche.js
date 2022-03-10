@@ -18,7 +18,7 @@ import { Shader } from "../shader";
 import {
   BindGroupLayoutEntry,
   BufferBindingLayout,
-  SamplerBindingLayout,
+  SamplerBindingLayout, ShaderStage,
   StorageTextureBindingLayout,
   TextureBindingLayout
 } from "../webgpu";
@@ -27,7 +27,7 @@ export class WGSLEncoder {
   private static _counters: number[] = [];
 
   private _wgsl: WGSL;
-  private _currentStage: number;
+  private _currentStage: ShaderStage;
 
   private _source: string;
   private _bindGroupInfo: BindGroupInfo = new Map<number, Set<number>>();
@@ -382,7 +382,7 @@ export class WGSLEncoder {
    * @param wgsl
    * @param currentStage
    */
-  constructor(wgsl: WGSL, currentStage: number) {
+  constructor(wgsl: WGSL, currentStage: ShaderStage) {
     this._wgsl = wgsl;
     this._currentStage = currentStage;
   }
