@@ -44,3 +44,4 @@ export * from "./Layer";
 export * from "./clone/CloneManager";
 export * from "./shadow";
 export * from "./webgpu";
+export * from "./physics/index";
