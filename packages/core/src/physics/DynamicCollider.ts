@@ -20,8 +20,7 @@ export class DynamicCollider extends Collider {
   private _sleepThreshold: number = 0;
   private _solverIterations: number = 0;
   private _isKinematic: boolean = false;
-  private _freezeRotation: boolean = false;
-  private _constraints: number = 0;
+  private _constraints: DynamicColliderConstraints = 0;
   private _collisionDetectionMode: CollisionDetectionMode = CollisionDetectionMode.Discrete;
 
   /**
@@ -31,9 +30,9 @@ export class DynamicCollider extends Collider {
     return this._linearDamping;
   }
 
-  set linearDamping(newValue: number) {
-    this._linearDamping = newValue;
-    (<IDynamicCollider>this._nativeCollider).setLinearDamping(newValue);
+  set linearDamping(value: number) {
+    this._linearDamping = value;
+    (<IDynamicCollider>this._nativeCollider).setLinearDamping(value);
   }
 
   /**
@@ -43,9 +42,9 @@ export class DynamicCollider extends Collider {
     return this._angularDamping;
   }
 
-  set angularDamping(newValue: number) {
-    this._angularDamping = newValue;
-    (<IDynamicCollider>this._nativeCollider).setAngularDamping(newValue);
+  set angularDamping(value: number) {
+    this._angularDamping = value;
+    (<IDynamicCollider>this._nativeCollider).setAngularDamping(value);
   }
 
   /**
@@ -55,9 +54,9 @@ export class DynamicCollider extends Collider {
     return this._linearVelocity;
   }
 
-  set linearVelocity(newValue: Vector3) {
-    if (this._linearVelocity !== newValue) {
-      newValue.cloneTo(this._linearVelocity);
+  set linearVelocity(value: Vector3) {
+    if (this._linearVelocity !== value) {
+      value.cloneTo(this._linearVelocity);
     }
     (<IDynamicCollider>this._nativeCollider).setLinearVelocity(this._linearVelocity);
   }
@@ -69,9 +68,9 @@ export class DynamicCollider extends Collider {
     return this._angularVelocity;
   }
 
-  set angularVelocity(newValue: Vector3) {
-    if (this._angularVelocity !== newValue) {
-      newValue.cloneTo(this._angularVelocity);
+  set angularVelocity(value: Vector3) {
+    if (this._angularVelocity !== value) {
+      value.cloneTo(this._angularVelocity);
     }
     (<IDynamicCollider>this._nativeCollider).setAngularVelocity(this._angularVelocity);
   }
@@ -83,9 +82,9 @@ export class DynamicCollider extends Collider {
     return this._mass;
   }
 
-  set mass(newValue: number) {
-    this._mass = newValue;
-    (<IDynamicCollider>this._nativeCollider).setMass(newValue);
+  set mass(value: number) {
+    this._mass = value;
+    (<IDynamicCollider>this._nativeCollider).setMass(value);
   }
 
   /**
@@ -95,9 +94,9 @@ export class DynamicCollider extends Collider {
     return this._centerOfMass;
   }
 
-  set centerOfMass(newValue: Vector3) {
-    if (this._centerOfMass !== newValue) {
-      newValue.cloneTo(this._centerOfMass);
+  set centerOfMass(value: Vector3) {
+    if (this._centerOfMass !== value) {
+      value.cloneTo(this._centerOfMass);
     }
     (<IDynamicCollider>this._nativeCollider).setCenterOfMass(this._centerOfMass);
   }
@@ -109,9 +108,9 @@ export class DynamicCollider extends Collider {
     return this._inertiaTensor;
   }
 
-  set inertiaTensor(newValue: Vector3) {
-    if (this._inertiaTensor !== newValue) {
-      newValue.cloneTo(this._inertiaTensor);
+  set inertiaTensor(value: Vector3) {
+    if (this._inertiaTensor !== value) {
+      value.cloneTo(this._inertiaTensor);
     }
     (<IDynamicCollider>this._nativeCollider).setInertiaTensor(this._inertiaTensor);
   }
@@ -123,9 +122,9 @@ export class DynamicCollider extends Collider {
     return this._maxAngularVelocity;
   }
 
-  set maxAngularVelocity(newValue: number) {
-    this._maxAngularVelocity = newValue;
-    (<IDynamicCollider>this._nativeCollider).setMaxAngularVelocity(newValue);
+  set maxAngularVelocity(value: number) {
+    this._maxAngularVelocity = value;
+    (<IDynamicCollider>this._nativeCollider).setMaxAngularVelocity(value);
   }
 
   /**
@@ -135,9 +134,9 @@ export class DynamicCollider extends Collider {
     return this._maxDepenetrationVelocity;
   }
 
-  set maxDepenetrationVelocity(newValue: number) {
-    this._maxDepenetrationVelocity = newValue;
-    (<IDynamicCollider>this._nativeCollider).setMaxDepenetrationVelocity(newValue);
+  set maxDepenetrationVelocity(value: number) {
+    this._maxDepenetrationVelocity = value;
+    (<IDynamicCollider>this._nativeCollider).setMaxDepenetrationVelocity(value);
   }
 
   /**
@@ -147,9 +146,9 @@ export class DynamicCollider extends Collider {
     return this._sleepThreshold;
   }
 
-  set sleepThreshold(newValue: number) {
-    this._sleepThreshold = newValue;
-    (<IDynamicCollider>this._nativeCollider).setSleepThreshold(newValue);
+  set sleepThreshold(value: number) {
+    this._sleepThreshold = value;
+    (<IDynamicCollider>this._nativeCollider).setSleepThreshold(value);
   }
 
   /**
@@ -159,9 +158,9 @@ export class DynamicCollider extends Collider {
     return this._solverIterations;
   }
 
-  set solverIterations(newValue: number) {
-    this._solverIterations = newValue;
-    (<IDynamicCollider>this._nativeCollider).setSolverIterations(newValue);
+  set solverIterations(value: number) {
+    this._solverIterations = value;
+    (<IDynamicCollider>this._nativeCollider).setSolverIterations(value);
   }
 
   /**
@@ -171,33 +170,21 @@ export class DynamicCollider extends Collider {
     return this._isKinematic;
   }
 
-  set isKinematic(newValue: boolean) {
-    this._isKinematic = newValue;
-    (<IDynamicCollider>this._nativeCollider).setIsKinematic(newValue);
-  }
-
-  /**
-   * Controls whether physics will change the rotation of the object.
-   */
-  get freezeRotation(): boolean {
-    return this._freezeRotation;
-  }
-
-  set freezeRotation(newValue: boolean) {
-    this._freezeRotation = newValue;
-    (<IDynamicCollider>this._nativeCollider).setFreezeRotation(newValue);
+  set isKinematic(value: boolean) {
+    this._isKinematic = value;
+    (<IDynamicCollider>this._nativeCollider).setIsKinematic(value);
   }
 
   /**
    * The particular rigid dynamic lock flag.
    */
-  get constraints(): number {
+  get constraints(): DynamicColliderConstraints {
     return this._constraints;
   }
 
-  set constraints(newValue: number) {
-    this._constraints = newValue;
-    (<IDynamicCollider>this._nativeCollider).setConstraints(newValue);
+  set constraints(value: DynamicColliderConstraints) {
+    this._constraints = value;
+    (<IDynamicCollider>this._nativeCollider).setConstraints(value);
   }
 
   /**
@@ -207,9 +194,9 @@ export class DynamicCollider extends Collider {
     return this._collisionDetectionMode;
   }
 
-  set collisionDetectionMode(newValue: CollisionDetectionMode) {
-    this._collisionDetectionMode = newValue;
-    (<IDynamicCollider>this._nativeCollider).setCollisionDetectionMode(newValue);
+  set collisionDetectionMode(value: CollisionDetectionMode) {
+    this._collisionDetectionMode = value;
+    (<IDynamicCollider>this._nativeCollider).setCollisionDetectionMode(value);
   }
 
   constructor(entity: Entity) {
@@ -240,23 +227,37 @@ export class DynamicCollider extends Collider {
   /**
    * Moves kinematically controlled dynamic actors through the game world.
    * @param position The desired position for the kinematic actor
+   */
+  move(position: Vector3): void;
+
+  /**
+   * Moves kinematically controlled dynamic actors through the game world.
    * @param rotation The desired rotation for the kinematic actor
    */
-  setKinematicTarget(position: Vector3, rotation: Quaternion) {
-    (<IDynamicCollider>this._nativeCollider).setKinematicTarget(position, rotation);
+  move(rotation: Quaternion): void;
+
+  /**
+   * Moves kinematically controlled dynamic actors through the game world.
+   * @param position The desired position for the kinematic actor
+   * @param rotation The desired rotation for the kinematic actor
+   */
+  move(position: Vector3, rotation: Quaternion): void;
+
+  move(positionOrRotation: Vector3 | Quaternion, rotation?: Quaternion): void {
+    (<IDynamicCollider>this._nativeCollider).move(positionOrRotation, rotation);
   }
 
   /**
    * Forces a collider to sleep at least one frame.
    */
-  putToSleep() {
-    (<IDynamicCollider>this._nativeCollider).putToSleep();
+  sleep(): void {
+    (<IDynamicCollider>this._nativeCollider).sleep();
   }
 
   /**
    * Forces a collider to wake up.
    */
-  wakeUp() {
+  wakeUp(): void {
     (<IDynamicCollider>this._nativeCollider).wakeUp();
   }
 
@@ -264,7 +265,7 @@ export class DynamicCollider extends Collider {
    * @override
    * @internal
    */
-  _onLateUpdate() {
+  _onLateUpdate(): void {
     const { transform } = this.entity;
     const { worldPosition, worldRotationQuaternion } = transform;
     this._nativeCollider.getWorldTransform(worldPosition, worldRotationQuaternion);
@@ -278,13 +279,13 @@ export class DynamicCollider extends Collider {
  * The collision detection mode constants.
  */
 export enum CollisionDetectionMode {
-  /// Continuous collision detection is off for this dynamic collider.
+  /** Continuous collision detection is off for this dynamic collider. */
   Discrete,
-  /// Continuous collision detection is on for colliding with static mesh geometry.
+  /** Continuous collision detection is on for colliding with static mesh geometry. */
   Continuous,
-  /// Continuous collision detection is on for colliding with static and dynamic geometry.
+  /** Continuous collision detection is on for colliding with static and dynamic geometry. */
   ContinuousDynamic,
-  /// Speculative continuous collision detection is on for static and dynamic geometries
+  /** Speculative continuous collision detection is on for static and dynamic geometries */
   ContinuousSpeculative
 }
 
@@ -292,6 +293,8 @@ export enum CollisionDetectionMode {
  * Use these flags to constrain motion of dynamic collider.
  */
 export enum DynamicColliderConstraints {
+  /** Not Freeze. */
+  None = 0,
   /** Freeze motion along the X-axis. */
   FreezePositionX = 1,
   /** Freeze motion along the Y-axis. */

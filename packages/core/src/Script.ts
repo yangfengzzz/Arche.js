@@ -87,6 +87,25 @@ export class Script extends Component {
   onTriggerStay(other: TriggerObject): void {}
 
   /**
+   * Called when the collision enter.
+   * @param other ColliderShape
+   */
+  onCollisionEnter(other: TriggerObject): void {}
+
+  /**
+   * Called when the collision stay.
+   * @remarks onTriggerStay is called every frame while the collision stay.
+   * @param other ColliderShape
+   */
+  onCollisionExit(other: TriggerObject): void {}
+
+  /**
+   * Called when the collision exit.
+   * @param other ColliderShape
+   */
+  onCollisionStay(other: TriggerObject): void {}
+
+  /**
    * Called when the pointer is down while over the ColliderShape.
    */
   onPointerDown(): void {}
