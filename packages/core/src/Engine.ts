@@ -16,6 +16,8 @@ import { ShaderProgramPool } from "./shader/ShaderProgramPool";
 import { LightManager } from "./lighting";
 import { ForwardRenderPass } from "./rendering";
 import { ShadowManager } from "./shadow";
+import { PhysicsManager } from "./physics";
+import { IPhysics } from "@arche-engine/design";
 
 ShaderPool.init();
 
@@ -23,6 +25,8 @@ export class Engine {
   /** @internal */
   static _gammaMacro: ShaderMacro = Shader.getMacroByName("OASIS_COLORSPACE_GAMMA");
 
+  /** Physics manager of Engine. */
+  physicsManager: PhysicsManager;
   _shadowManager: ShadowManager;
   _lightManager: LightManager;
   _componentsManager: ComponentsManager = new ComponentsManager();
@@ -183,7 +187,7 @@ export class Engine {
     clearTimeout(this._timeoutId);
   }
 
-  init(): Promise<void> {
+  init(physics?: IPhysics): Promise<void> {
     return new Promise<void>((resolve) => {
       navigator.gpu
         .requestAdapter({
@@ -200,6 +204,10 @@ export class Engine {
 
             this._shadowManager = new ShadowManager(this);
             this._lightManager = new LightManager(this);
+            if (physics) {
+              PhysicsManager._nativePhysics = physics;
+              this.physicsManager = new PhysicsManager();
+            }
             resolve();
           });
         });
@@ -255,6 +263,12 @@ export class Engine {
       scene._activeCameras.sort((camera1, camera2) => camera1.priority - camera2.priority);
 
       componentsManager.callScriptOnStart();
+      if (this.physicsManager) {
+        componentsManager.callColliderOnUpdate();
+        this.physicsManager._update(deltaTime / 1000.0);
+        componentsManager.callCharacterControllerOnLateUpdate();
+        componentsManager.callColliderOnLateUpdate();
+      }
       componentsManager.callScriptOnUpdate(deltaTime);
       componentsManager.callAnimationUpdate(deltaTime);
       componentsManager.callScriptOnLateUpdate(deltaTime);

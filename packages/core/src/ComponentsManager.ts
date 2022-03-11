@@ -6,6 +6,7 @@ import { Script } from "./Script";
 import { ShaderMacroCollection } from "./shader";
 import { BoundingFrustum, Vector3 } from "@arche-engine/math";
 import { RenderElement } from "./rendering/RenderElement";
+import { Collider, CharacterController } from "./physics";
 
 /**
  * The manager of the components.
@@ -30,6 +31,10 @@ export class ComponentsManager {
   // Delay dispose active/inActive Pool
   private _componentsContainerPool: Component[][] = [];
 
+  // Physics
+  private _colliders: DisorderedArray<Collider> = new DisorderedArray();
+  private _characterControllers: DisorderedArray<CharacterController> = new DisorderedArray();
+
   addRenderer(renderer: Renderer) {
     renderer._rendererIndex = this._renderers.length;
     this._renderers.add(renderer);
@@ -39,6 +44,28 @@ export class ComponentsManager {
     const replaced = this._renderers.deleteByIndex(renderer._rendererIndex);
     replaced && (replaced._rendererIndex = renderer._rendererIndex);
     renderer._rendererIndex = -1;
+  }
+
+  addCollider(collider: Collider) {
+    collider._index = this._colliders.length;
+    this._colliders.add(collider);
+  }
+
+  removeCollider(collider: Collider): void {
+    const replaced = this._colliders.deleteByIndex(collider._index);
+    replaced && (replaced._index = collider._index);
+    collider._index = -1;
+  }
+
+  addCharacterController(controller: CharacterController) {
+    controller._index = this._characterControllers.length;
+    this._characterControllers.add(controller);
+  }
+
+  removeCharacterController(controller: CharacterController) {
+    let replaced = this._characterControllers.deleteByIndex(controller._index);
+    replaced && (replaced!._index = controller._index);
+    controller._index = -1;
   }
 
   addOnStartScript(script: Script) {
@@ -241,6 +268,27 @@ export class ComponentsManager {
     for (let i = camComps.length - 1; i >= 0; --i) {
       const camComp = camComps[i];
       (camComp as any).onEndRender && (camComp as any).onEndRender(camera);
+    }
+  }
+
+  callColliderOnUpdate() {
+    const elements = this._colliders._elements;
+    for (let i = this._colliders.length - 1; i >= 0; --i) {
+      elements[i]._onUpdate();
+    }
+  }
+
+  callColliderOnLateUpdate() {
+    const elements = this._colliders._elements;
+    for (let i = this._colliders.length - 1; i >= 0; --i) {
+      elements[i]._onLateUpdate();
+    }
+  }
+
+  callCharacterControllerOnLateUpdate() {
+    let elements = this._characterControllers._elements;
+    for (let i = this._characterControllers.length - 1; i >= 0; --i) {
+      elements[i]!._onLateUpdate();
     }
   }
 
