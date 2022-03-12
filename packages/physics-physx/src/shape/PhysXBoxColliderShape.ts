@@ -42,6 +42,10 @@ export class PhysXBoxColliderShape extends PhysXColliderShape implements IBoxCol
     this._pxShape.setGeometry(this._pxGeometry);
   }
 
+  getSize(value: Vector3) {
+    Vector3.multiply(this._halfSize, this._scale, value);
+  }
+
   /**
    * {@inheritDoc IColliderShape.setWorldScale }
    */

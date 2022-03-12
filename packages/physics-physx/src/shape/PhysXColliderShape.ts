@@ -101,6 +101,11 @@ export abstract class PhysXColliderShape implements IColliderShape {
     this._pxShape.setLocalPose(PhysXColliderShape.transform);
   }
 
+  protected _getLocalTranslation(translation: Vector3) {
+    const trans = this._pxShape.getLocalPose();
+    translation.setValue(trans.translation.x, trans.translation.y, trans.translation.z);
+  }
+
   protected _allocShape(material: PhysXPhysicsMaterial): void {
     this._pxShape = PhysXPhysics._pxPhysics.createShape(
       this._pxGeometry,
