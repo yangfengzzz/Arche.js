@@ -18,9 +18,7 @@ import {
 } from "@arche-engine/design";
 import { PhysXPhysicsMaterial } from "./PhysXPhysicsMaterial";
 import { PhysXPhysicsManager } from "./PhysXPhysicsManager";
-import { PhysXBoxColliderShape } from "./shape/PhysXBoxColliderShape";
-import { PhysXSphereColliderShape } from "./shape/PhysXSphereColliderShape";
-import { PhysXCapsuleColliderShape } from "./shape/PhysXCapsuleColliderShape";
+import { PhysXBoxColliderShape, PhysXSphereColliderShape, PhysXCapsuleColliderShape } from "./shape";
 import { PhysXDynamicCollider } from "./PhysXDynamicCollider";
 import { PhysXStaticCollider } from "./PhysXStaticCollider";
 import { StaticInterfaceImplement } from "./StaticInterfaceImplement";
@@ -37,6 +35,16 @@ import { PhysXConfigurableJoint } from "./joint/PhysXConfigurableJoint";
 import { PhysXCapsuleCharacterControllerDesc } from "./characterkinematic/PhysXCapsuleCharacterControllerDesc";
 
 /**
+ * PhysX wasm compiler target
+ */
+enum PhysXTarget {
+  release,
+  profile,
+  checked,
+  debug
+}
+
+/**
  * PhysX object creation.
  */
 @StaticInterfaceImplement<IPhysics>()
@@ -45,6 +53,11 @@ export class PhysXPhysics {
   static _physX: any;
   /** @internal Physx physics object */
   static _pxPhysics: any;
+  /** Physx Visual Debugger */
+  static pvdTransport: any;
+  static socket: WebSocket;
+  static queue = [];
+  static physxTarget: PhysXTarget = PhysXTarget.release;
 
   /**
    * Initialize PhysXPhysics.
@@ -77,11 +90,9 @@ export class PhysXPhysics {
       }
 
       if (runtimeMode == PhysXRuntimeMode.JavaScript) {
-        script.src =
-          "https://gw.alipayobjects.com/os/lib/arche-engine/physics-physx/0.0.11/dist/physx.release.js";
+        script.src = "https://gw.alipayobjects.com/os/lib/arche-engine/physics-physx/0.0.11/dist/physx.release.js";
       } else if (runtimeMode == PhysXRuntimeMode.WebAssembly) {
-        script.src =
-          "https://gw.alipayobjects.com/os/lib/arche-engine/physics-physx/0.0.11/dist/physx.release.js";
+        script.src = "https://gw.alipayobjects.com/os/lib/arche-engine/physics-physx/0.0.11/dist/physx.release.js";
       }
     });
 
@@ -95,6 +106,72 @@ export class PhysXPhysics {
         });
       });
     });
+  }
+
+  private static _setupPVD() {
+    this.pvdTransport = PhysXPhysics._physX.PxPvdTransport.implement({
+      connect: function () {
+        PhysXPhysics.socket = new WebSocket("ws://127.0.0.1:8090", ["binary"]);
+        PhysXPhysics.socket.onopen = () => {
+          console.log("Connected to PhysX Debugger");
+          PhysXPhysics.queue.forEach((data) => PhysXPhysics.socket.send(data));
+          PhysXPhysics.queue = [];
+        };
+        PhysXPhysics.socket.onclose = () => {};
+        return true;
+      },
+      disconnect: function () {
+        console.log("Socket disconnect");
+      },
+      isConnected: function () {},
+      write: function (inBytes, inLength) {
+        const data = PhysXPhysics._physX.HEAPU8.slice(inBytes, inBytes + inLength);
+        if (PhysXPhysics.socket.readyState === WebSocket.OPEN) {
+          if (PhysXPhysics.queue.length) {
+            PhysXPhysics.queue.forEach((data) => PhysXPhysics.socket.send(data));
+            PhysXPhysics.queue.length = 0;
+          }
+          PhysXPhysics.socket.send(data);
+        } else {
+          PhysXPhysics.queue.push(data);
+        }
+        return true;
+      }
+    });
+  }
+
+  private static _setup() {
+    const version = PhysXPhysics._physX.PX_PHYSICS_VERSION;
+    const defaultErrorCallback = new PhysXPhysics._physX.PxDefaultErrorCallback();
+    const allocator = new PhysXPhysics._physX.PxDefaultAllocator();
+    const foundation = PhysXPhysics._physX.PxCreateFoundation(version, allocator, defaultErrorCallback);
+
+    if (PhysXPhysics.physxTarget != PhysXTarget.release) {
+      this._setupPVD();
+      const gPvd = PhysXPhysics._physX.PxCreatePvd(foundation);
+      gPvd.connect(
+        PhysXPhysics.pvdTransport,
+        new PhysXPhysics._physX.PxPvdInstrumentationFlags(PhysXPhysics._physX.PxPvdInstrumentationFlag.eALL.value)
+      );
+
+      PhysXPhysics._pxPhysics = PhysXPhysics._physX.PxCreatePhysics(
+        version,
+        foundation,
+        new PhysXPhysics._physX.PxTolerancesScale(),
+        true,
+        gPvd
+      );
+    } else {
+      PhysXPhysics._pxPhysics = PhysXPhysics._physX.PxCreatePhysics(
+        version,
+        foundation,
+        new PhysXPhysics._physX.PxTolerancesScale(),
+        false,
+        null
+      );
+    }
+
+    PhysXPhysics._physX.PxInitExtensions(PhysXPhysics._pxPhysics, null);
   }
 
   /**
