@@ -3,18 +3,17 @@ import {
   ICapsuleColliderShape,
   IDynamicCollider,
   IPhysics,
-  IPhysicsManager,
-  IPhysicsMaterial,
-  IPlaneColliderShape,
   ISphereColliderShape,
   IStaticCollider
 } from "@arche-engine/design";
 import { StaticInterfaceImplement } from "./StaticInterfaceImplement";
 import { Entity, Quaternion, Vector3, WebGPUEngine } from "arche-engine";
-import { PhysXPhysics, PhysXPlaneColliderShape, PhysXPhysicsMaterial } from "@arche-engine/physics-physx";
+import { PhysXPhysics, PhysXPhysicsMaterial } from "@arche-engine/physics-physx";
 import { PhysXDebugBoxColliderShape } from "./shape/PhysXDebugBoxColliderShape";
 import { PhysXDebugSphereColliderShape } from "./shape/PhysXDebugSphereColliderShape";
 import { PhysXDebugCapsuleColliderShape } from "./shape/PhysXDebugCapsuleColliderShape";
+import { PhysXDebugStaticCollider } from "./PhysXDebugStaticCollider";
+import { PhysXDebugDynamicCollider } from "./PhysXDebugDynamicCollider";
 
 /**
  * PhysX object creation.
@@ -28,6 +27,20 @@ export class PhysXDebugPhysics extends PhysXPhysics {
     this._engine = engine;
     const scene = this._engine.sceneManager.activeScene;
     this._rootEntity = scene.createRootEntity();
+  }
+
+  /**
+   * {@inheritDoc IPhysics.createStaticCollider }
+   */
+  static createStaticCollider(position: Vector3, rotation: Quaternion): IStaticCollider {
+    return new PhysXDebugStaticCollider(position, rotation);
+  }
+
+  /**
+   * {@inheritDoc IPhysics.createDynamicCollider }
+   */
+  static createDynamicCollider(position: Vector3, rotation: Quaternion): IDynamicCollider {
+    return new PhysXDebugDynamicCollider(position, rotation);
   }
 
   /**
@@ -46,13 +59,6 @@ export class PhysXDebugPhysics extends PhysXPhysics {
     material: PhysXPhysicsMaterial
   ): ISphereColliderShape {
     return new PhysXDebugSphereColliderShape(uniqueID, radius, material);
-  }
-
-  /**
-   * {@inheritDoc IPhysics.createPlaneColliderShape }
-   */
-  static createPlaneColliderShape(uniqueID: number, material: PhysXPhysicsMaterial): IPlaneColliderShape {
-    return new PhysXPlaneColliderShape(uniqueID, material);
   }
 
   /**
