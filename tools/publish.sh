@@ -27,6 +27,10 @@ cd physics-physx
 npm publish --access public
 cd ..
 
+cd physics-physx-debug
+npm publish --access public
+cd ..
+
 cd design
 npm publish --access public
 cd ..
