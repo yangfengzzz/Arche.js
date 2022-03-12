@@ -50,6 +50,10 @@ export class PhysXCapsuleColliderShape extends PhysXColliderShape implements ICa
     this._pxShape.setGeometry(this._pxGeometry);
   }
 
+  getRadius(): number {
+    return this._pxGeometry.radius;
+  }
+
   /**
    * {@inheritDoc ICapsuleColliderShape.setHeight }
    */
@@ -67,6 +71,10 @@ export class PhysXCapsuleColliderShape extends PhysXColliderShape implements ICa
         break;
     }
     this._pxShape.setGeometry(this._pxGeometry);
+  }
+
+  getHeight(): number {
+    return this._pxGeometry.halfHeight * 2;
   }
 
   /**

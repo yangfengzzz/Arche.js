@@ -37,6 +37,10 @@ export class PhysXSphereColliderShape extends PhysXColliderShape implements ISph
     this._pxShape.setGeometry(this._pxGeometry);
   }
 
+  getRadius(): number {
+    return this._pxGeometry.radius;
+  }
+
   /**
    * {@inheritDoc IColliderShape.setWorldScale }
    */
