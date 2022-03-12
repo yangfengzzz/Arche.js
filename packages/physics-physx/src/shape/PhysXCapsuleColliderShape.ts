@@ -96,6 +96,10 @@ export class PhysXCapsuleColliderShape extends PhysXColliderShape implements ICa
     this._setLocalPose(this._scale);
   }
 
+  getUpAxis(): ColliderShapeUpAxis {
+    return this._upAxis;
+  }
+
   /**
    * {@inheritDoc IColliderShape.setWorldScale }
    */

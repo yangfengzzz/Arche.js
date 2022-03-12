@@ -29,10 +29,10 @@ export class WGSLNormalGet {
     const paramName = this._paramName;
     if (macros.isEnable("HAS_NORMAL_TEXTURE")) {
       if (!macros.isEnable("HAS_TANGENT")) {
-        source += `var pos_dx = dfdx(${paramName}.v_pos);\n`;
-        source += `var pos_dy = dfdy(${paramName}.v_pos);\n`;
-        source += `var tex_dx = dfdx(vec3<f32>(${paramName}.v_uv, 0.0));\n`;
-        source += `var tex_dy = dfdy(vec3<f32>(${paramName}.v_uv, 0.0));\n`;
+        source += `var pos_dx = dpdx(${paramName}.v_pos);\n`;
+        source += `var pos_dy = dpdy(${paramName}.v_pos);\n`;
+        source += `var tex_dx = dpdx(vec3<f32>(${paramName}.v_uv, 0.0));\n`;
+        source += `var tex_dy = dpdy(vec3<f32>(${paramName}.v_uv, 0.0));\n`;
         source += "var t = (tex_dy.t * pos_dx - tex_dx.t * pos_dy) / (tex_dx.s * tex_dy.t - tex_dy.s * tex_dx.t);\n";
         if (macros.isEnable("HAS_NORMAL")) {
           source += "var ng = normalize(v_normal);\n";
@@ -51,8 +51,8 @@ export class WGSLNormalGet {
       if (macros.isEnable("HAS_NORMAL")) {
         source += `var n = normalize(${paramName}.v_normal);\n`;
       } else {
-        source += `var pos_dx = dfdx(${paramName}.v_pos);\n`;
-        source += `var pos_dy = dfdy(${paramName}.v_pos);\n`;
+        source += `var pos_dx = dpdx(${paramName}.v_pos);\n`;
+        source += `var pos_dy = dpdy(${paramName}.v_pos);\n`;
         source += "var n = normalize( cross(pos_dx, pos_dy) );\n";
       }
     }

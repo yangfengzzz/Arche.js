@@ -43,7 +43,7 @@ export class PhysXBoxColliderShape extends PhysXColliderShape implements IBoxCol
   }
 
   getSize(value: Vector3) {
-    Vector3.multiply(this._halfSize, this._scale, value);
+    Vector3.scale(this._pxGeometry.halfExtents, 2, value);
   }
 
   /**

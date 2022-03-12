@@ -27,6 +27,7 @@ export class PhysXDebugCapsuleColliderShape extends PhysXCapsuleColliderShape im
 
     this._renderer = this._entity.addComponent(MeshRenderer);
     this._renderer.setMaterial(new BlinnPhongMaterial(PhysXDebugPhysics._engine));
+    this._syncCapsuleAxis(this.getUpAxis());
     this._syncCapsuleGeometry();
   }
 
@@ -56,27 +57,7 @@ export class PhysXDebugCapsuleColliderShape extends PhysXCapsuleColliderShape im
    */
   setUpAxis(upAxis: ColliderShapeUpAxis): void {
     super.setUpAxis(upAxis);
-    switch (upAxis) {
-      case ColliderShapeUpAxis.X:
-        this._entity.transform.setRotationQuaternion(
-          0,
-          PhysXDebugCapsuleColliderShape.halfSqrt,
-          0,
-          PhysXDebugCapsuleColliderShape.halfSqrt
-        );
-        break;
-      case ColliderShapeUpAxis.Y:
-        this._entity.transform.setRotationQuaternion(0, 0, 0, 1);
-        break;
-      case ColliderShapeUpAxis.Z:
-        this._entity.transform.setRotationQuaternion(
-          0,
-          0,
-          PhysXDebugCapsuleColliderShape.halfSqrt,
-          PhysXDebugCapsuleColliderShape.halfSqrt
-        );
-        break;
-    }
+    this._syncCapsuleAxis(upAxis);
   }
 
   /**
@@ -92,6 +73,32 @@ export class PhysXDebugCapsuleColliderShape extends PhysXCapsuleColliderShape im
       const radius = this.getRadius();
       const height = this.getHeight();
       this._renderer.mesh = WireFramePrimitive.createCapsuleWireFrame(PhysXDebugPhysics._engine, radius, height);
+    }
+  }
+
+  private _syncCapsuleAxis(upAxis: ColliderShapeUpAxis) {
+    if (this._entity) {
+      switch (upAxis) {
+        case ColliderShapeUpAxis.X:
+          this._entity.transform.setRotationQuaternion(
+            0,
+            PhysXDebugCapsuleColliderShape.halfSqrt,
+            0,
+            PhysXDebugCapsuleColliderShape.halfSqrt
+          );
+          break;
+        case ColliderShapeUpAxis.Y:
+          this._entity.transform.setRotationQuaternion(0, 0, 0, 1);
+          break;
+        case ColliderShapeUpAxis.Z:
+          this._entity.transform.setRotationQuaternion(
+            0,
+            0,
+            PhysXDebugCapsuleColliderShape.halfSqrt,
+            PhysXDebugCapsuleColliderShape.halfSqrt
+          );
+          break;
+      }
     }
   }
 }
