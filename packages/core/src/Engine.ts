@@ -18,6 +18,7 @@ import { ForwardRenderPass } from "./rendering";
 import { ShadowManager } from "./shadow";
 import { PhysicsManager } from "./physics";
 import { IPhysics } from "@arche-engine/design";
+import { ParticleManager } from "./particle/ParticleManager";
 
 ShaderPool.init();
 
@@ -29,6 +30,7 @@ export class Engine {
   physicsManager: PhysicsManager;
   _shadowManager: ShadowManager;
   _lightManager: LightManager;
+  _particleManager: ParticleManager;
   _componentsManager: ComponentsManager = new ComponentsManager();
   _renderElementPool: ClassPool<RenderElement> = new ClassPool(RenderElement);
 
@@ -204,6 +206,7 @@ export class Engine {
 
             this._shadowManager = new ShadowManager(this);
             this._lightManager = new LightManager(this);
+            this._particleManager = new ParticleManager(this);
             if (physics) {
               PhysicsManager._nativePhysics = physics;
               this.physicsManager = new PhysicsManager();
