@@ -32,7 +32,6 @@ export { Background } from "./Background";
 export { BackgroundMode } from "./enums/BackgroundMode";
 export { CameraClearFlags } from "./enums/CameraClearFlags";
 export { ColorSpace } from "./enums/ColorSpace";
-export * from "./lighting/index";
 export * from "./material/index";
 export * from "./texture/index";
 export * from "./graphic/index";
@@ -42,6 +41,10 @@ export * from "./rendering/index";
 export * from "./shader/index";
 export * from "./Layer";
 export * from "./clone/CloneManager";
-export * from "./shadow";
+
 export * from "./webgpu";
 export * from "./physics/index";
+export * from "./shadow";
+export * from "./lighting";
+export * from "./particle";
+
