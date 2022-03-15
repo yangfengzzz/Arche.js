@@ -1,6 +1,6 @@
 {
   "name": "@arche-engine/physics-physx-debug",
-  "version": "0.0.14",
+  "version": "0.0.15",
   "license": "MIT",
   "main": "dist/main.js",
   "module": "dist/module.js",
@@ -15,9 +15,9 @@
     "types/**/*"
   ],
   "dependencies": {
-    "@arche-engine/design": "0.0.14",
-    "@arche-engine/physics-physx": "0.0.14",
-    "arche-engine": "0.0.14"
+    "@arche-engine/design": "^0.0.15",
+    "@arche-engine/physics-physx": "^0.0.15",
+    "arche-engine": "^0.0.15"
   },
   "publishConfig": {
     "access": "public"
