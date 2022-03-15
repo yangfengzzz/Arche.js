@@ -303,6 +303,7 @@ export class Engine {
           const computePass = commandEncoder.beginComputePass();
           this._lightManager.camera = camera;
           this._lightManager.draw(computePass);
+          this._particleManager.draw(computePass);
           for (let j = 0, n = this._computePass.length; j < n; j++) {
             const pass = this._computePass[j];
             pass.compute(computePass);

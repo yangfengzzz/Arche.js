@@ -11,7 +11,7 @@ import { Buffer } from "../graphic";
 import { VertexAttribute, VertexBufferLayout } from "../webgpu";
 import { ParticleManager } from "./ParticleManager";
 
-enum EmitterType {
+export enum EmitterType {
   POINT,
   DISK,
   SPHERE,
@@ -19,7 +19,7 @@ enum EmitterType {
   kNumEmitterType
 }
 
-enum SimulationVolume {
+export enum SimulationVolume {
   SPHERE,
   BOX,
   NONE,
@@ -67,11 +67,11 @@ export class ParticleRenderer extends Renderer {
 
   private _read: number = 0;
   private _write: number = 1;
-  private _atomicBuffer: [Buffer, Buffer];
+  private _atomicBuffer: [Buffer, Buffer] = [null, null];
   private static _readAtomicBufferProp = Shader.getPropertyByName("u_readAtomicBuffer");
   private static _writeAtomicBufferProp = Shader.getPropertyByName("u_writeAtomicBuffer");
 
-  private _appendConsumeBuffer: [Buffer, Buffer];
+  private _appendConsumeBuffer: [Buffer, Buffer] = [null, null];
   private static _readConsumeBufferProp = Shader.getPropertyByName("u_readConsumeBuffer");
   private static _writeConsumeBufferProp = Shader.getPropertyByName("u_writeConsumeBuffer");
 
@@ -183,6 +183,7 @@ export class ParticleRenderer extends Renderer {
   }
 
   set emitCount(count: number) {
+    this._numAliveParticles += count;
     this._emitterData[3] = count;
     this.shaderData.setFloatArray(ParticleRenderer._emitterDataProp, this._emitterData);
   }
@@ -365,5 +366,6 @@ export class ParticleRenderer extends Renderer {
     for (let i = 0; i < this._randomVec.length; ++i) {
       this._randomVec[i] = Math.random() * (this._maxValue - this._minValue) + this._minValue;
     }
+    this.shaderData.setFloatArray(ParticleRenderer._randomBufferProp, this._randomVec);
   }
 }

@@ -3,7 +3,7 @@ import { Engine } from "../Engine";
 import { Shader } from "../shader";
 import { Vector3 } from "@arche-engine/math";
 
-enum ColorMode {
+export enum ColorMode {
   DEFAULT,
   GRADIENT,
   kNumColorMode

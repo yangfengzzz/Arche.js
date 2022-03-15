@@ -3,8 +3,7 @@ import { EngineObject, Logger } from "./base";
 import { Camera } from "./Camera";
 import { Engine } from "./Engine";
 import { Entity } from "./Entity";
-import { ShaderData, ShaderDataGroup } from "./shader";
-import { ShaderMacroCollection } from "./shader/ShaderMacroCollection";
+import { ShaderData, ShaderDataGroup, ShaderMacroCollection } from "./shader";
 import { AmbientLight } from "./lighting";
 
 /**

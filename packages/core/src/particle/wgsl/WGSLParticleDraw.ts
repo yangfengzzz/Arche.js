@@ -93,6 +93,7 @@ export class WGSLParticleVertex extends WGSLParticleDraw {
 
   constructor() {
     super();
+    this._particleCommon = new WGSLParticleCommon();
     this._commonFrag = new WGSLCommonFrag("VertexIn");
   }
 
@@ -120,7 +121,7 @@ export class WGSLParticleVertex extends WGSLParticleDraw {
       encoder.addInoutType("VertexIn", 0, "position", "vec4<f32>");
       encoder.addInoutType("VertexIn", 1, "velocity", "vec4<f32>");
       encoder.addInoutType("VertexIn", 2, "simulation", "vec4<f32>");
-      encoder.addBuiltInoutType("VertexIn", "vertex_index", "vertexIndex", "f32");
+      encoder.addBuiltInoutType("VertexIn", "vertex_index", "vertexIndex", "u32");
 
       encoder.addBuiltInoutType("VertexOut", "position", "position", "vec4<f32>");
       encoder.addInoutType("VertexOut", 0, "uv", "vec2<f32>");
@@ -159,9 +160,7 @@ export class WGSLParticleVertex extends WGSLParticleDraw {
           "    // Output parameters.\n" +
           "    out.color = base_color(in.position.xyz, decay,\n" +
           "                           u_particleData.colorMode, u_particleData.birthGradient, u_particleData.deathGradient);\n" +
-          "    out.decay = decay;\n" +
-          "    \n" +
-          "    return out;\n";
+          "    out.decay = decay;\n";
         return source;
       });
       encoder.flush();
