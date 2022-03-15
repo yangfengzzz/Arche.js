@@ -40,8 +40,8 @@ export class ParticleRenderer extends Renderer {
 
   private _numAliveParticles: number = 0;
 
-  private _mesh: BufferMesh;
-  private _material: ParticleMaterial;
+  private readonly _mesh: BufferMesh;
+  private readonly _material: ParticleMaterial;
 
   private _minValue: number = 0.0;
   private _maxValue: number = 1.0;
@@ -126,6 +126,7 @@ export class ParticleRenderer extends Renderer {
   set scatteringFactor(factor: number) {
     this._simulationData[3] = factor;
     this.shaderData.setFloatArray(ParticleRenderer._simulationDataProp, this._simulationData);
+    this.shaderData.enableMacro("NEED_PARTICLE_SCATTERING");
   }
 
   get vectorFieldFactor(): number {
@@ -148,6 +149,7 @@ export class ParticleRenderer extends Renderer {
       ParticleRenderer._vectorFieldSamplerProp,
       this._vectorFieldTexture
     );
+    this.shaderData.enableMacro("NEED_PARTICLE_VECTOR_FIELD");
   }
 
   get curlNoiseFactor(): number {
@@ -157,6 +159,7 @@ export class ParticleRenderer extends Renderer {
   set curlNoiseFactor(factor: number) {
     this._simulationData[5] = factor;
     this.shaderData.setFloatArray(ParticleRenderer._simulationDataProp, this._simulationData);
+    this.shaderData.enableMacro("NEED_PARTICLE_CURL_NOISE");
   }
 
   get curlNoiseScale(): number {
@@ -166,6 +169,7 @@ export class ParticleRenderer extends Renderer {
   set curlNoiseScale(scale: number) {
     this._simulationData[6] = scale;
     this.shaderData.setFloatArray(ParticleRenderer._simulationDataProp, this._simulationData);
+    this.shaderData.enableMacro("NEED_PARTICLE_CURL_NOISE");
   }
 
   get velocityFactor(): number {
@@ -175,6 +179,7 @@ export class ParticleRenderer extends Renderer {
   set velocityFactor(factor: number) {
     this._simulationData[7] = factor;
     this.shaderData.setFloatArray(ParticleRenderer._simulationDataProp, this._simulationData);
+    this.shaderData.enableMacro("NEED_PARTICLE_VELOCITY_CONTROL");
   }
 
   //----------------------------------------------------------------------------
@@ -292,7 +297,7 @@ export class ParticleRenderer extends Renderer {
   }
 
   update(deltaTime: number): void {
-    this.timeStep = deltaTime * this.engine._particleManager.timeStepFactor;
+    this.timeStep = (deltaTime / 1000) * this.engine._particleManager.timeStepFactor;
     this._write = 1 - this._write;
     this._read = 1 - this._read;
 

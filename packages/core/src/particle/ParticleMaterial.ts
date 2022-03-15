@@ -88,7 +88,7 @@ export class ParticleMaterial extends BaseMaterial {
   }
 
   set debugDraw(flag: boolean) {
-    this._particleData[10] = flag ? 0 : 1;
+    this._particleData[10] = flag ? 1 : 0;
     this.shaderData.setFloatArray(ParticleMaterial._particleDataProp, this._particleData);
   }
 
@@ -98,6 +98,8 @@ export class ParticleMaterial extends BaseMaterial {
    */
   constructor(engine: Engine) {
     super(engine, Shader.find("particle_instancing"));
+    this.colorMode = ColorMode.DEFAULT;
+
     this.isTransparent = true;
     this.blendMode = BlendMode.Additive;
   }
