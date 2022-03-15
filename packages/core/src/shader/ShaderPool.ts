@@ -12,6 +12,13 @@ import { WGSLShadowVertex } from "../shadow/WGSLShadowVertex";
 import { WGSLClusterBoundsSource, WGSLClusterLightsSource } from "../lighting/wgsl/WGSLClusterCompute";
 import { WGSLSpriteDebugFragment, WGSLSpriteDebugVertex } from "../lighting/sprite/SpriteDebugMaterial";
 import { LightManager } from "../lighting";
+import {
+  WGSLParticleEmission,
+  WGSLParticleFragment,
+  WGSLParticleSimulation,
+  WGSLParticleVertex
+} from "../particle/wgsl";
+import { ParticleManager } from "../particle/ParticleManager";
 
 /**
  * Internal shader pool.
@@ -26,6 +33,7 @@ export class ShaderPool {
 
     Shader.create("shadow", new WGSLShadowVertex(), ShaderStage.VERTEX);
 
+    //--------------------------------------------------------------------------
     Shader.create(
       "cluster_bounds",
       new WGSLClusterBoundsSource(
@@ -57,6 +65,19 @@ export class ShaderPool {
       new WGSLSpriteDebugVertex(false),
       ShaderStage.VERTEX,
       new WGSLSpriteDebugFragment()
+    );
+
+    //--------------------------------------------------------------------------
+    Shader.create("particle_instancing", new WGSLParticleVertex(), ShaderStage.VERTEX, new WGSLParticleFragment());
+    Shader.create(
+      "particle_emission",
+      new WGSLParticleEmission([ParticleManager.PARTICLES_KERNEL_GROUP_WIDTH, 1, 1]),
+      ShaderStage.COMPUTE
+    );
+    Shader.create(
+      "particle_simulation",
+      new WGSLParticleSimulation([ParticleManager.PARTICLES_KERNEL_GROUP_WIDTH, 1, 1]),
+      ShaderStage.COMPUTE
     );
   }
 }

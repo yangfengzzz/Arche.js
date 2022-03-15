@@ -3,7 +3,6 @@ import { ParticleRenderer } from "./ParticleRenderer";
 import { DisorderedArray } from "../DisorderedArray";
 import { ComputePass } from "../rendering";
 import { Shader } from "../shader";
-import { ShaderStage } from "../webgpu";
 
 export class ParticleManager {
   static PARTICLES_KERNEL_GROUP_WIDTH = 256;
@@ -35,10 +34,8 @@ export class ParticleManager {
   }
 
   constructor(engine: Engine) {
-    Shader.create("particle_instancing", null, ShaderStage.VERTEX, null);
-
-    this._emitterPass = new ComputePass(engine, null);
-    this._simulationPass = new ComputePass(engine, null);
+    this._emitterPass = new ComputePass(engine, Shader.find("particle_emission"));
+    this._simulationPass = new ComputePass(engine, Shader.find("particle_simulation"));
   }
 
   addParticle(particle: ParticleRenderer) {
