@@ -90,16 +90,16 @@ export class BoneSlots {
       // Get Slot's Bone
       b = pose.bones[slot.boneIdx];
       // Compute Offset Rotation from Bind Pose Rotation
-      //quat.mul( offsetRot, slot.invBindRot, b.world.rot );
-      // Compute Offset Rotation from Bind Pose Rotation
       Quaternion.multiply(b.world.rot, slot.invBindRot, offsetRot);
 
       // Loop all the objects in the slot
       for (si of slot.items) {
         // ROTATION
-        if (!si.offsetRot) offsetRot.cloneTo(rot);
-        else Quaternion.multiply(offsetRot, si.offsetRot, rot);
-        //else                quat.mul( rot, si.offsetRot, offsetRot );
+        if (!si.offsetRot) {
+          offsetRot.cloneTo(rot);
+        } else {
+          Quaternion.multiply(offsetRot, si.offsetRot, rot);
+        }
 
         // SCALE
         if (!si.offsetScl) b.world.scl.cloneTo(scl);
@@ -110,9 +110,6 @@ export class BoneSlots {
         else {
           Vector3.transformByQuat(si.offsetPos, offsetRot, pos);
           Vector3.add(b.world.pos, pos, pos);
-
-          //vec3.add( pos, b.world.pos, si.offsetPos );
-          //vec3.copy( pos, b.world.pos );
         }
 
         // APPLY

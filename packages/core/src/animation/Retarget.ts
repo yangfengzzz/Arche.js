@@ -84,9 +84,7 @@ export class Retarget {
   from!: Source;
   // Armature to retarget animation for
   to!: Source;
-  //#endregion
 
-  //#region SETTERS
   setClip(c: Clip): this {
     this.anim.setClip(c);
     return this;

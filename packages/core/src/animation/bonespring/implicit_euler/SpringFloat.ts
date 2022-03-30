@@ -2,12 +2,10 @@ import { SpringBase } from "./SpringBase";
 
 // implicit euler spring
 export class SpringFloat extends SpringBase {
-  // #region MAIN
   vel = 0; // Velocity
   val = 0; // Current Value
   tar = 0; // Target Value
 
-  // #region SETTERS / GETTERS
   setTarget(v: number) {
     this.tar = v;
     return this;

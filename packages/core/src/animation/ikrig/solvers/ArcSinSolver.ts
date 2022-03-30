@@ -3,7 +3,6 @@ import type { IKChain, IKLink } from "../rigs/IKChain";
 import { SwingTwistBase } from "./support/SwingTwistBase";
 import { BoneTransform, Quaternion, Vector3 } from "@arche-engine/math";
 
-// #region ARC OFFSET RATIO CURVE
 // if Scale <= 0.3 or >= 1, Offset is zero
 // 20 Samples between 0 and 1 of PI*2.
 const PI_2 = Math.PI * 2;

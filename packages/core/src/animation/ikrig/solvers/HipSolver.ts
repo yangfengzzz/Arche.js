@@ -6,7 +6,6 @@ import { SwingTwistSolver } from "./SwingTwistSolver";
 import { BoneTransform, Vector3 } from "@arche-engine/math";
 
 export class HipSolver implements ISolver {
-  //#region MAIN
   isAbs: boolean = true;
   position = new Vector3();
   bindHeight: number = 0;

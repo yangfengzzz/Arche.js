@@ -1,10 +1,9 @@
 import { Pose as GLPose, PoseJoint as GLPoseJoint } from "../gltf2";
-import { Armature } from "./Armature.js";
-import { Bone } from "./Bone.js";
+import { Armature } from "./Armature";
+import { Bone } from "./Bone";
 import { BoneTransform, Quaternion, Vector3 } from "@arche-engine/math";
 
 export class Pose {
-  //#region MAIN
   arm!: Armature;
   // Clone of Armature Bones
   bones!: Bone[];
@@ -129,7 +128,6 @@ export class Pose {
   /** Add Offset movement to local space position */
   moveLocal(bone: number | string, offset: Vector3): this {
     const bIdx = typeof bone === "string" ? this.arm.names.get(bone) : bone;
-    //if( bIdx != undefined ) this.bones[ bIdx ].local.pos.add( offset );
 
     if (bIdx != undefined) {
       const v = this.bones[bIdx].local.pos;
@@ -150,7 +148,7 @@ export class Pose {
     return this;
   }
 
-  updateWorld(useOffset = true): this {
+  updateWorld(useOffset: boolean = true): this {
     let i, b;
     for (i = 0; i < this.bones.length; i++) {
       b = this.bones[i];
@@ -206,7 +204,7 @@ export class Pose {
     return out;
   }
 
-  updateBoneLengths(defaultBoneLen = 0): this {
+  updateBoneLengths(defaultBoneLen: number = 0): this {
     const bCnt = this.bones.length;
     let b: Bone, p: Bone;
     let i: number;
@@ -219,7 +217,6 @@ export class Pose {
     // Compute Bone Length from Children to Parent Bones
     // Leaf bones don't have children, so no way to determine this length
     for (i = bCnt - 1; i >= 0; i--) {
-      //-------------------------------
       b = this.bones[i];
       // No Parent to compute its length.
       if (b.pidx == -1) continue;

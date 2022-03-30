@@ -48,7 +48,6 @@ export class NaturalCCDSolver implements ISolver {
     return this;
   }
 
-  //#region SETTING TARGET DATA
   setTargetPos(v: Vector3): this {
     this.effectorPos[0] = v[0];
     this.effectorPos[1] = v[1];

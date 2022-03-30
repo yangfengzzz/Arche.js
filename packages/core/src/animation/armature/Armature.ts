@@ -10,7 +10,7 @@ export class Armature {
   bones: Array<Bone> = [];
   // Which Skinning System to use?
   skin?: ISkin;
-  // Sometimes the Armatures have a Transform Applied to them to render correctly in webgl.a
+  // Sometimes the Armatures have a Transform Applied to them to render correctly in webgl.
   offset: BoneTransform = new BoneTransform();
 
   addBone(name: string, pidx?: number, rot?: Quaternion, pos?: Vector3, scl?: Vector3): Bone {
@@ -26,7 +26,7 @@ export class Armature {
     return bone;
   }
 
-  bind(skin?: new () => ISkin, defaultBoneLen = 1.0): this {
+  bind(skin?: new () => ISkin, defaultBoneLen: number = 1.0): this {
     // Compute WorldSpace Transform for all the bones
     this.updateWorld();
     // Compute the length of all the Bones
@@ -45,7 +45,7 @@ export class Armature {
     return arm;
   }
 
-  newPose(doWorldUpdate = false): Pose {
+  newPose(doWorldUpdate: boolean = false): Pose {
     const p = new Pose(this);
     return doWorldUpdate ? p.updateWorld() : p;
   }
@@ -81,21 +81,20 @@ export class Armature {
     return this;
   }
 
-  updateBoneLengths(defaultBoneLen = 0): this {
+  updateBoneLengths(defaultBoneLen: number = 0): this {
     const bCnt = this.bones.length;
     let b: Bone;
     let p: Bone;
 
     for (let i = bCnt - 1; i >= 0; i--) {
-      //-------------------------------
       b = this.bones[i];
       // No Parent to compute its length.
       if (b.pidx == -1) continue;
 
-      //-------------------------------
       // Parent Bone, Compute its length based on its position and the current bone.
       p = this.bones[b.pidx];
-      p.len = Vector3.distance(p.world.pos, b.world.pos); // Compromise
+      // Compromise
+      p.len = Vector3.distance(p.world.pos, b.world.pos);
     }
 
     if (defaultBoneLen != 0) {

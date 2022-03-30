@@ -15,7 +15,7 @@ export class Bone {
   // World Transform of Resting Pose
   world = new BoneTransform();
 
-  constructor(name: string, idx: number, len = 0) {
+  constructor(name: string, idx: number, len: number = 0) {
     this.name = name;
     this.idx = idx;
     this.pidx = -1;
@@ -23,9 +23,9 @@ export class Bone {
   }
 
   setLocal(rot?: Quaternion, pos?: Vector3, scl?: Vector3): this {
-    if (rot) rot.cloneTo(this.local.rot); // this.local.rot.copy( rot );
-    if (pos) pos.cloneTo(this.local.pos); // this.local.pos.copy( pos );
-    if (scl) scl.cloneTo(this.local.scl); // this.local.scl.copy( scl );
+    if (rot) rot.cloneTo(this.local.rot);
+    if (pos) pos.cloneTo(this.local.pos);
+    if (scl) scl.cloneTo(this.local.scl);
     return this;
   }
 

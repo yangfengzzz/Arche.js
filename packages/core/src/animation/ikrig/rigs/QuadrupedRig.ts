@@ -5,7 +5,6 @@ import { Vector3 } from "@arche-engine/math";
 
 // https://www.schoolofmotion.com/blog/how-to-rig-quadrupeds-animation
 class QuadrupedRig extends IKRig {
-  //#region MAIN
   hip?: IKChain = undefined;
   tail?: IKChain = undefined;
   spine?: IKChain = undefined;

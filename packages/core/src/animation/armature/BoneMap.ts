@@ -8,7 +8,7 @@ class BoneParse {
   reFind: RegExp;
   reExclude?: RegExp;
 
-  constructor(name: string, isLR: boolean, reFind: string, reExclude?: string, isChain = false) {
+  constructor(name: string, isLR: boolean, reFind: string, reExclude?: string, isChain: boolean = false) {
     this.name = name;
     this.isLR = isLR;
     this.isChain = isChain;

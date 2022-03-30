@@ -2,7 +2,6 @@ import { Armature, Pose } from "../../armature";
 import { IKChain } from "./IKChain";
 
 export class IKRig {
-  //#region MAIN
   items: Map<string, IKChain> = new Map();
 
   // Change the Bind Transform for all the chains

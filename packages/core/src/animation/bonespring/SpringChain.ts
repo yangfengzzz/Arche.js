@@ -9,7 +9,6 @@ export class SpringChain {
   static ROT = 0;
   static POS = 1;
 
-  //#region MAIN
   items: SpringItem[] = [];
   name: string;
   spring: ISpringType;

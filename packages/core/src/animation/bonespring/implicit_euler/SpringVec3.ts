@@ -13,7 +13,6 @@ export class SpringVec3 extends SpringBase {
   tar = new Vector3();
   epsilon = 0.000001;
 
-  // #region SETTERS / GETTERS
   setTarget(v: Vector3) {
     v.cloneTo(this.tar);
     return this;

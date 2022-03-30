@@ -37,7 +37,6 @@ export class SwingTwistSolver implements ISolver {
     return this;
   }
 
-  //#region SETTING TARGET DATA
   setTargetDir(e: Vector3, pole?: Vector3, effectorScale?: number): this {
     this._isTarPosition = false;
     this.effectorDir.x = e.x;
