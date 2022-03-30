@@ -1,4 +1,4 @@
-import type { FrameInfo } from "../Animator";
+import { FrameInfo } from "../Animator";
 import { Pose } from "../armature";
 
 export type Lerp = typeof ELerp[ keyof typeof ELerp ];

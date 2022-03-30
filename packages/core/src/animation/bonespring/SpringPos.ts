@@ -1,5 +1,5 @@
 import { Bone, Pose } from "../armature";
-import type { ISpringType } from "./index";
+import { ISpringType } from "./index";
 import { SpringChain } from "./SpringChain";
 import { SpringItem } from "./SpringItem";
 import { BoneTransform } from "@arche-engine/math";

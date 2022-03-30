@@ -1,4 +1,4 @@
-import type { ITrack } from "./tracks/types";
+import { ITrack } from "./tracks/types";
 import { Pose } from "./armature";
 import { Clip } from "./Clip";
 import { MathUtil } from "@arche-engine/math";

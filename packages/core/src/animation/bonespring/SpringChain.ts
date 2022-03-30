@@ -1,5 +1,5 @@
 import { Armature, Pose, Bone } from "../armature";
-import type { ISpringType } from "./index";
+import { ISpringType } from "./index";
 
 import { SpringItem } from "./SpringItem";
 import { SpringRot } from "./SpringRot";

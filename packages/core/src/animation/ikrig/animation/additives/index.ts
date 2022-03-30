@@ -1,5 +1,3 @@
-import EffectorScale from "./EffectorScale";
-import { IKPoseAdditives } from "./IKPoseAdditives";
-import PositionOffset from "./PositionOffset";
-
-export { EffectorScale, IKPoseAdditives, PositionOffset };
+export { EffectorScale } from "./EffectorScale";
+export { IKPoseAdditives } from "./IKPoseAdditives";
+export { PositionOffset } from "./PositionOffset";

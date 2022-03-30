@@ -1,7 +1,7 @@
 import { Pose } from "../../armature";
-import type { IKChain } from "../rigs/IKChain";
-import type { IKData } from "..";
-import type { ISolver } from "./support/ISolver";
+import { IKChain } from "../rigs/IKChain";
+import { IKData } from "..";
+import { ISolver } from "./support/ISolver";
 import { SwingTwistSolver } from "./SwingTwistSolver";
 import { BoneTransform, Vector3 } from "@arche-engine/math";
 

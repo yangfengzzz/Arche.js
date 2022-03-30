@@ -1,6 +1,6 @@
 import { Quaternion, Vector3 } from "@arche-engine/math";
 
-class TypePool {
+export class TypePool {
   static _vec3Pool: Vector3[] = [];
   static _quatPool: Quaternion[] = [];
 
@@ -28,5 +28,3 @@ class TypePool {
     return this;
   }
 }
-
-export default TypePool;

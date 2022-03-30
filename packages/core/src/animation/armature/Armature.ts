@@ -1,4 +1,4 @@
-import type { ISkin } from "./skins/ISkin";
+import { ISkin } from "./skins/ISkin";
 import { Bone } from "./Bone";
 import { Pose } from "./Pose";
 import { Quaternion, Vector3, BoneTransform } from "@arche-engine/math";

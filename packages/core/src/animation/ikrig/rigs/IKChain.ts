@@ -156,7 +156,7 @@ export class IKChain {
       const b = pose.bones[this.links[1].idx];
       return b.world.pos;
     }
-    console.warn("TODO: Implemenet IKChain.getMiddlePosition");
+    console.warn("TODO: Implement IKChain.getMiddlePosition");
     return new Vector3();
   }
 

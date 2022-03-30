@@ -1,4 +1,4 @@
-import type { ISkin, TTextureInfo } from "./ISkin";
+import { ISkin, TTextureInfo } from "./ISkin";
 import { Armature } from "../Armature";
 import { Pose } from "../Pose";
 import { Bone } from "../Bone";

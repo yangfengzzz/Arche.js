@@ -1,8 +1,8 @@
-import type { ITrack, fnInterp, Lerp } from "./types";
-import type { FrameInfo } from "../Animator";
+import { ITrack, fnInterp, Lerp } from "./types";
+import { FrameInfo } from "../Animator";
 import { Pose } from "../armature";
 import { ELerp } from "./types";
-import TypePool from "../TypePool";
+import { TypePool } from "../TypePool";
 import { Vector3 } from "@arche-engine/math";
 
 function vec3_step(track: ITrack, fi: FrameInfo, out: Vector3): Vector3 {
@@ -21,7 +21,7 @@ function vec3_linear(track: ITrack, fi: FrameInfo, out: Vector3): Vector3 {
   return out;
 }
 
-export default class Vec3Track implements ITrack {
+export class Vec3Track implements ITrack {
   name: string = "Vec3Track";
   values!: Float32Array;
   boneIndex = -1;

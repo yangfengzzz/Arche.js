@@ -1,5 +1,5 @@
 import { BipedIKPose } from "../BipedIKPose";
-import IIKPoseAdditive from "../support/IIKPoseAdditive";
+import { IIKPoseAdditive } from "../support/IIKPoseAdditive";
 
 class Additive {
   key: string;

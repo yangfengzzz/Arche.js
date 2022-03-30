@@ -179,8 +179,10 @@ export class FabrikSolver implements ISolver {
       // To Local
       Quaternion.pmulInvert(q, pt.rot, q);
 
-      pose.setLocalRot(lnk.idx, q); // Save
-      pt.mul(q, lnk.bind.pos, lnk.bind.scl); // Set WorldSpace Transform for next bone
+      // Save
+      pose.setLocalRot(lnk.idx, q);
+      // Set WorldSpace Transform for next bone
+      pt.mul(q, lnk.bind.pos, lnk.bind.scl);
     }
   }
 
@@ -245,15 +247,19 @@ export class FabrikSolver implements ISolver {
 
     // Move all the points back towards the root position
     for (let i = 1; i < chain.count; i++) {
-      Vector3.subtract(apos[i], prevPos, dir); // Direction from Bone pos to prev pos
-      dir.normalize(); // Normalize it
+      // Direction from Bone pos to prev pos
+      Vector3.subtract(apos[i], prevPos, dir);
+      // Normalize it
+      dir.normalize();
 
       // Scale Direction by Prev Bone's Length then Move it so its touches prev bone's
       Vector3.scale(dir, prevLen, apos[i]);
       Vector3.add(apos[i], prevPos, apos[i]);
 
-      apos[i].cloneTo(prevPos); // Save for next bone
-      prevLen = lnks[i].len; // Save Previous Bone Length to compute tail position
+      // Save for next bone
+      apos[i].cloneTo(prevPos);
+      // Save Previous Bone Length to compute tail position
+      prevLen = lnks[i].len;
     }
 
     // Figure out the tail position after iteration

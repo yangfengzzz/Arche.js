@@ -1,5 +1,5 @@
 import { Pose } from "../../armature";
-import type { IKChain, IKLink } from "../rigs/IKChain";
+import { IKChain, IKLink } from "../rigs/IKChain";
 import { SwingTwistBase } from "./support/SwingTwistBase";
 import { BoneTransform, Quaternion, Vector3 } from "@arche-engine/math";
 

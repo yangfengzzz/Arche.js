@@ -4,21 +4,25 @@ import { IKRig } from "./IKRig";
 import { Vector3 } from "@arche-engine/math";
 
 // https://www.schoolofmotion.com/blog/how-to-rig-quadrupeds-animation
-class QuadrupedRig extends IKRig {
+export class QuadrupedRig extends IKRig {
   hip?: IKChain = undefined;
   tail?: IKChain = undefined;
   spine?: IKChain = undefined;
   neck?: IKChain = undefined;
   head?: IKChain = undefined;
 
-  hindLegL?: IKChain = undefined; // Rear Leg
+  // Rear Leg
+  hindLegL?: IKChain = undefined;
   hindLegR?: IKChain = undefined;
-  foreLegL?: IKChain = undefined; // Front Leg
+  // Front Leg
+  foreLegL?: IKChain = undefined;
   foreLegR?: IKChain = undefined;
 
-  tarsalL?: IKChain = undefined; // Foot / Rear Paw
+  // Foot / Rear Paw
+  tarsalL?: IKChain = undefined;
   tarsalR?: IKChain = undefined;
-  carpalL?: IKChain = undefined; // Hand / Front Paw
+  // Hand / Front Paw
+  carpalL?: IKChain = undefined;
   carpalR?: IKChain = undefined;
 
   /** Setup Chain Data & Sets Alt Directions */
@@ -62,9 +66,7 @@ class QuadrupedRig extends IKRig {
     }
   }
 
-  //BipedIKPose
   applyBipedIKPose(p: any): void {
-    // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     // Use Biped Legs for the HindLegs, Then Flip R>L for ForeLegs
     // Animals don't really walk like that, there is more of a delay between the Hind & Fore
     // But without running the animation of the legs twice with the second on a slight delay
@@ -94,7 +96,6 @@ class QuadrupedRig extends IKRig {
     this.carpalL?.solver.setTargetDir(p.footR.effectorDir, p.footR.poleDir);
     this.carpalR?.solver.setTargetDir(p.footL.effectorDir, p.footL.poleDir);
 
-    // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     this.head?.solver.setTargetDir(p.head.effectorDir, p.head.poleDir);
 
     this.hip?.solver
@@ -106,5 +107,3 @@ class QuadrupedRig extends IKRig {
       .setEndDir(p.spine.endEffectorDir, p.spine.endPoleDir);
   }
 }
-
-export default QuadrupedRig;

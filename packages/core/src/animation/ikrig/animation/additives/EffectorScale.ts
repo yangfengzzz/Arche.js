@@ -1,7 +1,7 @@
 import { BipedIKPose } from "../BipedIKPose";
-import type IIKPoseAdditive from "../support/IIKPoseAdditive";
+import { IIKPoseAdditive } from "../support/IIKPoseAdditive";
 
-export default class EffectorScale implements IIKPoseAdditive {
+export class EffectorScale implements IIKPoseAdditive {
   scale: number = 1.0;
 
   constructor(s: number) {

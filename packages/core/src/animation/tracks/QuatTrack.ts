@@ -1,6 +1,6 @@
-import type { ITrack, fnInterp, Lerp } from "./types";
-import type { FrameInfo } from "../Animator";
-import TypePool from "../TypePool";
+import { ITrack, fnInterp, Lerp } from "./types";
+import { FrameInfo } from "../Animator";
+import { TypePool } from "../TypePool";
 import { Quaternion } from "@arche-engine/math";
 import { ELerp } from "./types";
 import { Pose } from "../armature";
@@ -21,7 +21,7 @@ function quat_linear(track: ITrack, fi: FrameInfo, out: Quaternion): Quaternion 
   return out;
 }
 
-export default class QuatTrack implements ITrack {
+export class QuatTrack implements ITrack {
   name: string = "QuatTrack";
   values!: Float32Array;
   boneIndex = -1;

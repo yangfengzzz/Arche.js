@@ -1,10 +1,10 @@
 import { Accessor } from "./gltf2";
-import type { Track } from "./gltf2";
-import type { ITrack } from "./tracks/types";
+import { Track } from "./gltf2";
+import { ITrack } from "./tracks/types";
 
 import { ELerp } from "./tracks/types";
-import Vec3Track from "./tracks/Vec3Track";
-import QuatTrack from "./tracks/QuatTrack";
+import { Vec3Track } from "./tracks/Vec3Track";
+import { QuatTrack } from "./tracks/QuatTrack";
 
 export class Clip {
   // Name of the Clip

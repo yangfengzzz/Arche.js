@@ -1,5 +1,5 @@
 import { BipedIKPose } from "../BipedIKPose";
 
-export default interface IIKPoseAdditive {
+export interface IIKPoseAdditive {
   apply(key: string, src: BipedIKPose): void;
 }

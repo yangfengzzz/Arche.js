@@ -31,7 +31,6 @@ export class BipedRig extends IKRig {
     let n: string;
     const names: string[] = [];
 
-    //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     // VERY IMPORTANT : The order of the chains should not change in this
     // structure, it will determine the order in which the solvers will be
     // called. Certain chains should be called before others, like Hip Before Legs or Arms
@@ -101,7 +100,6 @@ export class BipedRig extends IKRig {
   }
 
   /** Use Solver Configuration for Fullbody IK */
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   useSolversForFBIK(pose?: Pose): this {
     // this.hip?.setSolver( new HipSolver().initData( pose, this.hip ) );
     // this.head?.setSolver( new SwingTwistSolver().initData( pose, this.head ) );
