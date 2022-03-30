@@ -2,13 +2,13 @@ import { Armature, Pose } from "../armature";
 import { SpringItem } from "./SpringItem";
 import { SpringChain } from "./SpringChain";
 
-interface ISpringType {
+export interface ISpringType {
   setRestPose(chain: SpringChain, pose: Pose, resetSpring: boolean, debug?: any): void;
 
   updatePose(chain: SpringChain, pose: Pose, dt: number, debug?: any): void;
 }
 
-class BoneSpring {
+export class BoneSpring {
   arm: Armature;
   items: Map<string, SpringChain> = new Map();
 
@@ -54,8 +54,6 @@ class BoneSpring {
     return this;
   }
 
-  //#region SPRING SETTERS
-
   /** Set Oscillation Per Section for all Chain Items */
   setOsc(chName: string, osc: number): this {
     const ch = this.items.get(chName);
@@ -70,7 +68,7 @@ class BoneSpring {
     return this;
   }
 
-  /** Spread a Oscillation range on the chain */
+  /** Spread an Oscillation range on the chain */
   setOscRange(chName: string, a: number, b: number): this {
     const ch = this.items.get(chName);
     if (!ch) {
@@ -118,6 +116,3 @@ class BoneSpring {
     return this;
   }
 }
-
-export default BoneSpring;
-export type { ISpringType };

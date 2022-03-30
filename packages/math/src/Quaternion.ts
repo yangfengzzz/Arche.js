@@ -45,7 +45,7 @@ export class Quaternion implements IClone {
   }
 
   /** Inverts the quaternion passed in, then pre multiplies to this quaternion. */
-  static pmulInvert(out: Quaternion, q: Quaternion, qinv: Quaternion): Quaternion {
+  static pmulInvert(q: Quaternion, qinv: Quaternion, out: Quaternion): Quaternion {
     // q.invert()
     let ax = qinv.x,
       ay = qinv.y,
@@ -74,6 +74,27 @@ export class Quaternion implements IClone {
     out.z = az * bw + aw * bz + ax * by - ay * bx;
     out.w = aw * bw - ax * bx - ay * by - az * bz;
 
+    return out;
+  }
+
+  /** PreMultiple an Axis Angle to this quaternions */
+  static pmulAxisAngle(axis: Vector3, angle: number, q: Quaternion, out: Quaternion): Quaternion {
+    const half = angle * 0.5,
+      s = Math.sin(half),
+      // A Quat based on Axis Angle
+      ax = axis.x * s,
+      ay = axis.y * s,
+      az = axis.z * s,
+      aw = Math.cos(half),
+      // B of mul
+      bx = q.x,
+      by = q.y,
+      bz = q.z,
+      bw = q.w;
+    out.x = ax * bw + aw * bx + ay * bz - az * by;
+    out.y = ay * bw + aw * by + az * bx - ax * bz;
+    out.z = az * bw + aw * bz + ax * by - ay * bx;
+    out.w = aw * bw - ax * bx - ay * by - az * bz;
     return out;
   }
 
