@@ -19,8 +19,7 @@ const GLB_JSON_LEN_BIDX = 12;
 // Byte Index for the start of Chunk0
 const GLB_JSON_BIDX = 20;
 
-async function parseGLB(res: Response): Promise<[JSON, ArrayBuffer] | null> {
-  //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+export async function parseGLB(res: Response): Promise<[JSON, ArrayBuffer] | null> {
   const arybuf = await res.arrayBuffer();
   const dv = new DataView(arybuf);
 
@@ -53,7 +52,6 @@ async function parseGLB(res: Response): Promise<[JSON, ArrayBuffer] | null> {
   // Skip the 2 INT header values to get the byte index start of BIN
   const bin_idx = chk1_bidx + 8;
 
-  //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   // PARSE JSON
   // JSON is encoded with uf8
   const txt_decoder = new TextDecoder("utf8");
@@ -64,7 +62,6 @@ async function parseGLB(res: Response): Promise<[JSON, ArrayBuffer] | null> {
   // Parse Text to JSON Objects
   const json = JSON.parse(json_text);
 
-  //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   // PARSE BIN - TODO, Not efficient to slice the array buffer
   // Ideally better to save start index as a starting offset
   // & fix the parser to tack that value onto every accessor call
@@ -77,5 +74,3 @@ async function parseGLB(res: Response): Promise<[JSON, ArrayBuffer] | null> {
 
   return [json, bin];
 }
-
-export default parseGLB;

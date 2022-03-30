@@ -11,7 +11,7 @@ type TAccessor = {
   max?: Array<number>;
 };
 
-class Accessor {
+export class Accessor {
   componentLen = 0;
   elementCnt = 0;
   byteOffset = 0;
@@ -46,5 +46,3 @@ class Accessor {
     }
   }
 }
-
-export default Accessor;

@@ -1,5 +1,5 @@
-import parseGLB from "./Glb";
-import Accessor from "./Accessor";
+import { parseGLB } from "./Glb";
+import { Accessor } from "./Accessor";
 import { Mesh, Primitive } from "./Mesh";
 import { Skin, SkinJoint } from "./Skin";
 import { Animation, Track } from "./Animation";
@@ -546,5 +546,10 @@ export class Gltf2 {
   }
 }
 
-export default Gltf2;
-export { Accessor };
+export { parseGLB } from "./Glb";
+export { Accessor } from "./Accessor";
+export { Mesh, Primitive } from "./Mesh";
+export { Skin, SkinJoint } from "./Skin";
+export { Animation, Track } from "./Animation";
+export { Texture } from "./Texture";
+export { Pose, PoseJoint } from "./Pose";

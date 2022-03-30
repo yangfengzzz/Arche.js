@@ -1,4 +1,4 @@
-import type Accessor from "./Accessor";
+import { Accessor } from "./Accessor";
 
 type Transform = typeof ETransform[keyof typeof ETransform];
 export const ETransform = {
