@@ -21,7 +21,7 @@ export class SkinDQ implements ISkin {
     const bind: DualQuaternion[] = new Array(bCnt);
 
     // For THREEJS support, Split DQ into Two Vec4 since it doesn't support mat2x4 properly
-    this.offsetQBuffer = new Float32Array(4 * bCnt); // Create Flat Buffer Space
+    this.offsetQBuffer = new Float32Array(4 * bCnt);
     this.offsetPBuffer = new Float32Array(4 * bCnt);
 
     // Fill Arrays
@@ -39,14 +39,16 @@ export class SkinDQ implements ISkin {
       l = b.local;
       q = world[i];
 
-      DualQuaternion.fromRotationTranslation(l.rot, l.pos, q); // Local Space
-
-      if (b.pidx != -1) DualQuaternion.multiply(world[b.pidx], q, q); // Add Parent if Available
-
-      DualQuaternion.invert(bind[i], q); // Invert for Bind Pose
-
-      new Vector4(0, 0, 0, 1).toArray(this.offsetQBuffer, i * 4); // Init Offsets : Quat Identity
-      new Vector4(0, 0, 0, 0).toArray(this.offsetPBuffer, i * 4); // ...No Translation
+      // Local Space
+      DualQuaternion.fromRotationTranslation(l.rot, l.pos, q);
+      // Add Parent if Available
+      if (b.pidx != -1) DualQuaternion.multiply(world[b.pidx], q, q);
+      // Invert for Bind Pose
+      DualQuaternion.invert(bind[i], q);
+      // Init Offsets : Quat Identity
+      new Vector4(0, 0, 0, 1).toArray(this.offsetQBuffer, i * 4);
+      // ...No Translation
+      new Vector4(0, 0, 0, 0).toArray(this.offsetPBuffer, i * 4);
     }
 
     // Save Reference to Vars
@@ -72,25 +74,31 @@ export class SkinDQ implements ISkin {
       // Compute world space Dual Quaternion for Each Bone
       // Make sure scale is applied in no way to prevent artifacts.
       q = this.world[i];
-      DualQuaternion.fromRotationTranslation(b.local.rot, b.local.pos, q); // Local Space Matrix
-      if (b.pidx != -1) DualQuaternion.multiply(this.world[b.pidx], q, q);
+      // Local Space Matrix
+      DualQuaternion.fromRotationTranslation(b.local.rot, b.local.pos, q);
       // Add Parent if Available (PMUL)
-      else DualQuaternion.multiply(offset, q, q); // Or use Offset on all root bones (PMUL)
+      // Or use Offset on all root bones (PMUL)
+      if (b.pidx != -1) {
+        DualQuaternion.multiply(this.world[b.pidx], q, q);
+      } else {
+        DualQuaternion.multiply(offset, q, q);
+      }
 
       // Compute Offset Matrix that will be used for skin a mesh
       // OffsetMatrix = Bone.WorldMatrix * Bone.BindMatrix
       DualQuaternion.multiply(q, this.bind[i], bOffset);
 
       ii = i * 4;
-      this.offsetQBuffer[ii] = bOffset[0]; // Quaternion Half
-      this.offsetQBuffer[ii + 1] = bOffset[1];
-      this.offsetQBuffer[ii + 2] = bOffset[2];
-      this.offsetQBuffer[ii + 3] = bOffset[3];
-
-      this.offsetPBuffer[ii] = bOffset[4]; // Translation Half
-      this.offsetPBuffer[ii + 1] = bOffset[5];
-      this.offsetPBuffer[ii + 2] = bOffset[6];
-      this.offsetPBuffer[ii + 3] = bOffset[7];
+      // Quaternion Half
+      this.offsetQBuffer[ii] = bOffset.elements[0];
+      this.offsetQBuffer[ii + 1] = bOffset.elements[1];
+      this.offsetQBuffer[ii + 2] = bOffset.elements[2];
+      this.offsetQBuffer[ii + 3] = bOffset.elements[3];
+      // Translation Half
+      this.offsetPBuffer[ii] = bOffset.elements[4];
+      this.offsetPBuffer[ii + 1] = bOffset.elements[5];
+      this.offsetPBuffer[ii + 2] = bOffset.elements[6];
+      this.offsetPBuffer[ii + 3] = bOffset.elements[7];
     }
 
     return this;
@@ -101,15 +109,24 @@ export class SkinDQ implements ISkin {
   }
 
   getTextureInfo(frameCount: number): TTextureInfo {
-    const boneCount = this.bind.length; // One Bind Per Bone
-    const strideByteLength = BYTE_LEN; // n Floats, 4 Bytes Each
-    const strideFloatLength = COMP_LEN; // How many floats makes up one bone offset
-    const pixelsPerStride = COMP_LEN / 4; // n Floats, 4 Floats Per Pixel ( RGBA )
-    const floatRowSize = COMP_LEN * frameCount; // How many Floats needed to hold all the frame data for 1 bone
-    const bufferFloatSize = floatRowSize * boneCount; // Size of the Buffer to store all the data.
-    const bufferByteSize = bufferFloatSize * 4; // Size of buffer in Bytes.
-    const pixelWidth = pixelsPerStride * frameCount; // How Many Pixels needed to hold all the frame data for 1 bone
-    const pixelHeight = boneCount; // Repeat Data, but more user-friendly to have 2 names depending on usage.
+    // One Bind Per Bone
+    const boneCount = this.bind.length;
+    // n Floats, 4 Bytes Each
+    const strideByteLength = BYTE_LEN;
+    // How many floats makes up one bone offset
+    const strideFloatLength = COMP_LEN;
+    // n Floats, 4 Floats Per Pixel ( RGBA )
+    const pixelsPerStride = COMP_LEN / 4;
+    // How many Floats needed to hold all the frame data for 1 bone
+    const floatRowSize = COMP_LEN * frameCount;
+    // Size of the Buffer to store all the data.
+    const bufferFloatSize = floatRowSize * boneCount;
+    // Size of buffer in Bytes.
+    const bufferByteSize = bufferFloatSize * 4;
+    // How Many Pixels needed to hold all the frame data for 1 bone
+    const pixelWidth = pixelsPerStride * frameCount;
+    // Repeat Data, but more user-friendly to have 2 names depending on usage.
+    const pixelHeight = boneCount;
 
     return {
       boneCount,
