@@ -121,8 +121,7 @@ export class Pose {
       // Apply Axis Rotation
       Quaternion.multiply(rot, q, q);
       // To Local Space Conversion
-      p.cloneTo(b.local.rot);
-      b.local.rot.invert().multiply(q);
+      Quaternion.pmulInvert(q, p, b.local.rot);
     } else console.warn("Bone not found, ", bone);
     return this;
   }

@@ -8,9 +8,117 @@ import { Vector3 } from "./Vector3";
  */
 export class Quaternion implements IClone {
   /** @internal */
+  static readonly _xUnitVec3 = new Vector3(1, 0, 0);
+  /** @internal */
+  static readonly _yUnitVec3 = new Vector3(0, 1, 0);
+  /** @internal */
   static readonly _tempVector3 = new Vector3();
   /** @internal */
   static readonly _tempQuat1 = new Quaternion();
+
+  /**
+   * Determines the distance of two Quaternion.
+   * @param a - The first Quaternion
+   * @param b - The second Quaternion
+   * @returns The distance of two Quaternion
+   */
+  static distance(a: Quaternion, b: Quaternion): number {
+    const x = b.x - a.x;
+    const y = b.y - a.y;
+    const z = b.z - a.z;
+    const w = b.w - a.w;
+    return Math.sqrt(x * x + y * y + z * z + w * w);
+  }
+
+  /**
+   * Determines the squared distance of two Quaternion.
+   * @param a - The first Quaternion
+   * @param b - The second Quaternion
+   * @returns The squared distance of two Quaternion
+   */
+  static distanceSquared(a: Quaternion, b: Quaternion): number {
+    const x = b.x - a.x;
+    const y = b.y - a.y;
+    const z = b.z - a.z;
+    const w = b.w - a.w;
+    return x * x + y * y + z * z + w * w;
+  }
+
+  /** Inverts the quaternion passed in, then pre multiplies to this quaternion. */
+  static pmulInvert(out: Quaternion, q: Quaternion, qinv: Quaternion): Quaternion {
+    // q.invert()
+    let ax = qinv.x,
+      ay = qinv.y,
+      az = qinv.z,
+      aw = qinv.w;
+
+    const dot = ax * ax + ay * ay + az * az + aw * aw;
+
+    if (dot == 0) {
+      ax = ay = az = aw = 0;
+    } else {
+      const dot_inv = 1.0 / dot;
+      ax = -ax * dot_inv;
+      ay = -ay * dot_inv;
+      az = -az * dot_inv;
+      aw = aw * dot_inv;
+    }
+
+    // Quat.mul( a, b );
+    const bx = q.x,
+      by = q.y,
+      bz = q.z,
+      bw = q.w;
+    out.x = ax * bw + aw * bx + ay * bz - az * by;
+    out.y = ay * bw + aw * by + az * bx - ax * bz;
+    out.z = az * bw + aw * bz + ax * by - ay * bx;
+    out.w = aw * bw - ax * bx - ay * by - az * bz;
+
+    return out;
+  }
+
+  /** Checks if on opposite hemisphere, if so, negate change quat */
+  static dotNegate(chg: Quaternion, chk: Quaternion, out: Quaternion): Quaternion {
+    if (Quaternion.dot(chg, chk) < 0) Quaternion.scale(chg, -1, out);
+    return out;
+  }
+
+  /**
+   * Sets a quaternion to represent the shortest rotation from one
+   * vector to another.
+   *
+   * Both vectors are assumed to be unit length.
+   *
+   * @param out the receiving quaternion.
+   * @param a the initial vector
+   * @param b the destination vector
+   * @returns out
+   */
+  static rotationTo(a: Vector3, b: Vector3, out: Quaternion): Quaternion {
+    let dot = Vector3.dot(a, b);
+    if (dot < -0.999999) {
+      Vector3.cross(Quaternion._tempVector3, Quaternion._xUnitVec3, a);
+      if (Quaternion._tempVector3.length() < 0.000001) {
+        Vector3.cross(Quaternion._tempVector3, Quaternion._yUnitVec3, a);
+      }
+      Quaternion._tempVector3.normalize();
+      Quaternion.rotationAxisAngle(Quaternion._tempVector3, Math.PI, out);
+      return out;
+    } else if (dot > 0.999999) {
+      out[0] = 0;
+      out[1] = 0;
+      out[2] = 0;
+      out[3] = 1;
+      return out;
+    } else {
+      Vector3.cross(Quaternion._tempVector3, a, b);
+      out[0] = Quaternion._tempVector3[0];
+      out[1] = Quaternion._tempVector3[1];
+      out[2] = Quaternion._tempVector3[2];
+      out[3] = 1 + dot;
+      return out.normalize();
+    }
+  }
 
   /**
    * Determines the sum of two quaternions.
