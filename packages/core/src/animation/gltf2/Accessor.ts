@@ -38,7 +38,7 @@ export class Accessor {
     this.byteSize = this.elementCnt * this.componentLen * compByte;
     this.boundMin = accessor.min ? accessor.min.slice(0) : null;
     this.boundMax = accessor.max ? accessor.max.slice(0) : null;
-    this.type = typeName; //accessor.type;
+    this.type = typeName;
 
     if (bin) {
       const size = this.elementCnt * this.componentLen;

@@ -1,4 +1,5 @@
 import { Accessor } from "./Accessor";
+import { Quaternion, Vector3 } from "@arche-engine/math";
 
 export class Mesh {
   // Index in Mesh Collection
@@ -7,10 +8,12 @@ export class Mesh {
   name: string | null = null;
   // Mesh is made up of more than one Primitive
   primitives: Array<Primitive> = [];
-
-  position: number[] | null = null; // Node's Position
-  rotation: number[] | null = null; // Node's Rotation
-  scale: number[] | null = null; // Node's Scale
+  // Node's Position
+  position: Vector3 | null = null;
+  // Node's Rotation
+  rotation: Quaternion | null = null;
+  // Node's Scale
+  scale: Vector3 | null = null;
 }
 
 export class Primitive {

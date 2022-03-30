@@ -18,7 +18,7 @@ export class SpringChain {
     this.spring = type == 1 ? new SpringPos() : new SpringRot();
   }
 
-  setBones(aryName: string[], arm: Armature, osc = 5.0, damp = 0.5): void {
+  setBones(aryName: string[], arm: Armature, osc: number = 5.0, damp: number = 0.5): void {
     let bn: string;
     let b: Bone | null;
     let spr: SpringItem;
@@ -38,7 +38,7 @@ export class SpringChain {
     }
   }
 
-  setRestPose(pose: Pose, resetSpring = false, debug?: any): void {
+  setRestPose(pose: Pose, resetSpring: boolean = false, debug?: any): void {
     this.spring.setRestPose(this, pose, resetSpring, debug);
   }
 

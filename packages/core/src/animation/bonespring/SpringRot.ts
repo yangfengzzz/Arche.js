@@ -5,7 +5,7 @@ import { SpringItem } from "./SpringItem";
 import { BoneTransform, Quaternion, Vector3 } from "@arche-engine/math";
 
 export class SpringRot implements ISpringType {
-  setRestPose(chain: SpringChain, pose: Pose, resetSpring = true, debug?: any): void {
+  setRestPose(chain: SpringChain, pose: Pose, resetSpring: boolean = true, debug?: any): void {
     const tail = new Vector3();
     let si: SpringItem;
     let b: Bone;
@@ -86,7 +86,8 @@ export class SpringRot implements ISpringType {
 
       // Save Result back to pose bone
       rot.cloneTo(b.local.rot);
-      pTran.mul(rot, si.bind.pos, si.bind.scl); // Using new Rotation, Move Parent WS Transform for the next item
+      // Using new Rotation, Move Parent WS Transform for the next item
+      pTran.mul(rot, si.bind.pos, si.bind.scl);
     }
   }
 }

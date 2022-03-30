@@ -5,7 +5,7 @@ import { SpringItem } from "./SpringItem";
 import { BoneTransform } from "@arche-engine/math";
 
 export class SpringPos implements ISpringType {
-  setRestPose(chain: SpringChain, pose: Pose, resetSpring = true, debug?: any): void {
+  setRestPose(chain: SpringChain, pose: Pose, resetSpring: boolean = true, debug?: any): void {
     let si: SpringItem;
     let b: Bone;
 

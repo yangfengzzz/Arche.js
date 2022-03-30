@@ -1,3 +1,5 @@
+import { Matrix, Quaternion, Vector3 } from "@arche-engine/math";
+
 export class Skin {
   // Index in Mesh Collection
   index: number | null = null;
@@ -9,11 +11,11 @@ export class Skin {
   // Sometimes Skin Objects will have their own transform in nodes
   // Tends to come from FBX to GLTF conversion in blender.
   // Local Space Position
-  position: number[] | null = null;
+  position: Vector3 | null = null;
   // Local Space Rotation
-  rotation: number[] | null = null;
+  rotation: Quaternion | null = null;
   // Local Space Scale
-  scale: number[] | null = null;
+  scale: Vector3 | null = null;
 }
 
 export class SkinJoint {
@@ -21,15 +23,15 @@ export class SkinJoint {
   name: string | null = null;
   // Joint Index
   index: number | null = null;
-  // Parent Joint Index, Null if its a Root Joint
+  // Parent Joint Index, Null if it's a Root Joint
   parentIndex: number | null = null;
 
   // Inverted WorldSpace Transform
-  bindMatrix: number[] | null = null;
+  bindMatrix: Matrix | null = null;
   // Local Space Position
-  position: number[] | null = null;
+  position: Vector3 | null = null;
   // Local Space Rotation
-  rotation: number[] | null = null;
+  rotation: Quaternion | null = null;
   // Local Space Scale
-  scale: number[] | null = null;
+  scale: Vector3 | null = null;
 }

@@ -5,6 +5,7 @@ import { Skin, SkinJoint } from "./Skin";
 import { Animation, Track } from "./Animation";
 import { Texture } from "./Texture";
 import { Pose } from "./Pose";
+import { Matrix } from "@arche-engine/math";
 
 export class Gltf2 {
   json: any;
@@ -87,7 +88,6 @@ export class Gltf2 {
       return null;
     }
 
-    //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     const mesh = new Mesh();
     mesh.name = m.name;
     mesh.index = mIdx;
@@ -97,13 +97,11 @@ export class Gltf2 {
       attr = p.attributes;
       prim = new Primitive();
 
-      //------------------------------------------------------
       if (p.material != undefined) {
         prim.materialIdx = p.material;
         prim.materialName = json.materials[p.material].name;
       }
 
-      //------------------------------------------------------
       if (p.indices != undefined) prim.indices = this.parseAccessor(p.indices);
       if (attr.POSITION != undefined) prim.position = this.parseAccessor(attr.POSITION);
       if (attr.NORMAL != undefined) prim.normal = this.parseAccessor(attr.NORMAL);
@@ -114,7 +112,6 @@ export class Gltf2 {
       if (attr.WEIGHTS_0 != undefined) prim.weights_0 = this.parseAccessor(attr.WEIGHTS_0);
       if (attr.COLOR_0 != undefined) prim.color_0 = this.parseAccessor(attr.COLOR_0);
 
-      //------------------------------------------------------
       mesh.primitives.push(prim);
     }
 
@@ -152,7 +149,6 @@ export class Gltf2 {
       return null;
     }
 
-    //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     const json = this.json;
     let js: any | null = null;
     let idx: number | null = null;
@@ -205,7 +201,6 @@ export class Gltf2 {
       // Map Node Index to Joint Index
       jMap.set(ni, i);
 
-      //-----------------------------------------
       joint = new SkinJoint();
       joint.index = i;
       joint.name = node.name ? node.name : "bone_" + i;
@@ -216,21 +211,19 @@ export class Gltf2 {
       joint.scale = node?.scale?.slice(0) ?? null;
 
       if (bind && bind.data) {
-        bi = i * 16;
-        joint.bindMatrix = Array.from(bind.data.slice(bi, bi + 16));
+        joint.bindMatrix = new Matrix();
+        joint.bindMatrix.setValueByArray(bind.data, i * 16);
       }
 
-      //-----------------------------------------
       // Because of Rounding Errors, If Scale is VERY close to 1, Set it to 1.
       // This helps when dealing with transform hierarchy since small errors will
       // compound and cause scaling in places that it's not meant to.
       if (joint.scale) {
-        if (Math.abs(1 - joint.scale[0]) <= 0.000001) joint.scale[0] = 1;
-        if (Math.abs(1 - joint.scale[1]) <= 0.000001) joint.scale[1] = 1;
-        if (Math.abs(1 - joint.scale[2]) <= 0.000001) joint.scale[2] = 1;
+        if (Math.abs(1 - joint.scale.x) <= 0.000001) joint.scale.x = 1;
+        if (Math.abs(1 - joint.scale.y) <= 0.000001) joint.scale.y = 1;
+        if (Math.abs(1 - joint.scale.z) <= 0.000001) joint.scale.z = 1;
       }
 
-      //-----------------------------------------
       skin.joints.push(joint);
     }
 
@@ -257,7 +250,6 @@ export class Gltf2 {
       }
     }
 
-    //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     // Sometimes there is a Node Transform available for a Skin
     if (skin.name) {
       const snode = this.getNodeByName(skin.name);
@@ -269,7 +261,6 @@ export class Gltf2 {
       }
     }
 
-    //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     return skin;
   }
 
@@ -280,7 +271,6 @@ export class Gltf2 {
       return null;
     }
 
-    //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     const json = this.json;
     let mat = null;
 
@@ -341,7 +331,6 @@ export class Gltf2 {
       return null;
     }
 
-    //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     const json = this.json;
     let js: any | null = null;
     let idx: number | null = null;
@@ -372,7 +361,6 @@ export class Gltf2 {
       return null;
     }
 
-    //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     const NJMap: Map<number, number> = new Map(); // Node to Joint Map;
     const timeStamps: Array<Accessor> = [];
     const tsMap: Map<number, number> = new Map(); // Timestamp Sample ID to Array Index
@@ -417,7 +405,6 @@ export class Gltf2 {
       return -1; // This should Never Happen
     };
 
-    //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     const anim = new Animation(js.name);
     anim.timestamps = timeStamps;
 
@@ -432,23 +419,19 @@ export class Gltf2 {
     // Accessor tmp var
     let acc: Accessor | null;
     for (ch of js.channels) {
-      //---------------------------------
       jointIdx = fnGetJoint(ch.target.node);
       sampler = js.samplers[ch.sampler];
       track = Track.fromGltf(jointIdx, ch.target.path, sampler.interpolation);
 
-      //---------------------------------
       // Get the Keyframe Values for this Transform Track
       acc = this.parseAccessor(sampler.output); // ACCESSOR_INDEX_FOR_KEYFRAME_TRANSFORM_VALUE,
       if (acc) track.keyframes = acc;
 
-      //---------------------------------
       // Save Timestamp Data Since It's shared among tracks.
       // This creates a unique array of TimeStamps that we can
       // reference by using the index value
       track.timeStampIndex = fnGetTimestamp(sampler.input);
 
-      //---------------------------------
       anim.tracks.push(track);
     }
 
@@ -470,7 +453,6 @@ export class Gltf2 {
       return null;
     }
 
-    //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     const json = this.json;
     let js: any | null = null;
     let idx: number | null = null;
@@ -495,7 +477,6 @@ export class Gltf2 {
       return null;
     }
 
-    //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     const pose = new Pose(js.name);
     let jnt: any;
 
@@ -524,7 +505,6 @@ export class Gltf2 {
     if (!res.ok) return null;
 
     switch (url.slice(-4).toLocaleLowerCase()) {
-      //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
       case "gltf":
         let bin: ArrayBuffer | undefined;
         const json = await res.json();
@@ -536,7 +516,6 @@ export class Gltf2 {
 
         return new Gltf2(json, bin);
 
-      //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
       case ".glb":
         const tuple = await parseGLB(res);
         return tuple ? new Gltf2(tuple[0], tuple[1]) : null;
