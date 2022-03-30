@@ -44,13 +44,13 @@ export class SpringVec3 extends SpringBase {
       dt2_osc = dt * dt_osc,
       det_inv = 1.0 / (friction + dt2_osc);
 
-    this.vel[0] = (this.vel[0] + dt_osc * (this.tar[0] - this.val[0])) * det_inv;
-    this.vel[1] = (this.vel[1] + dt_osc * (this.tar[1] - this.val[1])) * det_inv;
-    this.vel[2] = (this.vel[2] + dt_osc * (this.tar[2] - this.val[2])) * det_inv;
+    this.vel.x = (this.vel.x + dt_osc * (this.tar.x - this.val.x)) * det_inv;
+    this.vel.y = (this.vel.y + dt_osc * (this.tar.y - this.val.y)) * det_inv;
+    this.vel.z = (this.vel.z + dt_osc * (this.tar.z - this.val.z)) * det_inv;
 
-    this.val[0] = (friction * this.val[0] + dt * this.vel[0] + dt2_osc * this.tar[0]) * det_inv;
-    this.val[1] = (friction * this.val[1] + dt * this.vel[1] + dt2_osc * this.tar[1]) * det_inv;
-    this.val[2] = (friction * this.val[2] + dt * this.vel[2] + dt2_osc * this.tar[2]) * det_inv;
+    this.val.x = (friction * this.val.x + dt * this.vel.x + dt2_osc * this.tar.x) * det_inv;
+    this.val.y = (friction * this.val.y + dt * this.vel.y + dt2_osc * this.tar.y) * det_inv;
+    this.val.z = (friction * this.val.z + dt * this.vel.z + dt2_osc * this.tar.z) * det_inv;
 
     return true;
   }

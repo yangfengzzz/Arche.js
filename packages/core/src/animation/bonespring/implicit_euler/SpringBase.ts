@@ -41,7 +41,8 @@ export class SpringBase {
 
   // Critical Damping with a speed control of how fast the cycle to run
   setDampExpo(dampTime: number) {
-    this.oscPerSec = 0.6931472 / dampTime; // -Log(0.5) but in terms of OCS its 39.7 degrees over time
+    // -Log(0.5) but in terms of OCS its 39.7 degrees over time
+    this.oscPerSec = 0.6931472 / dampTime;
     this.damping = 1;
     return this;
   }
