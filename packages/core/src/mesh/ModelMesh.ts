@@ -4,6 +4,8 @@ import { Engine } from "../Engine";
 import { VertexAttribute, VertexBufferLayout } from "../webgpu";
 import { Attributes } from "../shaderlib";
 import { SampledTexture2D } from "../texture";
+import { BlendShape } from "./BlendShape";
+import { UpdateFlag } from "../UpdateFlag";
 
 /**
  * Mesh containing common vertex elements of the model.
@@ -41,6 +43,10 @@ export class ModelMesh extends Mesh {
   private _uv5: Vector2[] | null = null;
   private _uv6: Vector2[] | null = null;
   private _uv7: Vector2[] | null = null;
+  private _boneWeights: Vector4[] | null = null;
+  private _boneIndices: Vector4[] | null = null;
+  private _blendShapes: BlendShape[] = [];
+  private _blendShapeUpdateFlags: UpdateFlag[] = [];
 
   /**
    * Whether to access data of the mesh.
@@ -309,6 +315,42 @@ export class ModelMesh extends Mesh {
    */
   getIndices(): Uint8Array | Uint16Array | Uint32Array {
     return this._indices;
+  }
+
+  /**
+   * Add a BlendShape for this ModelMesh.
+   * @param blendShape - The BlendShape
+   */
+  addBlendShape(blendShape: BlendShape): void {
+    if (!this._accessible) {
+      throw "Not allowed to access data while accessible is false.";
+    }
+
+    this._vertexChangeFlag |= ValueChanged.BlendShape;
+    this._useBlendShapeNormal = this._useBlendShapeNormal || blendShape._useBlendShapeNormal;
+    this._useBlendShapeTangent = this._useBlendShapeTangent || blendShape._useBlendShapeTangent;
+    this._blendShapes.push(blendShape);
+    this._blendShapeUpdateFlags.push(blendShape._registerChangeFlag());
+    this._hasBlendShape = true;
+  }
+
+  /**
+   * Clear all BlendShapes.
+   */
+  clearBlendShapes(): void {
+    if (!this._accessible) {
+      throw "Not allowed to access data while accessible is false.";
+    }
+    this._vertexChangeFlag |= ValueChanged.BlendShape;
+    this._useBlendShapeNormal = false;
+    this._useBlendShapeTangent = false;
+    this._blendShapes.length = 0;
+    const blendShapeUpdateFlags = this._blendShapeUpdateFlags;
+    for (let i = 0, n = blendShapeUpdateFlags.length; i < n; i++) {
+      blendShapeUpdateFlags[i].destroy();
+    }
+    blendShapeUpdateFlags.length = 0;
+    this._hasBlendShape = false;
   }
 
   /**
@@ -617,6 +659,74 @@ export class ModelMesh extends Mesh {
         }
       }
       offset += 2;
+    }
+
+    // BlendShape.
+    if (_vertexChangeFlag & ValueChanged.BlendShape) {
+      const blendShapes = this._blendShapes;
+      const blendShapeUpdateFlags = this._blendShapeUpdateFlags;
+      const blendShapeCount = Math.min(blendShapes.length, 4);
+
+      if (/*rhi.canUseFloatTextureBlendShape*/ false) {
+      } else {
+        for (let i = 0; i < blendShapeCount; i++) {
+          const blendShapeUpdateFlag = blendShapeUpdateFlags[i];
+          if (blendShapeUpdateFlag.flag) {
+            const blendShape = blendShapes[i];
+            const { frames } = blendShape;
+            const frameCount = frames.length;
+            const endFrame = frames[frameCount - 1];
+            if (frameCount > 0 && endFrame.deltaPositions.length !== this._vertexCount) {
+              throw "BlendShape frame deltaPositions length must same with mesh vertexCount.";
+            }
+
+            const { deltaPositions } = endFrame;
+            for (let j = 0; j < _vertexCount; j++) {
+              const start = _elementCount * j + offset;
+              const deltaPosition = deltaPositions[j];
+              if (deltaPosition) {
+                vertices[start] = deltaPosition.x;
+                vertices[start + 1] = deltaPosition.y;
+                vertices[start + 2] = deltaPosition.z;
+              }
+            }
+            offset += 3;
+
+            if (this._useBlendShapeNormal) {
+              const { deltaNormals } = endFrame;
+              if (deltaNormals) {
+                for (let j = 0; j < _vertexCount; j++) {
+                  const start = _elementCount * j + offset;
+                  const deltaNormal = deltaNormals[j];
+                  if (deltaNormal) {
+                    vertices[start] = deltaNormal.x;
+                    vertices[start + 1] = deltaNormal.y;
+                    vertices[start + 2] = deltaNormal.z;
+                  }
+                }
+              }
+              offset += 3;
+            }
+
+            if (this._useBlendShapeTangent) {
+              const { deltaTangents } = endFrame;
+              if (deltaTangents) {
+                for (let j = 0; j < _vertexCount; j++) {
+                  const start = _elementCount * j + offset;
+                  const deltaTangent = deltaTangents[j];
+                  if (deltaTangent) {
+                    vertices[start] = deltaTangent.x;
+                    vertices[start + 1] = deltaTangent.y;
+                    vertices[start + 2] = deltaTangent.z;
+                  }
+                }
+              }
+              offset += 3;
+            }
+            blendShapeUpdateFlag.flag = false;
+          }
+        }
+      }
     }
 
     this._vertexChangeFlag = 0;
