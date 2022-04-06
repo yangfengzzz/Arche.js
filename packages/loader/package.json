@@ -16,6 +16,7 @@
   "dependencies": {
     "@arche-engine/core": "^0.0.15",
     "@arche-engine/math": "^0.0.15",
+    "@arche-engine/draco": "^0.0.15",
     "@webgpu/types": "latest"
   }
 }

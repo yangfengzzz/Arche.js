@@ -161,6 +161,64 @@ export class ModelMesh extends Mesh {
   }
 
   /**
+   * Set per-vertex bone weights for the mesh.
+   * @param boneWeights - The bone weights for the mesh.
+   */
+  setBoneWeights(boneWeights: Vector4[] | null): void {
+    if (!this._accessible) {
+      throw "Not allowed to access data while accessible is false.";
+    }
+
+    if (boneWeights.length !== this._vertexCount) {
+      throw "The array provided needs to be the same size as vertex count.";
+    }
+
+    this._vertexSlotChanged = true;
+    this._vertexChangeFlag |= ValueChanged.BoneWeight;
+    this._boneWeights = boneWeights;
+  }
+
+  /**
+   * Get weights for the mesh.
+   * @remarks Please call the setWeights() method after modification to ensure that the modification takes effect.
+   */
+  getBoneWeights(): Vector4[] | null {
+    if (!this._accessible) {
+      throw "Not allowed to access data while accessible is false.";
+    }
+    return this._boneWeights;
+  }
+
+  /**
+   * Set per-vertex bone indices for the mesh.
+   * @param boneIndices - The bone indices for the mesh.
+   */
+  setBoneIndices(boneIndices: Vector4[] | null): void {
+    if (!this._accessible) {
+      throw "Not allowed to access data while accessible is false.";
+    }
+
+    if (boneIndices.length !== this._vertexCount) {
+      throw "The array provided needs to be the same size as vertex count.";
+    }
+
+    this._vertexSlotChanged = !!this._boneIndices !== !!boneIndices;
+    this._vertexChangeFlag |= ValueChanged.BoneIndex;
+    this._boneIndices = boneIndices;
+  }
+
+  /**
+   * Get joints for the mesh.
+   * @remarks Please call the setBoneIndices() method after modification to ensure that the modification takes effect.
+   */
+  getBoneIndices(): Vector4[] | null {
+    if (!this._accessible) {
+      throw "Not allowed to access data while accessible is false.";
+    }
+    return this._boneIndices;
+  }
+
+  /**
    * Set per-vertex tangents for the mesh.
    * @param tangents - The tangents for the mesh.
    */

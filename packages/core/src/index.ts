@@ -36,6 +36,8 @@ export * from "./material/index";
 export * from "./texture/index";
 export * from "./graphic/index";
 export * from "./shaderlib/index";
+export * from "./animation/index";
+export * from "./lighting/index";
 export * from "./mesh/index";
 export * from "./rendering/index";
 export * from "./shader/index";
