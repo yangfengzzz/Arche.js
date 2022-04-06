@@ -48,3 +48,4 @@ export * from "./shadow";
 export * from "./lighting";
 export * from "./particle";
 
+export * from "./animation-tool/index";
