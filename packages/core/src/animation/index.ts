@@ -1,5 +1,18 @@
-import { Animator } from "./Animator";
-import { Clip } from "./Clip";
-import { Retarget } from "./Retarget";
-
-export { Animator, Clip, Retarget };
+export { AnimationClip } from "./AnimationClip";
+export { Animator } from "./Animator";
+export { AnimatorController } from "./AnimatorController";
+export { AnimatorControllerLayer } from "./AnimatorControllerLayer";
+export { AnimatorStateMachine } from "./AnimatorStateMachine";
+export { AnimatorState } from "./AnimatorState";
+export { AnimatorStateTransition } from "./AnimatorTransition";
+export { AnimationCurve } from "./AnimationCurve";
+export { AnimationClipCurveBinding } from "./AnimationClipCurveBinding";
+export * from "./KeyFrame";
+export { AnimationEvent } from "./AnimationEvent";
+export { StateMachineScript } from "./StateMachineScript";
+export { AnimatorConditionMode } from "./enums/AnimatorConditionMode";
+export { InterpolableValueType } from "./enums/InterpolableValueType";
+export { InterpolationType } from "./enums/InterpolationType";
+export { WrapMode } from "./enums/WrapMode";
+export { AnimatorLayerBlendingMode } from "./enums/AnimatorLayerBlendingMode";
+export { AnimationProperty } from "./enums/AnimationProperty";

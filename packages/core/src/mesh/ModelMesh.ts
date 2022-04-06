@@ -3,11 +3,21 @@ import { Mesh, Buffer, IndexBufferBinding } from "../graphic";
 import { Engine } from "../Engine";
 import { VertexAttribute, VertexBufferLayout } from "../webgpu";
 import { Attributes } from "../shaderlib";
+import { SampledTexture2D } from "../texture";
 
 /**
  * Mesh containing common vertex elements of the model.
  */
 export class ModelMesh extends Mesh {
+  /** @internal */
+  _hasBlendShape: boolean = false;
+  /** @internal */
+  _useBlendShapeNormal: boolean = false;
+  /** @internal */
+  _useBlendShapeTangent: boolean = false;
+  /** @internal */
+  _blendShapeTexture: SampledTexture2D;
+
   private _vertexCount: number = 0;
   private _accessible: boolean = true;
   private _verticesFloat32: Float32Array | null = null;
