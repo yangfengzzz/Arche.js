@@ -27,14 +27,21 @@ export class BoneMap {
     new BoneParse("spine", false, "spine.*d*|chest", undefined, true)
   ];
 
-  constructor(joints: string[], root: BoneInfo) {
+  constructor(joints: Entity[]);
+  constructor(joints: string[], root: BoneInfo);
+
+  constructor(joints: string[] | Entity[], root?: BoneInfo) {
     let i: number;
     let b: BoneInfo;
     let bp: BoneParse;
     let key: string | null;
 
     for (i = 0; i < joints.length; i++) {
-      b = root.findByName(joints[i]);
+      if (root) {
+        b = root.findByName(<string>joints[i]);
+      } else {
+        b = <Entity>joints[i];
+      }
       for (bp of this.Parsers) {
         // Didn't pass test, Move to next parser.
         if (!(key = bp.test(b.name))) continue;
