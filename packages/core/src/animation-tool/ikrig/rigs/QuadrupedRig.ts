@@ -86,8 +86,8 @@ export class QuadrupedRig extends IKRig {
     Vector3.lerp(p.armR.effectorDir, p.legL.effectorDir, 0.4, b);
     b.normalize();
 
-    this.foreLegL?.solver.setTargetDir(a, p.legR.poleDir, p.legR2.lenScale);
-    this.foreLegR?.solver.setTargetDir(b, p.legL.poleDir, p.legL2.lenScale);
+    this.foreLegL?.solver.setTargetDir(a, p.legR.poleDir, p.legR.lenScale);
+    this.foreLegR?.solver.setTargetDir(b, p.legL.poleDir, p.legL.lenScale);
 
     this.tarsalL?.solver.setTargetDir(p.footL.effectorDir, p.footL.poleDir);
     this.tarsalR?.solver.setTargetDir(p.footR.effectorDir, p.footR.poleDir);
