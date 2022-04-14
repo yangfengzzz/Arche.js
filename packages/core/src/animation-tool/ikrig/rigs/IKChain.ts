@@ -19,7 +19,10 @@ export class IKLink {
   constructor(idx: Entity) {
     this.idx = idx;
     this.pidx = null;
-    this.len = Vector3.distance(idx.transform.worldPosition, idx.parent.transform.worldPosition);
+    this.len = Vector3.distance(
+      idx.transform.worldPosition,
+      idx.childCount > 0 ? idx.children[0].transform.worldPosition : idx.transform.worldPosition
+    );
   }
 
   static fromBone(b: Entity): IKLink {
@@ -43,7 +46,10 @@ export class IKChain {
   }
 
   addBone(b: Entity): this {
-    this.length += Vector3.distance(b.transform.worldPosition, b.parent.transform.worldPosition);
+    this.length += Vector3.distance(
+      b.transform.worldPosition,
+      b.childCount > 0 ? b.children[0].transform.worldPosition : b.transform.worldPosition
+    );
     this.links.push(IKLink.fromBone(b));
     this.count++;
     return this;
@@ -56,9 +62,14 @@ export class IKChain {
 
     for (b of bNames) {
       if (b) {
-        this.length += Vector3.distance(b.transform.worldPosition, b.parent.transform.worldPosition);
+        this.length += Vector3.distance(
+          b.transform.worldPosition,
+          b.childCount > 0 ? b.children[0].transform.worldPosition : b.transform.worldPosition
+        );
         this.links.push(IKLink.fromBone(b));
-      } else console.log("Chain.setBones - Bone Not Found:", b.name);
+      } else {
+        console.log("Chain.setBones - Bone Not Found:", b.name);
+      }
     }
 
     this.count = this.links.length;
@@ -88,7 +99,10 @@ export class IKChain {
     this.length = 0;
     for (lnk of this.links) {
       // Get Current Length in Pose
-      len = Vector3.distance(lnk.idx.transform.worldPosition, lnk.idx.parent.transform.worldPosition);
+      len = Vector3.distance(
+        lnk.idx.transform.worldPosition,
+        lnk.idx.childCount > 0 ? lnk.idx.children[0].transform.worldPosition : lnk.idx.transform.worldPosition
+      );
       // Save it to Link
       lnk.len = len;
       // Accumulate the total chain length
@@ -122,7 +136,7 @@ export class IKChain {
 
   getPositionAt(idx: number): Vector3 {
     const b = this.links[idx].idx;
-    return b.transform.worldPosition;
+    return b.transform.worldPosition.clone();
   }
 
   getAllPositions(): Array<Vector3> {
@@ -146,13 +160,13 @@ export class IKChain {
 
   getStartPosition(): Vector3 {
     const b = this.links[0].idx;
-    return b.transform.worldPosition;
+    return b.transform.worldPosition.clone();
   }
 
   getMiddlePosition(): Vector3 {
     if (this.count == 2) {
       const b = this.links[1].idx;
-      return b.transform.worldPosition;
+      return b.transform.worldPosition.clone();
     }
     console.warn("TODO: Implement IKChain.getMiddlePosition");
     return new Vector3();
@@ -160,12 +174,19 @@ export class IKChain {
 
   getLastPosition(): Vector3 {
     const b = this.links[this.count - 1].idx;
-    return b.transform.worldPosition;
+    return b.transform.worldPosition.clone();
   }
 
   getTailPosition(ignoreScale: boolean = false): Vector3 {
     const b = this.links[this.count - 1].idx;
-    const v = new Vector3(0, Vector3.distance(b.transform.worldPosition, b.parent.transform.worldPosition), 0);
+    const v = new Vector3(
+      0,
+      Vector3.distance(
+        b.transform.worldPosition,
+        b.childCount > 0 ? b.children[0].transform.worldPosition : b.transform.worldPosition
+      ),
+      0
+    );
 
     if (!ignoreScale) {
       return v.transformCoordinate(b.transform.worldMatrix);

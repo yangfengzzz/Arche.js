@@ -55,8 +55,11 @@ export class HipSolver implements ISolver {
     const lnk = chain.first();
 
     // Get the Starting Transform
-    if (lnk.pidx == null) lnk.idx.transform.worldMatrix.cloneTo(pt);
-    else lnk.pidx.transform.worldMatrix.cloneTo(pt);
+    if (lnk.pidx == null) {
+      // lnk.idx.transform.worldMatrix.cloneTo(pt);
+    } else {
+      lnk.pidx.transform.worldMatrix.cloneTo(pt);
+    }
 
     // Invert Transform to Translate Position to Local Space
     Matrix.invert(pt, ptInv);
@@ -83,7 +86,7 @@ export class HipSolver implements ISolver {
 
     // To Local Space
     hipPos.transformCoordinate(ptInv);
-    lnk.idx.transform.position.cloneTo(hipPos);
+    lnk.idx.transform.position = hipPos;
 
     // Apply SwingTwist Rotation
     this._swingTwist.resolve(chain);

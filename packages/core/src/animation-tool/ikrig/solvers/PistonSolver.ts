@@ -47,7 +47,7 @@ export class PistonSolver extends SwingTwistBase {
 
       // Normalize Bone Length In relation to Total, Use that as a scale of total delta movement
       // then subtract from the bone's length, apply that length to the next bone's Position.
-      v[1] = lnk.len - deltaLen * (lnk.len * incInv);
+      v.y = lnk.len - deltaLen * (lnk.len * incInv);
 
       chain.links[i + 1].idx.transform.position = v;
     }

@@ -74,6 +74,9 @@ export class BipedRig extends IKRig {
       }
 
       // Add Chain to Rig & assign chain to Rig's property of the same name.
+      if (n == "spine") {
+        names.reverse();
+      }
       self[n] = this.add(n, names);
     }
 
@@ -100,17 +103,17 @@ export class BipedRig extends IKRig {
 
   /** Use Solver Configuration for Fullbody IK */
   useSolversForFBIK(): this {
-    // this.hip?.setSolver( new HipSolver().initData( pose, this.hip ) );
-    // this.head?.setSolver( new SwingTwistSolver().initData( pose, this.head ) );
-    // this.armL?.setSolver( new LimbSolver().initData( pose, this.armL ) );
-    // this.armR?.setSolver( new LimbSolver().initData( pose, this.armR ) );
-    // this.legL?.setSolver( new LimbSolver().initData( pose, this.legL ) );
-    // this.legR?.setSolver( new LimbSolver().initData( pose, this.legR ) );
-    // this.footL?.setSolver( new SwingTwistSolver().initData( pose, this.footL ) );
-    // this.footR?.setSolver( new SwingTwistSolver().initData( pose, this.footR ) );
-    // this.handL?.setSolver( new SwingTwistSolver().initData( pose, this.handL ) );
-    // this.handR?.setSolver( new SwingTwistSolver().initData( pose, this.handR ) );
-    // this.spine?.setSolver( new SwingTwistChainSolver().initData( pose, this.spine ) );
+    // this.hip?.setSolver(new HipSolver().initData(this.hip));
+    // this.head?.setSolver(new SwingTwistSolver().initData(this.head));
+    // this.armL?.setSolver(new LimbSolver().initData(this.armL));
+    // this.armR?.setSolver(new LimbSolver().initData(this.armR));
+    // this.legL?.setSolver(new LimbSolver().initData(this.legL));
+    // this.legR?.setSolver(new LimbSolver().initData(this.legR));
+    // this.footL?.setSolver(new SwingTwistSolver().initData(this.footL));
+    // this.footR?.setSolver(new SwingTwistSolver().initData(this.footR));
+    // this.handL?.setSolver(new SwingTwistSolver().initData(this.handL));
+    // this.handR?.setSolver(new SwingTwistSolver().initData(this.handR));
+    // this.spine?.setSolver(new SwingTwistChainSolver().initData(this.spine));
     return this;
   }
 

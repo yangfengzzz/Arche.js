@@ -154,9 +154,9 @@ export class SwingTwistSolver implements ISolver {
     // Kinda Hacky putting this here, but its the only time where there is access to chain's length for all extending solvers.
     // So if not using a TargetPosition, means we're using Direction then we have to compute the effectorPos.
     if (!this._isTarPosition) {
-      this.effectorPos[0] = this.originPos[0] + this.effectorDir[0] * chain.length * this.effectorScale;
-      this.effectorPos[1] = this.originPos[1] + this.effectorDir[1] * chain.length * this.effectorScale;
-      this.effectorPos[2] = this.originPos[2] + this.effectorDir[2] * chain.length * this.effectorScale;
+      this.effectorPos.x = this.originPos.x + this.effectorDir.x * chain.length * this.effectorScale;
+      this.effectorPos.y = this.originPos.y + this.effectorDir.y * chain.length * this.effectorScale;
+      this.effectorPos.z = this.originPos.z + this.effectorDir.z * chain.length * this.effectorScale;
     }
 
     return [rot, pt];
