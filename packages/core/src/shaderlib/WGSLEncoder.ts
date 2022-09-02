@@ -282,7 +282,7 @@ export class WGSLEncoder {
   addInoutType(structName: string, location: number, attributes: string, type: UniformType);
 
   addInoutType(structName: string, location: number, attributes: string, type: string) {
-    const formatTemplate = `@location(${location}) ${attributes}: ${type};`;
+    const formatTemplate = `@location(${location}) ${attributes}: ${type},`;
     if (!this._inoutType.has(structName)) {
       this._inoutType.set(structName, []);
     }
@@ -295,7 +295,7 @@ export class WGSLEncoder {
   addBuiltInoutType(structName: string, builtin: BuiltInType, attributes: string, type: UniformType);
 
   addBuiltInoutType(structName: string, builtin: BuiltInType, attributes: string, type: string) {
-    const formatTemplate = `@builtin(${builtin}) ${attributes}: ${type};`;
+    const formatTemplate = `@builtin(${builtin}) ${attributes}: ${type},`;
     if (!this._inoutType.has(structName)) {
       this._inoutType.set(structName, []);
     }
@@ -310,9 +310,9 @@ export class WGSLEncoder {
   //----------------------------------------------------------------------------
   addRenderEntry(inParam: [string, string][], outType: [string, string], code: () => string) {
     if (this._currentStage == GPUShaderStage.VERTEX) {
-      this._entryBlock += "@stage(vertex)\n";
+      this._entryBlock += "@vertex\n";
     } else if (this._currentStage == GPUShaderStage.FRAGMENT) {
-      this._entryBlock += "@stage(fragment)\n";
+      this._entryBlock += "@fragment\n";
     } else {
       throw "Use Begin at first";
     }

@@ -15,9 +15,9 @@ export class WGSLLightFragDefine {
     if (macros.isEnable("POINT_LIGHT_COUNT")) {
       encoder.addStruct(
         "struct PointLight {\n" +
-          "  color : vec3<f32>;\n" +
-          "  position : vec3<f32>;\n" +
-          "  distance : f32;\n" +
+          "  color : vec3<f32>,\n" +
+          "  position : vec3<f32>,\n" +
+          "  distance : f32\n" +
           "};\n"
       );
       encoder.addUniformBinding("u_pointLight", `array<PointLight, ${macros.variableMacros("POINT_LIGHT_COUNT")}>`, 0);
@@ -26,12 +26,12 @@ export class WGSLLightFragDefine {
     if (macros.isEnable("SPOT_LIGHT_COUNT")) {
       encoder.addStruct(
         "struct SpotLight {\n" +
-          "  color : vec3<f32>;\n" +
-          "  distance : f32;\n" +
-          "  position : vec3<f32>;\n" +
-          "  angleCos : f32;\n" +
-          "  direction : vec3<f32>;\n" +
-          "  penumbraCos : f32;\n" +
+          "  color : vec3<f32>,\n" +
+          "  distance : f32,\n" +
+          "  position : vec3<f32>,\n" +
+          "  angleCos : f32,\n" +
+          "  direction : vec3<f32>,\n" +
+          "  penumbraCos : f32\n" +
           "};\n"
       );
       encoder.addUniformBinding("u_spotLight", `array<SpotLight, ${macros.variableMacros("SPOT_LIGHT_COUNT")}>`, 0);
@@ -39,10 +39,10 @@ export class WGSLLightFragDefine {
 
     encoder.addStruct(
       "struct EnvMapLight {\n" +
-        "  diffuse : vec3<f32>;\n" +
-        "  mipMapLevel : f32;\n" +
-        "  diffuseIntensity : f32;\n" +
-        "  specularIntensity : f32;\n" +
+        "  diffuse : vec3<f32>,\n" +
+        "  mipMapLevel : f32,\n" +
+        "  diffuseIntensity : f32,\n" +
+        "  specularIntensity : f32\n" +
         "};\n"
     );
     encoder.addUniformBinding("u_envMapLight", "EnvMapLight", 0);

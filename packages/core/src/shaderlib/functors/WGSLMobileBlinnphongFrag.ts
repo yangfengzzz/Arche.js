@@ -106,8 +106,7 @@ export class WGSLMobileBlinnphongFrag {
       source += "    direction = direction / lightDistance;\n";
       source += "    var angleCos = dot( direction, -u_spotLight[index].direction );\n";
       source += "    var decay = clamp(1.0 - pow(lightDistance/u_spotLight[index].distance, 4.0), 0.0, 1.0);\n";
-      source +=
-        "    var spotEffect = smoothStep( u_spotLight[index].penumbraCos, u_spotLight[index].angleCos, angleCos );\n";
+      source += "    var spotEffect = mix( u_spotLight[index].penumbraCos, u_spotLight[index].angleCos, angleCos );\n";
       source += "    var decayTotal = decay * spotEffect;\n";
       source += "    var d = max( dot( N, direction ), 0.0 )  * decayTotal;\n";
       source += "    lightDiffuse = lightDiffuse + u_spotLight[index].color * d;\n";

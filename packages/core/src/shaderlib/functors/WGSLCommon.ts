@@ -3,10 +3,10 @@ import { ShaderMacroCollection } from "../../shader";
 
 export class WGSLCommon {
   execute(encoder: WGSLEncoder, macros: ShaderMacroCollection) {
-    encoder.addStruct("let PI:f32 = 3.14159265359;\n");
-    encoder.addStruct("let RECIPROCAL_PI:f32 = 0.31830988618;\n");
-    encoder.addStruct("let EPSILON:f32 = 1.0e-6;\n");
-    encoder.addStruct("let LOG2:f32 = 1.442695;\n");
+    encoder.addStruct("const PI:f32 = 3.14159265359;\n");
+    encoder.addStruct("const RECIPROCAL_PI:f32 = 0.31830988618;\n");
+    encoder.addStruct("const EPSILON:f32 = 1.0e-6;\n");
+    encoder.addStruct("const LOG2:f32 = 1.442695;\n");
 
     let source: string = "fn saturate(a:f32)->f32 { return clamp( a, 0.0, 1.0 );}\n";
     source += "fn whiteCompliment(a:f32)->f32 { return 1.0 - saturate( a );}\n";

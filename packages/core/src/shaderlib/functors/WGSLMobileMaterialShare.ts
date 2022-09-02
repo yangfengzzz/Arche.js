@@ -9,11 +9,11 @@ export class WGSLMobileMaterialShare {
     this._outputStructName = outputStructName;
     this._blinnPhongStruct =
       "struct BlinnPhongData {\n" +
-      "  baseColor : vec4<f32>;\n" +
-      "  specularColor : vec4<f32>;\n" +
-      "  emissiveColor : vec4<f32>;\n" +
-      "  normalIntensity : f32;\n" +
-      "  shininess : f32;\n" +
+      "  baseColor : vec4<f32>,\n" +
+      "  specularColor : vec4<f32>,\n" +
+      "  emissiveColor : vec4<f32>,\n" +
+      "  normalIntensity : f32,\n" +
+      "  shininess : f32 \n" +
       "};\n";
   }
 

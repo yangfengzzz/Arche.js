@@ -28,6 +28,7 @@ export class RenderContext {
     this._configure.device = this._device;
     this._configure.format = this.drawableTextureFormat();
     this._configure.usage = GPUTextureUsage.RENDER_ATTACHMENT;
+    this._configure.alphaMode = "premultiplied";
     this._context.configure(this._configure);
 
     this._depthStencilDescriptor.dimension = "2d";
@@ -54,7 +55,7 @@ export class RenderContext {
   }
 
   drawableTextureFormat(): GPUTextureFormat {
-    return this._context.getPreferredFormat(this._adapter);
+    return navigator.gpu.getPreferredCanvasFormat();
   }
 
   depthStencilTexture(): GPUTextureView {
