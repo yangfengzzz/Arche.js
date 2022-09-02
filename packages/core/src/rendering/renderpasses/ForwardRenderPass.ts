@@ -1,5 +1,5 @@
 import { RenderPass } from "../RenderPass";
-import { RenderPassColorAttachment, RenderPassDepthStencilAttachment, RenderPassDescriptor } from "../../webgpu";
+import { RenderPassColorAttachment, RenderPassDepthStencilAttachment } from "../../webgpu";
 import { ForwardSubpass } from "../subpasses";
 import { Engine } from "../../Engine";
 import { Scene } from "../../Scene";

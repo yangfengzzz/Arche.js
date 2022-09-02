@@ -33,7 +33,7 @@ export class TextureViewDescriptor implements GPUTextureViewDescriptor {
 }
 
 export class ExternalTextureDescriptor implements GPUExternalTextureDescriptor {
-  colorSpace?: GPUPredefinedColorSpace;
+  colorSpace?: PredefinedColorSpace;
   label?: string;
   source: HTMLVideoElement;
 }
@@ -55,7 +55,7 @@ export class ImageCopyTexture implements GPUImageCopyTexture {
 export class ImageCopyTextureTagged implements GPUImageCopyTextureTagged {
   texture: GPUTexture;
   aspect?: GPUTextureAspect;
-  colorSpace?: GPUPredefinedColorSpace;
+  colorSpace?: PredefinedColorSpace;
   mipLevel?: GPUIntegerCoordinate;
   origin?: Origin3DDict;
   premultipliedAlpha?: boolean;

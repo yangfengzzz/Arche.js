@@ -2,10 +2,10 @@ import { VertexState, FragmentState, PrimitiveState, DepthStencilState, Multisam
 
 export class RenderPipelineDescriptor implements GPURenderPipelineDescriptor {
   label?: string;
-  layout?: GPUPipelineLayout;
   depthStencil?: DepthStencilState;
   fragment?: FragmentState;
   multisample?: MultisampleState;
   primitive?: PrimitiveState;
   vertex: VertexState;
+  layout: GPUPipelineLayout | GPUAutoLayoutMode;
 }

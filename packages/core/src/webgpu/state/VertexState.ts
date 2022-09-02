@@ -16,9 +16,7 @@ export class VertexAttribute implements GPUVertexAttribute {
   offset: GPUSize64;
   shaderLocation: GPUIndex32;
 
-  constructor(offset: GPUSize64,
-              format: GPUVertexFormat,
-              shaderLocation: GPUIndex32) {
+  constructor(offset: GPUSize64, format: GPUVertexFormat, shaderLocation: GPUIndex32) {
     this.offset = offset;
     this.format = format;
     this.shaderLocation = shaderLocation;

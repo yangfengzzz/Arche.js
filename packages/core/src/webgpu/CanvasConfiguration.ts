@@ -1,8 +1,8 @@
 export class CanvasConfiguration implements GPUCanvasConfiguration {
-  colorSpace?: GPUPredefinedColorSpace;
-  compositingAlphaMode?: GPUCanvasCompositingAlphaMode;
-  size?: GPUExtent3D;
+  colorSpace?: PredefinedColorSpace;
   usage?: GPUTextureUsageFlags;
   device: GPUDevice;
   format: GPUTextureFormat;
+  viewFormats?: Iterable<GPUTextureFormat>;
+  alphaMode?: GPUCanvasAlphaMode;
 }

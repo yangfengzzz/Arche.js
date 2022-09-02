@@ -28,7 +28,6 @@ export class RenderContext {
     this._configure.device = this._device;
     this._configure.format = this.drawableTextureFormat();
     this._configure.usage = GPUTextureUsage.RENDER_ATTACHMENT;
-    this._configure.size = this._size;
     this._context.configure(this._configure);
 
     this._depthStencilDescriptor.dimension = "2d";

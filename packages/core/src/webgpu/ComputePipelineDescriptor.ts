@@ -1,7 +1,7 @@
 export class ComputePipelineDescriptor implements GPUComputePipelineDescriptor {
-  compute: ProgrammableStage;
   label?: string;
-  layout?: GPUPipelineLayout;
+  compute: ProgrammableStage;
+  layout: GPUPipelineLayout | GPUAutoLayoutMode;
 }
 
 export class ProgrammableStage implements GPUProgrammableStage {
