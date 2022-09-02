@@ -64,7 +64,7 @@ export class WGSLParticleDraw extends WGSL {
       "    let d = 1.0 - abs(dot(p, p));\n" +
       "    \n" +
       "    // Alpha coefficient.\n" +
-      "    let alpha = smoothStep(0.0, 1.0, d);\n" +
+      "    let alpha = mix(0.0, 1.0, d);\n" +
       "    \n" +
       "    //color = texture(uSpriteSampler2d, texcoord).rrrr;\n" +
       "    color = color * alpha * decay * uFadeCoefficient;\n" +
@@ -74,14 +74,14 @@ export class WGSLParticleDraw extends WGSL {
 
     this._drawStruct =
       "struct ParticleData {\n" +
-      "    birthGradient: vec3<f32>;\n" +
-      "    minParticleSize: f32;\n" +
-      "    deathGradient: vec3<f32>;\n" +
-      "    maxParticleSize: f32;\n" +
-      "    colorMode: u32;\n" +
-      "    fadeCoefficient: f32;\n" +
-      "    debugDraw: f32;\n" +
-      "    _pad: f32;\n" +
+      "    birthGradient: vec3<f32>,\n" +
+      "    minParticleSize: f32,\n" +
+      "    deathGradient: vec3<f32>,\n" +
+      "    maxParticleSize: f32,\n" +
+      "    colorMode: u32,\n" +
+      "    fadeCoefficient: f32,\n" +
+      "    debugDraw: f32,\n" +
+      "    _pad: f32 \n" +
       "};\n";
   }
 }

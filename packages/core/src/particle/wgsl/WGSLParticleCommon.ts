@@ -5,12 +5,12 @@ export class WGSLParticleCommon {
   execute(encoder: WGSLEncoder, macros: ShaderMacroCollection) {
     encoder.addStruct(
       "struct TParticle {\n" +
-        "    position: vec4<f32>;\n" +
-        "    velocity: vec4<f32>;\n" +
-        "    start_age: f32;\n" +
-        "    age: f32;\n" +
-        "    padding0: f32; \n" +
-        "    id: u32;\n" +
+        "    position: vec4<f32>,\n" +
+        "    velocity: vec4<f32>,\n" +
+        "    start_age: f32,\n" +
+        "    age: f32,\n" +
+        "    padding0: f32, \n" +
+        "    id: u32,\n" +
         "};\n"
     );
 

@@ -4,7 +4,7 @@ import { ShaderMacroCollection } from "../../shader";
 export class WGSLLightFragDefine {
   execute(encoder: WGSLEncoder, macros: ShaderMacroCollection) {
     if (macros.isEnable("DIRECT_LIGHT_COUNT")) {
-      encoder.addStruct("struct DirectLight {\n " + " color : vec3<f32>;\n " + "direction : vec3<f32>;\n" + "};\n");
+      encoder.addStruct("struct DirectLight {\n " + " color : vec3<f32>,\n " + "direction : vec3<f32>,\n" + "};\n");
       encoder.addUniformBinding(
         "u_directLight",
         `array<DirectLight, ${macros.variableMacros("DIRECT_LIGHT_COUNT")}>`,
@@ -14,11 +14,7 @@ export class WGSLLightFragDefine {
 
     if (macros.isEnable("POINT_LIGHT_COUNT")) {
       encoder.addStruct(
-        "struct PointLight {\n" +
-          "  color : vec3<f32>,\n" +
-          "  position : vec3<f32>,\n" +
-          "  distance : f32\n" +
-          "};\n"
+        "struct PointLight {\n" + "  color : vec3<f32>,\n" + "  position : vec3<f32>,\n" + "  distance : f32\n" + "};\n"
       );
       encoder.addUniformBinding("u_pointLight", `array<PointLight, ${macros.variableMacros("POINT_LIGHT_COUNT")}>`, 0);
     }

@@ -22,19 +22,19 @@ export class WGSLParticleEmission extends WGSL {
 
       encoder.addStruct(
         "struct ParticleEmitterData {\n" +
-          "    emitterPosition: vec3<f32>;\n" +
-          "    emitCount: u32;\n" +
-          "    emitterDirection: vec3<f32>;\n" +
-          "    emitterType: u32;\n" +
-          "    emitterRadius: f32;\n" +
-          "    particleMinAge: f32;\n" +
-          "    particleMaxAge: f32;\n" +
-          "    pad: f32;\n" +
+          "    emitterPosition: vec3<f32>,\n" +
+          "    emitCount: u32,\n" +
+          "    emitterDirection: vec3<f32>,\n" +
+          "    emitterType: u32,\n" +
+          "    emitterRadius: f32,\n" +
+          "    particleMinAge: f32,\n" +
+          "    particleMaxAge: f32,\n" +
+          "    pad: f32 \n" +
           "};\n"
       );
       encoder.addUniformBinding("u_emitterData", "ParticleEmitterData");
 
-      encoder.addStruct("struct Counter {\n" + "counter: atomic<u32>;\n" + "};\n");
+      encoder.addStruct("struct Counter {\n" + "counter: atomic<u32>,\n" + "};\n");
       encoder.addStorageBufferBinding("u_readAtomicBuffer", "Counter", false);
 
       const particleCount = macros.variableMacros("PARTICLE_COUNT");

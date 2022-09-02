@@ -8,7 +8,7 @@ export class WGSLShadowCommon {
       if (count === "1") {
         let source = "";
         source +=
-          "let offsets = array<vec2<f32>, 4>(\n" +
+          "const offsets = array<vec2<f32>, 4>(\n" +
           "    vec2<f32>(0.0, 0.0),\n" +
           "    vec2<f32>(0.5, 0.0),\n" +
           "    vec2<f32>(0.0, 0.5),\n" +
@@ -16,12 +16,12 @@ export class WGSLShadowCommon {
           ");\n" +
           "\n" +
           "struct ShadowData {\n" +
-          "     bias:f32;\n" +
-          "     intensity:f32;\n" +
-          "     radius:f32;\n" +
-          "     dump:f32;\n" +
-          "     vp:array<mat4x4<f32>, 4>;\n" +
-          "     cascadeSplits:vec4<f32>;\n" +
+          "     bias:f32,\n" +
+          "     intensity:f32,\n" +
+          "     radius:f32,\n" +
+          "     dump:f32,\n" +
+          "     vp:array<mat4x4<f32>, 4>,\n" +
+          "     cascadeSplits:vec4<f32> \n" +
           "};\n" +
           "\n" +
           "fn textureProj( worldPos:vec3<f32>,  viewPos:vec3<f32>,  off:vec2<f32>,\n" +
@@ -97,12 +97,12 @@ export class WGSLShadowCommon {
           ");\n" +
           "\n" +
           "struct ShadowData {\n" +
-          "     bias:f32;\n" +
-          "     intensity:f32;\n" +
-          "     radius:f32;\n" +
-          "     dump:f32;\n" +
-          "     vp:array<mat4x4<f32>, 4>;\n" +
-          "     cascadeSplits:vec4<f32>;\n" +
+          "     bias:f32,\n" +
+          "     intensity:f32,\n" +
+          "     radius:f32,\n" +
+          "     dump:f32,\n" +
+          "     vp:array<mat4x4<f32>, 4>,\n" +
+          "     cascadeSplits:vec4<f32> \n" +
           "};\n" +
           "\n" +
           "fn textureProj( worldPos:vec3<f32>,  viewPos:vec3<f32>,  off:vec2<f32>,\n" +
@@ -176,12 +176,12 @@ export class WGSLShadowCommon {
       let source = "";
       source +=
         "struct CubeShadowData {\n" +
-        "     bias:f32;\n" +
-        "     intensity:f32;\n" +
-        "     radius:f32;\n" +
-        "     dump:f32;\n" +
-        "     vp:array<mat4x4<f32>, 6>;\n" +
-        "     lightPos:vec3<f32>;\n" +
+        "     bias:f32,\n" +
+        "     intensity:f32,\n" +
+        "     radius:f32,\n" +
+        "     dump:f32,\n" +
+        "     vp:array<mat4x4<f32>, 6>,\n" +
+        "     lightPos:vec3<f32>,\n" +
         "};\n" +
         "\n" +
         "fn convertUVToDirection( face:i32,  uv:vec2<f32>)->vec3<f32> {\n" +

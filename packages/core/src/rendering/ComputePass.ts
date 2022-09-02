@@ -123,7 +123,7 @@ export class ComputePass extends EngineObject {
       passEncoder.setPipeline(computePipeline);
     }
 
-    passEncoder.dispatch(this._workgroupCountX, this._workgroupCountY, this._workgroupCountZ);
+    passEncoder.dispatchWorkgroups(this._workgroupCountX, this._workgroupCountY, this._workgroupCountZ);
   }
 
   _bindingData(entry: BindGroupEntry) {

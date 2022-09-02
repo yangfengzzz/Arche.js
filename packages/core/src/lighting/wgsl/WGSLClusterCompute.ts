@@ -12,7 +12,7 @@ export class WGSLTileFunctions {
 
   execute(encoder: WGSLEncoder, macros: ShaderMacroCollection) {
     encoder.addStruct(
-      `let tileCount : vec3<u32> = vec3<u32>(${this._tileCount[0]}u, ${this._tileCount[1]}u, ${this._tileCount[2]}u);\n`
+      `const tileCount : vec3<u32> = vec3<u32>(${this._tileCount[0]}u, ${this._tileCount[1]}u, ${this._tileCount[2]}u);\n`
     );
     const tileFunc =
       "fn linearDepth(depthSample : f32) -> f32 {\n" +
@@ -51,11 +51,11 @@ export class WGSLClusterStructs {
   execute(encoder: WGSLEncoder, macros: ShaderMacroCollection) {
     encoder.addStruct(
       "struct ClusterBounds {\n" +
-        "  minAABB : vec3<f32>;\n" +
-        "  maxAABB : vec3<f32>;\n" +
+        "  minAABB : vec3<f32>,\n" +
+        "  maxAABB : vec3<f32>,\n" +
         "};\n" +
         "struct Clusters {\n" +
-        `  bounds : array<ClusterBounds, ${this._totalTiles}>;\n` +
+        `  bounds : array<ClusterBounds, ${this._totalTiles}>,\n` +
         "};\n"
     );
   }
@@ -74,14 +74,14 @@ export class WGSLClusterLightsStructs {
   execute(encoder: WGSLEncoder, macros: ShaderMacroCollection) {
     encoder.addStruct(
       "struct ClusterLights {\n" +
-        "  offset : u32;\n" +
-        "  point_count : u32;\n" +
-        "  spot_count : u32;\n" +
+        "  offset : u32,\n" +
+        "  point_count : u32,\n" +
+        "  spot_count : u32,\n" +
         "};\n" +
         "struct ClusterLightGroup {\n" +
-        "  offset : atomic<u32>;\n" +
-        `  lights : array<ClusterLights, ${this._totalTiles}>;\n` +
-        `  indices : array<u32, ${this._totalTiles * this._maxLightsPerCluster}>;\n` +
+        "  offset : atomic<u32>,\n" +
+        `  lights : array<ClusterLights, ${this._totalTiles}>,\n` +
+        `  indices : array<u32, ${this._totalTiles * this._maxLightsPerCluster}>,\n` +
         "};\n"
     );
     encoder.addStorageBufferBinding("u_clusterLights", "ClusterLightGroup", false);
@@ -132,9 +132,9 @@ export class WGSLClusterBoundsSource extends WGSL {
           "}\n"
       );
       encoder.addFunction(
-        `let tileCount = vec3<u32>(${this._tileCount[0]}u, ${this._tileCount[1]}u, ${this._tileCount[2]}u);\n`
+        `const tileCount = vec3<u32>(${this._tileCount[0]}u, ${this._tileCount[1]}u, ${this._tileCount[2]}u);\n`
       );
-      encoder.addFunction("let eyePos = vec3<f32>(0.0, 0.0, 0.0);\n");
+      encoder.addFunction("const eyePos = vec3<f32>(0.0, 0.0, 0.0);\n");
 
       encoder.addComputeEntry(
         [this._workgroupSize[0], this._workgroupSize[1], this._workgroupSize[2]],
@@ -212,14 +212,14 @@ export class WGSLClusterLightsSource extends WGSL {
       this._tileFunctions.execute(encoder, macros);
 
       encoder.addFunction(
-        "fn sqDistPointAABB(point : vec3<f32>, minAABB : vec3<f32>, maxAABB : vec3<f32>) -> f32 {\n" +
+        "fn sqDistPointAABB(p : vec3<f32>, minAABB : vec3<f32>, maxAABB : vec3<f32>) -> f32 {\n" +
           "  var sqDist = 0.0;\n" +
           "  // const minAABB : vec3<f32> = u_clusters.bounds[tileIndex].minAABB;\n" +
           "  // const maxAABB : vec3<f32> = u_clusters.bounds[tileIndex].maxAABB;\n" +
           "\n" +
           "  // Wait, does this actually work? Just porting code, but it seems suspect?\n" +
           "  for(var i = 0; i < 3; i = i + 1) {\n" +
-          "    let v = point[i];\n" +
+          "    let v = p[i];\n" +
           "    if(v < minAABB[i]){\n" +
           "      sqDist = sqDist + (minAABB[i] - v) * (minAABB[i] - v);\n" +
           "    }\n" +

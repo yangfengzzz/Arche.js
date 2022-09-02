@@ -341,7 +341,7 @@ export class WGSLEncoder {
 
   addComputeEntry(workgroupSize: number[], code: () => string, builtIn: [string, BuiltInType][] = []) {
     if (this._currentStage == GPUShaderStage.COMPUTE) {
-      this._entryBlock += `@stage(compute) @workgroup_size(${workgroupSize[0]}, ${workgroupSize[1]}, ${workgroupSize[2]})\n`;
+      this._entryBlock += `@compute @workgroup_size(${workgroupSize[0]}, ${workgroupSize[1]}, ${workgroupSize[2]})\n`;
     } else {
       throw "Use Begin at first";
     }

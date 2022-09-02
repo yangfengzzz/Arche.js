@@ -10,21 +10,21 @@ export class WGSLPbrFragDefine {
     this._outputStructName = outputStructName;
     this._is_metallic_workflow = is_metallic_workflow;
     this._pbrStruct = "struct PbrBaseData {\n";
-    this._pbrStruct += "  baseColor : vec4<f32>;\n";
-    this._pbrStruct += "  emissiveColor : vec4<f32>;\n";
-    this._pbrStruct += "  normalTextureIntensity : f32;\n";
-    this._pbrStruct += "  occlusionTextureIntensity : f32;\n";
+    this._pbrStruct += "  baseColor : vec4<f32>,\n";
+    this._pbrStruct += "  emissiveColor : vec4<f32>,\n";
+    this._pbrStruct += "  normalTextureIntensity : f32,\n";
+    this._pbrStruct += "  occlusionTextureIntensity : f32,\n";
     this._pbrStruct += "};\n";
 
     if (this._is_metallic_workflow) {
       this._pbrStruct += "struct PbrData {\n";
-      this._pbrStruct += "  metallic : f32;\n";
-      this._pbrStruct += "  roughness : f32;\n";
+      this._pbrStruct += "  metallic : f32,\n";
+      this._pbrStruct += "  roughness : f32,\n";
       this._pbrStruct += "};\n";
     } else {
       this._pbrStruct += "struct PbrSpecularData {\n";
-      this._pbrStruct += "  specularColor : vec4<f32>;\n";
-      this._pbrStruct += "  glossiness : f32;\n";
+      this._pbrStruct += "  specularColor : vec4<f32>,\n";
+      this._pbrStruct += "  glossiness : f32,\n";
       this._pbrStruct += "};\n";
     }
   }
@@ -74,25 +74,25 @@ export class WGSLPbrFragDefine {
     }
 
     let structType = "struct ReflectedLight {\n";
-    structType += "    directDiffuse: vec3<f32>;\n";
-    structType += "    directSpecular: vec3<f32>;\n";
-    structType += "    indirectDiffuse: vec3<f32>;\n";
-    structType += "    indirectSpecular: vec3<f32>;\n";
+    structType += "    directDiffuse: vec3<f32>,\n";
+    structType += "    directSpecular: vec3<f32>,\n";
+    structType += "    indirectDiffuse: vec3<f32>,\n";
+    structType += "    indirectSpecular: vec3<f32>,\n";
     structType += "};\n";
     encoder.addStruct(structType);
 
     structType = "struct GeometricContext {\n";
-    structType += "    position: vec3<f32>;\n";
-    structType += "    normal: vec3<f32>;\n";
-    structType += "    viewDir: vec3<f32>;\n";
+    structType += "    position: vec3<f32>,\n";
+    structType += "    normal: vec3<f32>,\n";
+    structType += "    viewDir: vec3<f32>,\n";
     structType += "};\n";
     encoder.addStruct(structType);
 
     structType = "struct PhysicalMaterial {\n";
-    structType += "    diffuseColor: vec3<f32>;\n";
-    structType += "    roughness: f32;\n";
-    structType += "    specularColor: vec3<f32>;\n";
-    structType += "    opacity: f32;\n";
+    structType += "    diffuseColor: vec3<f32>,\n";
+    structType += "    roughness: f32,\n";
+    structType += "    specularColor: vec3<f32>,\n";
+    structType += "    opacity: f32,\n";
     structType += "};\n";
     encoder.addStruct(structType);
   }

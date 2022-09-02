@@ -30,19 +30,19 @@ export class WGSLParticleSimulation extends WGSL {
 
       encoder.addStruct(
         "struct ParticleSimulationData {\n" +
-          "    timeStep:f32;\n" +
-          "    boundingVolumeType:i32;\n" +
-          "    bboxSize:f32;\n" +
-          "    scatteringFactor:f32;\n" +
-          "    vectorFieldFactor:f32;\n" +
-          "    curlNoiseFactor:f32;\n" +
-          "    curlNoiseScale:f32;\n" +
-          "    velocityFactor:f32;\n" +
+          "    timeStep:f32,\n" +
+          "    boundingVolumeType:i32,\n" +
+          "    bboxSize:f32,\n" +
+          "    scatteringFactor:f32,\n" +
+          "    vectorFieldFactor:f32,\n" +
+          "    curlNoiseFactor:f32,\n" +
+          "    curlNoiseScale:f32,\n" +
+          "    velocityFactor:f32,\n" +
           "};\n"
       );
       encoder.addUniformBinding("u_simulationData", "ParticleSimulationData");
 
-      encoder.addStruct("struct Counter {\n" + "counter: atomic<u32>;\n" + "};\n");
+      encoder.addStruct("struct Counter {\n" + "counter: atomic<u32>,\n" + "};\n");
       encoder.addStorageBufferBinding("u_readAtomicBuffer", "Counter", false);
       encoder.addStorageBufferBinding("u_writeAtomicBuffer", "Counter", false);
 
