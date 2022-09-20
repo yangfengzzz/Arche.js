@@ -13,7 +13,7 @@ recursively:
 
 ```shell
 git clone https://github.com/ArcheGraphics/Arche.js.git && cd Arche.js
-npm run boostrap
+pnpm install && npm run boostrap
 ```
 
 ## Build
