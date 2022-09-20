@@ -1,24 +1,14 @@
+import blinnPhongFs from "../shaderlib/extra/blinn-phong.fs.glsl";
+import blinnPhongVs from "../shaderlib/extra/blinn-phong.vs.glsl";
+import pbrFs from "../shaderlib/extra/pbr.fs.glsl";
+import pbrSpecularFs from "../shaderlib/extra/pbr-specular.fs.glsl";
+import shadowMapVs from "../shaderlib/extra/shadow-map.vs.glsl";
+import skyboxFs from "../shaderlib/extra/skybox.fs.glsl";
+import skyboxVs from "../shaderlib/extra/skybox.vs.glsl";
+import unlitFs from "../shaderlib/extra/unlit.fs.glsl";
+import unlitVs from "../shaderlib/extra/unlit.vs.glsl";
 import { Shader } from "./Shader";
-import {
-  WGSLBlinnPhongFragment,
-  WGSLBlinnPhongVertex,
-  WGSLPbrFragment,
-  WGSLPbrVertex,
-  WGSLUnlitFragment,
-  WGSLUnlitVertex
-} from "../shaderlib";
 import { ShaderStage } from "../webgpu";
-import { WGSLShadowVertex } from "../shadow/WGSLShadowVertex";
-import { WGSLClusterBoundsSource, WGSLClusterLightsSource } from "../lighting/wgsl/WGSLClusterCompute";
-import { WGSLSpriteDebugFragment, WGSLSpriteDebugVertex } from "../lighting/sprite/SpriteDebugMaterial";
-import { LightManager } from "../lighting";
-import {
-  WGSLParticleEmission,
-  WGSLParticleFragment,
-  WGSLParticleSimulation,
-  WGSLParticleVertex
-} from "../particle/wgsl";
-import { ParticleManager } from "../particle/ParticleManager";
 
 /**
  * Internal shader pool.
@@ -26,58 +16,18 @@ import { ParticleManager } from "../particle/ParticleManager";
  */
 export class ShaderPool {
   static init(): void {
-    Shader.create("unlit", new WGSLUnlitVertex(), ShaderStage.VERTEX, new WGSLUnlitFragment());
-    Shader.create("blinn-phong", new WGSLBlinnPhongVertex(), ShaderStage.VERTEX, new WGSLBlinnPhongFragment());
-    Shader.create("pbr", new WGSLPbrVertex(), ShaderStage.VERTEX, new WGSLPbrFragment(true));
-    Shader.create("pbr-specular", new WGSLPbrVertex(), ShaderStage.VERTEX, new WGSLPbrFragment(false));
+    Shader.create("blinn-phong-vert", blinnPhongVs, ShaderStage.VERTEX);
+    Shader.create("blinn-phong-frag", blinnPhongFs, ShaderStage.FRAGMENT);
 
-    Shader.create("shadow", new WGSLShadowVertex(), ShaderStage.VERTEX);
+    Shader.create("pbr", pbrFs, ShaderStage.FRAGMENT);
+    Shader.create("pbr-specular", pbrSpecularFs, ShaderStage.FRAGMENT);
 
-    //--------------------------------------------------------------------------
-    Shader.create(
-      "cluster_bounds",
-      new WGSLClusterBoundsSource(
-        LightManager.TILE_COUNT,
-        LightManager.MAX_LIGHTS_PER_CLUSTER,
-        LightManager.WORKGROUP_SIZE
-      ),
-      ShaderStage.COMPUTE
-    );
+    Shader.create("unlit-vert", unlitVs, ShaderStage.VERTEX);
+    Shader.create("unlit-frag", unlitFs, ShaderStage.FRAGMENT);
 
-    Shader.create(
-      "cluster_lights",
-      new WGSLClusterLightsSource(
-        LightManager.TILE_COUNT,
-        LightManager.MAX_LIGHTS_PER_CLUSTER,
-        LightManager.WORKGROUP_SIZE
-      ),
-      ShaderStage.COMPUTE
-    );
+    Shader.create("shadow-map", shadowMapVs, ShaderStage.VERTEX);
 
-    Shader.create(
-      "spotlight_sprite_debug",
-      new WGSLSpriteDebugVertex(true),
-      ShaderStage.VERTEX,
-      new WGSLSpriteDebugFragment()
-    );
-    Shader.create(
-      "pointlight_sprite_debug",
-      new WGSLSpriteDebugVertex(false),
-      ShaderStage.VERTEX,
-      new WGSLSpriteDebugFragment()
-    );
-
-    //--------------------------------------------------------------------------
-    Shader.create("particle_instancing", new WGSLParticleVertex(), ShaderStage.VERTEX, new WGSLParticleFragment());
-    Shader.create(
-      "particle_emission",
-      new WGSLParticleEmission([ParticleManager.PARTICLES_KERNEL_GROUP_WIDTH, 1, 1]),
-      ShaderStage.COMPUTE
-    );
-    Shader.create(
-      "particle_simulation",
-      new WGSLParticleSimulation([ParticleManager.PARTICLES_KERNEL_GROUP_WIDTH, 1, 1]),
-      ShaderStage.COMPUTE
-    );
+    Shader.create("skybox-vert", skyboxVs, ShaderStage.VERTEX);
+    Shader.create("skybox-frag", skyboxFs, ShaderStage.FRAGMENT);
   }
 }

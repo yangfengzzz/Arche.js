@@ -1,5 +1,5 @@
 import { Engine } from "../Engine";
-import { ShaderFactory } from "../shaderlib/ShaderFactory";
+import { ShaderFactory } from "../shaderlib";
 import { Shader } from "./Shader";
 import { ShaderMacroCollection } from "./ShaderMacroCollection";
 import { ShaderProgram } from "./ShaderProgram";
