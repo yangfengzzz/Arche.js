@@ -77,6 +77,12 @@ export class Origin2DDict implements GPUOrigin2DDict {
   y?: GPUIntegerCoordinate;
 }
 
+export class ImageDataLayout implements GPUImageDataLayout {
+  offset?: GPUSize64;
+  bytesPerRow?: GPUSize32;
+  rowsPerImage?: GPUSize32;
+}
+
 export function bytesPerPixel(format: GPUTextureFormat): number {
   switch (format) {
     case "r8unorm":
@@ -121,6 +127,6 @@ export function bytesPerPixel(format: GPUTextureFormat): number {
       return 16;
 
     default:
-      throw "undefined";
+      throw "unsupported texture format";
   }
 }

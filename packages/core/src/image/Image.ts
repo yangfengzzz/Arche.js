@@ -1,8 +1,10 @@
 import {
+  bytesPerPixel,
   Extent3DDict,
   Extent3DDictStrict,
   ImageCopyExternalImage,
   ImageCopyTextureTagged,
+  ImageDataLayout,
   Origin3DDict,
   TextureDescriptor
 } from "../webgpu";
@@ -41,6 +43,7 @@ export class Image extends RefObject {
   private static _imageCopyExternalImage: ImageCopyExternalImage = new ImageCopyExternalImage();
   private static _imageCopyTextureTagged = new ImageCopyTextureTagged();
   private static _extent3DDictStrict = new Extent3DDictStrict();
+  private static _imageDataLayout = new ImageDataLayout();
 
   private _data: TypedArray;
   private _format: GPUTextureFormat;
@@ -134,6 +137,87 @@ export class Image extends RefObject {
   }
 
   /**
+   * Create webgpu texture
+   * @param usage - Texture Usage
+   */
+  createTexture(usage: number = GPUTextureUsage.TEXTURE_BINDING | GPUTextureUsage.COPY_DST) {
+    Image._textureDescriptor.label = this.name;
+    Image._textureDescriptor.usage = usage;
+    Image._textureDescriptor.format = this._format;
+    Image._textureDescriptor.size = this._mipmaps.at(0).extent;
+    if (this._layers > 1) {
+      Image._textureDescriptor.size.depthOrArrayLayers = this._layers;
+    }
+    Image._textureDescriptor.mipLevelCount = this._mipmaps.length;
+    this._texture = this.engine.device.createTexture(Image._textureDescriptor);
+  }
+
+  /**
+   * Create image view
+   * @param view_type - Texture view dimension
+   * @param base_mip_level - base mipmap level
+   * @param base_array_layer - base array layer
+   * @param n_mip_levels - mipmap level count
+   * @param n_array_layers - array layer count
+   */
+  getImageView(
+    view_type: GPUTextureViewDimension = "2d",
+    base_mip_level: number = 0,
+    base_array_layer: number = 0,
+    n_mip_levels: number = 0,
+    n_array_layers: number = 0
+  ): ImageView {
+    let key = murmurhash3_32_gc(view_type, 0);
+    key = murmurhash3_32_gc(base_mip_level.toString(), key);
+    key = murmurhash3_32_gc(base_array_layer.toString(), key);
+    key = murmurhash3_32_gc(n_mip_levels.toString(), key);
+    key = murmurhash3_32_gc(n_array_layers.toString(), key);
+
+    let view = this._image_views.get(key);
+    if (view === undefined) {
+      view = new ImageView(this, view_type, base_mip_level, base_array_layer, n_mip_levels, n_array_layers);
+      this._image_views.set(key, view);
+    }
+    return view;
+  }
+
+  uploadTexture() {
+    const data = this.data;
+    const mipmaps = this._mipmaps;
+    const layers = this.layers;
+    const offsets = this.offsets;
+    const pixelBytes = bytesPerPixel(this.format);
+    const queue = this.engine.device.queue;
+
+    for (let layer = 0; layer < layers; layer++) {
+      for (let i = 0; i < mipmaps.length; i++) {
+        const width = this.extent.width >> i;
+        const height = this.extent.height >> i;
+
+        const imageCopyTexture = Image._imageCopyTextureTagged;
+        imageCopyTexture.texture = this._texture;
+        imageCopyTexture.mipLevel = i;
+        imageCopyTexture.origin.x = 0;
+        imageCopyTexture.origin.y = 0;
+        imageCopyTexture.origin.z = layer;
+        imageCopyTexture.aspect = "all";
+
+        const extent3DDictStrict = Image._extent3DDictStrict;
+        extent3DDictStrict.width = width;
+        extent3DDictStrict.height = height;
+        extent3DDictStrict.depthOrArrayLayers = 1;
+
+        const imageDataLayout = Image._imageDataLayout;
+        imageDataLayout.offset = layers > 1 ? offsets[layer][i] : mipmaps[i].offset;
+        imageDataLayout.bytesPerRow = pixelBytes * width;
+        imageDataLayout.rowsPerImage = height;
+
+        queue.writeTexture(imageCopyTexture, data, imageDataLayout, extent3DDictStrict);
+      }
+    }
+  }
+
+  /**
    * Load external image
    * @param element - HTML element
    */
@@ -182,51 +266,6 @@ export class Image extends RefObject {
    */
   clear(): void {
     this._data = null;
-  }
-
-  /**
-   * Create webgpu texture
-   * @param usage - Texture Usage
-   */
-  createTexture(usage: number = GPUTextureUsage.TEXTURE_BINDING | GPUTextureUsage.COPY_DST) {
-    Image._textureDescriptor.label = this.name;
-    Image._textureDescriptor.usage = usage;
-    Image._textureDescriptor.format = this._format;
-    Image._textureDescriptor.size = this._mipmaps.at(0).extent;
-    if (this._layers > 1) {
-      Image._textureDescriptor.size.depthOrArrayLayers = this._layers;
-    }
-    Image._textureDescriptor.mipLevelCount = this._mipmaps.length;
-    this._texture = this.engine.device.createTexture(Image._textureDescriptor);
-  }
-
-  /**
-   * Create image view
-   * @param view_type - Texture view dimension
-   * @param base_mip_level - base mipmap level
-   * @param base_array_layer - base array layer
-   * @param n_mip_levels - mipmap level count
-   * @param n_array_layers - array layer count
-   */
-  getImageView(
-    view_type: GPUTextureViewDimension = "2d",
-    base_mip_level: number = 0,
-    base_array_layer: number = 0,
-    n_mip_levels: number = 0,
-    n_array_layers: number = 0
-  ): ImageView {
-    let key = murmurhash3_32_gc(view_type, 0);
-    key = murmurhash3_32_gc(base_mip_level.toString(), key);
-    key = murmurhash3_32_gc(base_array_layer.toString(), key);
-    key = murmurhash3_32_gc(n_mip_levels.toString(), key);
-    key = murmurhash3_32_gc(n_array_layers.toString(), key);
-
-    let view = this._image_views.get(key);
-    if (view === undefined) {
-      view = new ImageView(this, view_type, base_mip_level, base_array_layer, n_mip_levels, n_array_layers);
-      this._image_views.set(key, view);
-    }
-    return view;
   }
 
   /**
