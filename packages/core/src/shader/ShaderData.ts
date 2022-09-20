@@ -1,5 +1,4 @@
 import { IClone } from "@arche-engine/design";
-import { Color, Matrix, Vector2, Vector3, Vector4 } from "@arche-engine/math";
 import { IRefObject } from "../asset";
 import { ShaderDataGroup } from "./ShaderDataGroup";
 import { Shader } from "./Shader";
@@ -8,8 +7,6 @@ import { ShaderMacroCollection } from "./ShaderMacroCollection";
 import { ShaderProperty } from "./ShaderProperty";
 import { Buffer } from "../graphic";
 import { Engine } from "../Engine";
-import { MacroName } from "./InternalMacroName";
-import { ignoreClone } from "../clone/CloneManager";
 import { ImageView } from "../image/ImageView";
 import { SamplerDescriptor } from "../webgpu";
 
@@ -19,15 +16,8 @@ export type ShaderPropertyResourceType = Buffer | ImageView | SamplerDescriptor;
  * Shader data collection,Correspondence includes shader properties data and macros data.
  */
 export class ShaderData implements IRefObject, IClone {
-  private static _intArray1: Int32Array = new Int32Array(1);
-  private static _floatArray1: Float32Array = new Float32Array(1);
-  private static _floatArray2: Float32Array = new Float32Array(2);
-  private static _floatArray3: Float32Array = new Float32Array(3);
-  private static _floatArray4: Float32Array = new Float32Array(4);
+  private static _defaultSamplerDesc = new SamplerDescriptor();
 
-  /** @internal */
-  @ignoreClone
-  _index: number = -1;
   /** @internal */
   _group: ShaderDataGroup;
   /** @internal */
@@ -36,8 +26,10 @@ export class ShaderData implements IRefObject, IClone {
   _propertyFunctors: Record<number, () => Buffer> = Object.create(null);
   /** @internal */
   _macroCollection: ShaderMacroCollection = new ShaderMacroCollection();
-  private readonly _engine: Engine;
+
+  private _macroMap: Record<number, ShaderMacro> = Object.create(null);
   private _refCount: number = 0;
+  private readonly _engine: Engine;
 
   /**
    * @internal
@@ -83,125 +75,6 @@ export class ShaderData implements IRefObject, IClone {
 
   //--------------------------------------------------------------------------------------------------------------------
   /**
-   * Get float by shader property name.
-   * @param propertyID - Shader property name
-   * @returns Float
-   */
-  getFloat(propertyID: number): Buffer;
-
-  /**
-   * Get float by shader property name.
-   * @param propertyName - Shader property name
-   * @returns Float
-   */
-  getFloat(propertyName: string): Buffer;
-
-  /**
-   * Get float by shader property.
-   * @param property - Shader property
-   * @returns Float
-   */
-  getFloat(property: ShaderProperty): Buffer;
-
-  getFloat(property: number | string | ShaderProperty): Buffer {
-    return this._getDataBuffer(property);
-  }
-
-  /**
-   * Set float by shader property name.
-   * @remarks Corresponding float shader property type.
-   * @param propertyName - Shader property name
-   * @param value - Float
-   */
-  setFloat(propertyName: string, value: number): void;
-
-  /**
-   * Set float by shader property.
-   * @remarks Corresponding float shader property type.
-   * @param property - Shader property
-   * @param value - Float
-   */
-  setFloat(property: ShaderProperty, value: number): void;
-
-  setFloat(property: string | ShaderProperty, value: number): void {
-    ShaderData._floatArray1[0] = value;
-    this._setDataBuffer(property, ShaderData._floatArray1);
-  }
-
-  //------------------------------------------------------------------------------------------------------------------
-  /**
-   * Get int by shader property name.
-   * @param propertyID - Shader property name
-   * @returns Int
-   */
-  getInt(propertyID: number): Buffer;
-
-  /**
-   * Get int by shader property name.
-   * @param propertyName - Shader property name
-   * @returns Int
-   */
-  getInt(propertyName: string): Buffer;
-
-  /**
-   * Get int by shader property.
-   * @param property - Shader property
-   * @returns Int
-   */
-  getInt(property: ShaderProperty): Buffer;
-
-  getInt(property: number | string | ShaderProperty): Buffer {
-    return this._getDataBuffer(property);
-  }
-
-  /**
-   * Set int by shader property name.
-   * @remarks Correspondence includes int and bool shader property type.
-   * @param propertyName - Shader property name
-   * @param value - Int
-   */
-  setInt(propertyName: string, value: number): void;
-
-  /**
-   * Set int by shader property.
-   * @remarks Correspondence includes int and bool shader property type.
-   * @param property - Shader property
-   * @param value - Int
-   */
-  setInt(property: ShaderProperty, value: number): void;
-
-  setInt(property: string | ShaderProperty, value: number): void {
-    ShaderData._intArray1[0] = value;
-    this._setDataBuffer(property, ShaderData._intArray1);
-  }
-
-  //------------------------------------------------------------------------------------------------------------------
-  /**
-   * Get float array by shader property name.
-   * @param propertyID - Shader property name
-   * @returns Float array
-   */
-  getFloatArray(propertyID: number): Buffer;
-
-  /**
-   * Get float array by shader property name.
-   * @param propertyName - Shader property name
-   * @returns Float array
-   */
-  getFloatArray(propertyName: string): Buffer;
-
-  /**
-   * Get float array by shader property.
-   * @param property - Shader property
-   * @returns Float array
-   */
-  getFloatArray(property: ShaderProperty): Buffer;
-
-  getFloatArray(property: number | string | ShaderProperty): Buffer {
-    return this._getDataBuffer(property);
-  }
-
-  /**
    * Set float array by shader property name.
    * @remarks Correspondence includes float array、vec2 array、vec3 array、vec4 array and matrix array shader property type.
    * @param propertyName - Shader property name
@@ -221,32 +94,7 @@ export class ShaderData implements IRefObject, IClone {
     this._setDataBuffer(property, value);
   }
 
-  //------------------------------------------------------------------------------------------------------------------
-  /**
-   * Get int array by shader property name.
-   * @param propertyID - Shader property name
-   * @returns Int Array
-   */
-  getIntArray(propertyID: number): Buffer;
-
-  /**
-   * Get int array by shader property name.
-   * @param propertyName - Shader property name
-   * @returns Int Array
-   */
-  getIntArray(propertyName: string): Buffer;
-
-  /**
-   * Get int array by shader property.
-   * @param property - Shader property
-   * @returns Int Array
-   */
-  getIntArray(property: ShaderProperty): Buffer;
-
-  getIntArray(property: number | string | ShaderProperty): Buffer {
-    return this._getDataBuffer(property);
-  }
-
+  //--------------------------------------------------------------------------------------------------------------------
   /**
    * Set int array by shader property name.
    * @remarks Correspondence includes bool array、int array、bvec2 array、bvec3 array、bvec4 array、ivec2 array、ivec3 array and ivec4 array shader property type.
@@ -269,296 +117,39 @@ export class ShaderData implements IRefObject, IClone {
 
   //------------------------------------------------------------------------------------------------------------------
   /**
-   * Get two-dimensional from shader property name.
-   * @param propertyID - Shader property name
-   * @returns Two-dimensional vector
+   * Set texture by shader property name.
+   * @param samplerName - Shader property name
+   * @param value - Texture
    */
-  getVector2(propertyID: number): Buffer;
+  setSampler(samplerName: string, value: SamplerDescriptor): void;
 
   /**
-   * Get two-dimensional from shader property name.
-   * @param propertyName - Shader property name
-   * @returns Two-dimensional vector
+   * Set texture by shader property.
+   * @param samplerProperty - Shader property
+   * @param value - Texture
    */
-  getVector2(propertyName: string): Buffer;
+  setSampler(samplerProperty: ShaderProperty, value: SamplerDescriptor): void;
 
-  /**
-   * Get two-dimensional from shader property.
-   * @param property - Shader property
-   * @returns Two-dimensional vector
-   */
-  getVector2(property: ShaderProperty): Buffer;
-
-  getVector2(property: number | string | ShaderProperty): Buffer {
-    return this._getDataBuffer(property);
+  setSampler(samplerProperty: string | ShaderProperty, value: SamplerDescriptor): void {
+    this._setSampler(samplerProperty, value);
   }
 
   /**
-   * Set two-dimensional vector from shader property name.
-   * @remarks Correspondence includes vec2、ivec2 and bvec2 shader property type.
-   * @param property - Shader property name
-   * @param value - Two-dimensional vector
+   * Set texture by shader property name.
+   * @param textureName - Shader property name
+   * @param value - Texture
    */
-  setVector2(property: string, value: Vector2): void;
+  setStorageImageView(textureName: string, value: ImageView): void;
 
   /**
-   * Set two-dimensional vector from shader property.
-   * @remarks Correspondence includes vec2、ivec2 and bvec2 shader property type.
-   * @param property - Shader property
-   * @param value - Two-dimensional vector
+   * Set texture by shader property.
+   * @param textureProperty - Shader property
+   * @param value - Texture
    */
-  setVector2(property: ShaderProperty, value: Vector2): void;
+  setStorageImageView(textureProperty: ShaderProperty, value: ImageView): void;
 
-  setVector2(property: string | ShaderProperty, value: Vector2): void {
-    ShaderData._floatArray2[0] = value.x;
-    ShaderData._floatArray2[1] = value.y;
-    this._setDataBuffer(property, ShaderData._floatArray2);
-  }
-
-  //------------------------------------------------------------------------------------------------------------------
-  /**
-   * Get vector3 by shader property name.
-   * @param propertyID - Shader property name
-   * @returns Three-dimensional vector
-   */
-  getVector3(propertyID: number): Buffer;
-
-  /**
-   * Get vector3 by shader property name.
-   * @param propertyName - Shader property name
-   * @returns Three-dimensional vector
-   */
-  getVector3(propertyName: string): Buffer;
-
-  /**
-   * Get vector3 by shader property.
-   * @param property - Shader property
-   * @returns Three-dimensional vector
-   */
-  getVector3(property: ShaderProperty): Buffer;
-
-  getVector3(property: number | string | ShaderProperty): Buffer {
-    return this._getDataBuffer(property);
-  }
-
-  /**
-   * Set three-dimensional vector by shader property name.
-   * @remarks Correspondence includes vec3、ivec3 and bvec3 shader property type.
-   * @param property - Shader property name
-   * @param value - Three-dimensional vector
-   */
-  setVector3(property: string, value: Vector3): void;
-
-  /**
-   * Set three-dimensional vector by shader property.
-   * @remarks Correspondence includes vec3、ivec3 and bvec3 shader property type.
-   * @param property - Shader property
-   * @param value - Three-dimensional vector
-   */
-  setVector3(property: ShaderProperty, value: Vector3): void;
-
-  setVector3(property: string | ShaderProperty, value: Vector3): void {
-    ShaderData._floatArray3[0] = value.x;
-    ShaderData._floatArray3[1] = value.y;
-    ShaderData._floatArray3[2] = value.z;
-    this._setDataBuffer(property, ShaderData._floatArray3);
-  }
-
-  //------------------------------------------------------------------------------------------------------------------
-  /**
-   * Get vector4 by shader property name.
-   * @param propertyID - Shader property name
-   * @returns Four-dimensional vector
-   */
-  getVector4(propertyID: number): Buffer;
-
-  /**
-   * Get vector4 by shader property name.
-   * @param propertyName - Shader property name
-   * @returns Four-dimensional vector
-   */
-  getVector4(propertyName: string): Buffer;
-
-  /**
-   * Get vector4 by shader property.
-   * @param property - Shader property
-   * @returns Four-dimensional vector
-   */
-  getVector4(property: ShaderProperty): Buffer;
-
-  getVector4(property: number | string | ShaderProperty): Buffer {
-    return this._getDataBuffer(property);
-  }
-
-  /**
-   * Set four-dimensional vector by shader property name.
-   * @remarks Correspondence includes vec4、ivec4 and bvec4 shader property type.
-   * @param property - Shader property name
-   * @param value - Four-dimensional vector
-   */
-  setVector4(property: string, value: Vector4): void;
-
-  /**
-   * Set four-dimensional vector by shader property.
-   * @remarks Correspondence includes vec4、ivec4 and bvec4 shader property type.
-   * @param property - Shader property
-   * @param value - Four-dimensional vector
-   */
-  setVector4(property: ShaderProperty, value: Vector4): void;
-
-  setVector4(property: string | ShaderProperty, value: Vector4): void {
-    ShaderData._floatArray4[0] = value.x;
-    ShaderData._floatArray4[1] = value.y;
-    ShaderData._floatArray4[2] = value.z;
-    ShaderData._floatArray4[3] = value.w;
-    this._setDataBuffer(property, ShaderData._floatArray4);
-  }
-
-  //------------------------------------------------------------------------------------------------------------------
-  /**
-   * Get matrix by shader property name.
-   * @param propertyID - Shader property name
-   * @returns Matrix
-   */
-  getMatrix(propertyID: number): Buffer;
-
-  /**
-   * Get matrix by shader property name.
-   * @param propertyName - Shader property name
-   * @returns Matrix
-   */
-  getMatrix(propertyName: string): Buffer;
-
-  /**
-   * Get matrix by shader property.
-   * @param property - Shader property
-   * @returns Matrix
-   */
-  getMatrix(property: ShaderProperty): Buffer;
-
-  getMatrix(property: number | string | ShaderProperty): Buffer {
-    return this._getDataBuffer(property);
-  }
-
-  /**
-   * Set matrix by shader property name.
-   * @remarks Correspondence includes matrix shader property type.
-   * @param propertyName - Shader property name
-   * @param value - Matrix
-   */
-  setMatrix(propertyName: string, value: Matrix);
-
-  /**
-   * Set matrix by shader property.
-   * @remarks Correspondence includes matrix shader property type.
-   * @param property - Shader property
-   * @param value - Matrix
-   */
-  setMatrix(property: ShaderProperty, value: Matrix);
-
-  setMatrix(property: string | ShaderProperty, value: Matrix): void {
-    this._setDataBuffer(property, value.elements);
-  }
-
-  //------------------------------------------------------------------------------------------------------------------
-  /**
-   * Get color by shader property name.
-   * @param propertyID - Shader property name
-   * @returns Color
-   */
-  getColor(propertyID: number): Buffer;
-
-  /**
-   * Get color by shader property name.
-   * @param propertyName - Shader property name
-   * @returns Color
-   */
-  getColor(propertyName: string): Buffer;
-
-  /**
-   * Get color by shader property.
-   * @param property - Shader property
-   * @returns Color
-   */
-  getColor(property: ShaderProperty): Buffer;
-
-  getColor(property: number | string | ShaderProperty): Buffer {
-    return this._getDataBuffer(property);
-  }
-
-  /**
-   * Set color by shader property name.
-   * @remarks Correspondence includes vec4 shader property type.
-   * @param propertyName - Shader property name
-   * @param value - Color
-   */
-  setColor(propertyName: string, value: Color): void;
-
-  /**
-   * Set color by shader property.
-   * @remarks Correspondence includes vec4 shader property type.
-   * @param property - Shader property
-   * @param value - Color
-   */
-  setColor(property: ShaderProperty, value: Color): void;
-
-  setColor(property: string | ShaderProperty, value: Color): void {
-    ShaderData._floatArray4[0] = value.r;
-    ShaderData._floatArray4[1] = value.g;
-    ShaderData._floatArray4[2] = value.b;
-    ShaderData._floatArray4[3] = value.a;
-    this._setDataBuffer(property, ShaderData._floatArray4);
-  }
-
-  //------------------------------------------------------------------------------------------------------------------
-  /**
-   * Get texture by shader property name.
-   * @param propertyID - Shader property name
-   * @returns Texture
-   */
-  getTextureView(propertyID: number): GPUTextureView;
-
-  /**
-   * Get texture by shader property name.
-   * @param propertyName - Shader property name
-   * @returns Texture
-   */
-  getTextureView(propertyName: string): GPUTextureView;
-
-  /**
-   * Get texture by shader property.
-   * @param property - Shader property
-   * @returns Texture
-   */
-  getTextureView(property: ShaderProperty): GPUTextureView;
-
-  getTextureView(property: number | string | ShaderProperty): GPUTextureView {
-    return this._getTextureView(property);
-  }
-
-  /**
-   * Get texture by shader property name.
-   * @param propertyID - Shader property name
-   * @returns Texture
-   */
-  getSampler(propertyID: number): GPUSampler;
-
-  /**
-   * Get texture by shader property name.
-   * @param propertyName - Shader property name
-   * @returns Texture
-   */
-  getSampler(propertyName: string): GPUSampler;
-
-  /**
-   * Get texture by shader property.
-   * @param property - Shader property
-   * @returns Texture
-   */
-  getSampler(property: ShaderProperty): GPUSampler;
-
-  getSampler(property: number | string | ShaderProperty): GPUSampler {
-    return this._getSampler(property);
+  setStorageImageView(textureProperty: string | ShaderProperty, value: ImageView): void {
+    this._setStorageImageView(textureProperty, value);
   }
 
   /**
@@ -567,7 +158,7 @@ export class ShaderData implements IRefObject, IClone {
    * @param samplerName - Shader property name
    * @param value - Texture
    */
-  setSampledTexture(textureName: string, samplerName: string, value: SampledTexture): void;
+  setImageView(textureName: string, samplerName: string, value: ImageView): void;
 
   /**
    * Set texture by shader property.
@@ -575,107 +166,104 @@ export class ShaderData implements IRefObject, IClone {
    * @param samplerProperty - Shader property
    * @param value - Texture
    */
-  setSampledTexture(textureProperty: ShaderProperty, samplerProperty: ShaderProperty, value: SampledTexture): void;
+  setImageView(textureProperty: ShaderProperty, samplerProperty: ShaderProperty, value: ImageView): void;
 
-  setSampledTexture(
+  setImageView(
     textureProperty: string | ShaderProperty,
     samplerProperty: string | ShaderProperty,
-    value: SampledTexture
+    value: ImageView
   ): void {
-    this._setSampledTexture(textureProperty, samplerProperty, value);
+    this._setImageView(textureProperty, samplerProperty, value);
   }
 
-  //------------------------------------------------------------------------------------------------------------------
+  //--------------------------------------------------------------------------------------------------------------------
   /**
-   * Enable macro.
-   * @param macroName - Macro name
-   */
-  enableMacro(macroName: MacroName): void;
-
-  /**
-   * Enable macro.
+   * Enable macro with name.
    * @param macroName - Macro name
    */
   enableMacro(macroName: string): void;
 
   /**
-   * Enable macro.
-   * @param macro - Shader macro
-   */
-  enableMacro(macro: ShaderMacro): void;
-
-  /**
-   * Enable macro.
-   * @remarks Name and value will combine one macro, it's equal the macro of "name value".
+   * Enable macro with name and value.
+   * @remarks Name and value will combine, it's equal the macro of "name value".
    * @param name - Macro name
    * @param value - Macro value
    */
   enableMacro(name: string, value: string): void;
 
-  enableMacro(macro: string | ShaderMacro, value: string = null): void {
-    this._macroCollection.enableMacro(macro, value);
+  /**
+   * Enable macro with shaderMacro.
+   * @param macro - Shader macro
+   */
+  enableMacro(macro: ShaderMacro): void;
+
+  enableMacro(macro: string | ShaderMacro, value?: string): void {
+    if (typeof macro === "string") {
+      macro = Shader.getMacroByName(macro, value);
+    }
+    const nameID = macro._nameId;
+    const lastMacro = this._macroMap[nameID];
+    if (lastMacro !== macro) {
+      const macroCollection = this._macroCollection;
+      lastMacro && macroCollection.disable(lastMacro);
+      macroCollection.enable(macro);
+      this._macroMap[nameID] = macro;
+    }
   }
 
   /**
-   * Disable macro
-   * @param macroName - Macro name
-   */
-  disableMacro(macroName: MacroName): void;
-
-  /**
-   * Disable macro
+   * Disable macro.
    * @param macroName - Macro name
    */
   disableMacro(macroName: string): void;
 
   /**
-   * Disable macro
+   * Disable macro.
    * @param macro - Shader macro
    */
   disableMacro(macro: ShaderMacro): void;
 
   disableMacro(macro: string | ShaderMacro): void {
-    this._macroCollection.disableMacro(macro);
+    let nameID: number;
+    if (typeof macro === "string") {
+      nameID = ShaderMacro._macroNameIdMap[macro];
+      if (nameID === undefined) {
+        return;
+      }
+    } else {
+      nameID = macro._nameId;
+    }
+
+    const currentMacro = this._macroMap[nameID];
+    if (currentMacro) {
+      this._macroCollection.disable(currentMacro);
+      delete this._macroMap[nameID];
+    }
   }
 
-  clone(): ShaderData {
-    const shaderData = new ShaderData(this._group, this._engine);
-    this.cloneTo(shaderData);
-    return shaderData;
+  /**
+   * Get shader macro array that are currently enabled for ShaderData.
+   */
+  getMacros(): ShaderMacro[];
+  /**
+   * Get shader macro array that are currently enabled for ShaderData.
+   * @param out - Shader macro array
+   */
+  getMacros(out: ShaderMacro[]): void;
+
+  getMacros(out?: ShaderMacro[]): ShaderMacro[] | void {
+    if (out) {
+      const macroMap = this._macroMap;
+      out.length = 0;
+      for (var key in macroMap) {
+        out.push(macroMap[key]);
+      }
+    } else {
+      return Object.values(this._macroMap);
+    }
   }
 
-  cloneTo(target: ShaderData): void {
-    // CloneManager.deepCloneObject(this._macroCollection, target._macroCollection);
-    // Object.assign(target._variableMacros, this._variableMacros);
-    //
-    // const properties = this._propertyResources;
-    // const targetProperties = target._propertyResources;
-    // const keys = Object.keys(properties);
-    // for (let i = 0, n = keys.length; i < n; i++) {
-    //     const k = keys[i];
-    //     const property: ShaderPropertyResourceType = properties[k];
-    //     if (property != null) {
-    //         if (typeof property === "number") {
-    //             targetProperties[k] = property;
-    //         } else if (property instanceof SamplerTexture2D) {
-    //             targetProperties[k] = property;
-    //         } else if (property instanceof Array || property instanceof Float32Array || property instanceof Int32Array) {
-    //             targetProperties[k] = property.slice();
-    //         } else {
-    //             const targetProperty = targetProperties[k];
-    //             if (targetProperty) {
-    //                 property.cloneTo(targetProperty);
-    //             } else {
-    //                 targetProperties[k] = property.clone();
-    //             }
-    //         }
-    //     } else {
-    //         targetProperties[k] = property;
-    //     }
-    // }
-  }
-
-  //------------------------------------------------------------------------------------------------------------------
+  //--------------------------------------------------------------------------------------------------------------------
   /**
    * @internal
    */
@@ -705,11 +293,7 @@ export class ShaderData implements IRefObject, IClone {
   /**
    * @internal
    */
-  _setSampledTexture(
-    texProperty: string | ShaderProperty,
-    sampleProperty: string | ShaderProperty,
-    value: SampledTexture
-  ): void {
+  _setImageView(texProperty: string | ShaderProperty, sampleProperty: string | ShaderProperty, value: ImageView): void {
     // texture
     {
       if (typeof texProperty === "string") {
@@ -745,7 +329,7 @@ export class ShaderData implements IRefObject, IClone {
       }
 
       if (this._propertyResources[sampleProperty._uniqueId] == undefined) {
-        this._propertyResources[sampleProperty._uniqueId] = value;
+        this._propertyResources[sampleProperty._uniqueId] = ShaderData._defaultSamplerDesc;
       }
     }
   }
@@ -753,45 +337,52 @@ export class ShaderData implements IRefObject, IClone {
   /**
    * @internal
    */
-  _getDataBuffer(property: number | string | ShaderProperty): Buffer {
-    if (typeof property === "string") {
-      property = Shader.getPropertyByName(property)._uniqueId;
-    }
-    if (typeof property !== "string" && typeof property !== "number") {
-      property = property._uniqueId;
+  _setStorageImageView(texProperty: string | ShaderProperty, value: ImageView): void {
+    if (typeof texProperty === "string") {
+      texProperty = Shader.getPropertyByName(texProperty);
     }
 
-    let buffer = this._propertyResources[property] as Buffer;
-    if (buffer === undefined || buffer === null) {
-      const functor = this._propertyFunctors[property];
-      if (functor !== undefined) {
-        buffer = functor();
+    if (texProperty._group !== this._group) {
+      if (texProperty._group === undefined) {
+        texProperty._group = this._group;
+      } else {
+        throw `Shader property ${texProperty.name} has been used as ${ShaderDataGroup[texProperty._group]} property.`;
       }
     }
-    return buffer;
+
+    this._propertyResources[texProperty._uniqueId] = value;
   }
 
   /**
    * @internal
    */
-  _getSampler(property: number | string | ShaderProperty): GPUSampler {
-    if (typeof property === "string") {
-      property = Shader.getPropertyByName(property)._uniqueId;
+  _setSampler(sampleProperty: string | ShaderProperty, value: SamplerDescriptor): void {
+    if (typeof sampleProperty === "string") {
+      sampleProperty = Shader.getPropertyByName(sampleProperty);
     }
-    if (typeof property !== "string" && typeof property !== "number") {
-      property = property._uniqueId;
+
+    if (sampleProperty._group !== this._group) {
+      if (sampleProperty._group === undefined) {
+        sampleProperty._group = this._group;
+      } else {
+        throw `Shader property ${sampleProperty.name} has been used as ${
+          ShaderDataGroup[sampleProperty._group]
+        } property.`;
+      }
     }
-    return (<SampledTexture>this._propertyResources[property]).sampler;
+
+    this._propertyResources[sampleProperty._uniqueId] = value;
   }
 
-  _getTextureView(property: number | string | ShaderProperty): GPUTextureView {
-    if (typeof property === "string") {
-      property = Shader.getPropertyByName(property)._uniqueId;
-    }
-    if (typeof property !== "string" && typeof property !== "number") {
-      property = property._uniqueId;
-    }
-    return (<SampledTexture>this._propertyResources[property]).textureView;
+  //--------------------------------------------------------------------------------------------------------------------
+  clone(): ShaderData {
+    const shaderData = new ShaderData(this._group, this._engine);
+    this.cloneTo(shaderData);
+    return shaderData;
+  }
+
+  cloneTo(target: ShaderData): void {
+    // todo
   }
 
   /**
@@ -809,10 +400,6 @@ export class ShaderData implements IRefObject, IClone {
     const properties = this._propertyResources;
     for (const k in properties) {
       const property = properties[k];
-      // @todo: Separate array to speed performance.
-      if (property && property instanceof SampledTexture2D) {
-        property._addRefCount(value);
-      }
     }
   }
 }
