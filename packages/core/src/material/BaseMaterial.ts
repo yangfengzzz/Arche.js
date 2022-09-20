@@ -52,7 +52,7 @@ export class BaseMaterial extends Material {
   set tilingOffset(value: Vector4) {
     const tilingOffset = this._tilingOffset;
     if (value !== tilingOffset) {
-      value.cloneTo(tilingOffset);
+      tilingOffset.copyFrom(value);
     }
     this.shaderData.setVector4(BaseMaterial._tilingOffsetProp, tilingOffset);
   }

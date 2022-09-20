@@ -21,7 +21,7 @@ export class SpringRot implements ISpringType {
 
       if (resetSpring) {
         // Tail's LocalSpace Position.
-        tail.setValue(0, b.transform.position.length(), 0);
+        tail.set(0, b.transform.position.length(), 0);
         // Move Tail to WorldSpace
         Vector3.transformCoordinate(tail, b.transform.worldMatrix, tail);
         // Set Spring to Start at this Position.
@@ -29,7 +29,7 @@ export class SpringRot implements ISpringType {
       }
 
       // Copy LS Transform as this will be the Actual Rest Pose of the bone.
-      b.transform.localMatrix.cloneTo(si.bind);
+      si.bind.copyFrom(b.transform.localMatrix);
     }
   }
 
@@ -49,7 +49,7 @@ export class SpringRot implements ISpringType {
     // Its Pose Bone
     b = si.index;
 
-    b.parent.transform.worldMatrix.cloneTo(pTran);
+    pTran.copyFrom(b.parent.transform.worldMatrix);
 
     // Start Processing Chain
     for (si of chain.items) {
@@ -61,7 +61,7 @@ export class SpringRot implements ISpringType {
       // Compute the Bone's Resting WS Transform
       Matrix.multiply(pTran, si.bind, cTran);
       // Tail's LocalSpace Position.
-      tail.setValue(0, b.transform.position.length(), 0);
+      tail.set(0, b.transform.position.length(), 0);
       // Move Tail to WorldSpace
       Vector3.transformCoordinate(tail, cTran, tail);
 

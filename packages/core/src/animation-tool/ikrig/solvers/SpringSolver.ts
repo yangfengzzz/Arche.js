@@ -58,13 +58,13 @@ export class SpringSolver extends SwingTwistBase {
     // Apply First Rotation to SwingTwist Rot
     Quaternion.multiply(r_axis_an, rot, rot);
     // Save as Next Parent Rotation
-    rot.cloneTo(qnext);
+    qnext.copyFrom(rot);
     // To Local
     Quaternion.pmulInvert(rot, qprev, rot);
     // Save
     lnk.idx.transform.rotationQuaternion = rot;
     // Move as Prev Parent Rotation
-    qnext.cloneTo(qprev);
+    qprev.copyFrom(qnext);
 
     // The last thing we do is fix the first bone rotation. The first bone starts off
     // aligned with the IK line, so we rotate N degrees to the left of the line for it.
@@ -85,13 +85,13 @@ export class SpringSolver extends SwingTwistBase {
       // Then apply the AB rotation to get it to point toward the IK Line
       Quaternion.multiply(r_axis, rot, rot);
       // Save WS rotation for next bone
-      rot.cloneTo(qnext);
+      qnext.copyFrom(rot);
       // To local space...
       Quaternion.pmulInvert(rot, qprev, rot);
       // Save to Pose
       lnk.idx.transform.rotationQuaternion = rot;
       // Move WS to qprev to act as the starting point
-      qnext.cloneTo(qprev);
+      qprev.copyFrom(qnext);
     }
   }
 }

@@ -35,7 +35,7 @@ export class PBRSpecularMaterial extends PBRBaseMaterial {
 
     const specularColor = this._specularColor;
     if (value !== specularColor) {
-      value.cloneTo(specularColor);
+      specularColor.copyFrom(value);
     }
   }
 

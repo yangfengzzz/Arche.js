@@ -58,7 +58,7 @@ export class HipSolver implements ISolver {
     if (lnk.pidx == null) {
       // lnk.idx.transform.worldMatrix.cloneTo(pt);
     } else {
-      lnk.pidx.transform.worldMatrix.cloneTo(pt);
+      pt.copyFrom(lnk.pidx.transform.worldMatrix);
     }
 
     // Invert Transform to Translate Position to Local Space
@@ -67,7 +67,7 @@ export class HipSolver implements ISolver {
     // Which Position Type Are we handling?
     if (this.isAbs) {
       // Set Absolute Position of where the hip must be
-      this.position.cloneTo(hipPos);
+      hipPos.copyFrom(this.position);
     } else {
       const ct = new Matrix();
       // Get Bone's BindPose position in relation to this pose
@@ -117,7 +117,7 @@ export class HipSolver implements ISolver {
     out.bindHeight = HipSolver.pos.y;
 
     // Save Delta Change
-    v.cloneTo(out.pos);
+    out.pos.copyFrom(v);
 
     // Alt Effector
     Vector3.transformByQuat(lnk.effectorDir, b.transform.worldRotationQuaternion, v);

@@ -20,7 +20,7 @@ export class SpringPos implements ISpringType {
       // Set Spring to Start at this Position.
       si.spring.reset(b.transform.worldPosition);
       // Copy LS Transform as this will be the Actual Rest Pose of the bone.
-      b.transform.localMatrix.cloneTo(si.bind);
+      si.bind.copyFrom(b.transform.localMatrix);
     }
   }
 
@@ -38,10 +38,10 @@ export class SpringPos implements ISpringType {
     b = si.index;
     if (b.parent) {
       // Use Parent's WS Transform
-      b.parent.transform.worldMatrix.cloneTo(pTran);
+      pTran.copyFrom(b.parent.transform.worldMatrix);
     } else {
       // Use Pose's Offset if there is no parent.
-      b.transform.worldMatrix.cloneTo(pTran);
+      pTran.copyFrom(b.transform.worldMatrix);
     }
 
     // Start Processing Chain
@@ -57,7 +57,7 @@ export class SpringPos implements ISpringType {
 
       // If no spring movement, save WS transform and move to next item
       if (!si.spring.update(dt)) {
-        cTran.cloneTo(pTran);
+        pTran.copyFrom(cTran);
         continue;
       }
 
@@ -67,7 +67,7 @@ export class SpringPos implements ISpringType {
       Vector3.transformCoordinate(si.spring.val, iTran, b.transform.position);
 
       // Using new Position, Move Parent WS Transform for the next item
-      si.bind.cloneTo(SpringPos.transform);
+      SpringPos.transform.copyFrom(si.bind);
       const localPos = b.transform.position;
       SpringPos.transform.elements[12] = localPos.x;
       SpringPos.transform.elements[13] = localPos.y;

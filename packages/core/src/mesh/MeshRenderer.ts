@@ -6,9 +6,9 @@ import { Entity } from "../Entity";
 import { Mesh } from "../graphic";
 import { Renderer } from "../Renderer";
 import { Shader } from "../shader";
-import { UpdateFlag } from "../UpdateFlag";
 import { RenderElement } from "../rendering/RenderElement";
 import { Attributes } from "../shaderlib";
+import { BoolUpdateFlag } from "../BoolUpdateFlag";
 
 /**
  * MeshRenderer Component.
@@ -22,7 +22,7 @@ export class MeshRenderer extends Renderer implements ICustomClone {
   @ignoreClone
   private _mesh: Mesh;
   @ignoreClone
-  private _meshUpdateFlag: UpdateFlag;
+  private _meshUpdateFlag: BoolUpdateFlag;
 
   /**
    * @internal
@@ -59,7 +59,7 @@ export class MeshRenderer extends Renderer implements ICustomClone {
   _render(opaqueQueue: RenderElement[], alphaTestQueue: RenderElement[], transparentQueue: RenderElement[]): void {
     const mesh = this._mesh;
     if (mesh) {
-      if (this._meshUpdateFlag.flag) {
+      if (this._meshUpdateFlag) {
         const shaderData = this.shaderData;
         const vertexLayouts = mesh._vertexBufferLayouts;
 
@@ -135,8 +135,8 @@ export class MeshRenderer extends Renderer implements ICustomClone {
       const worldMatrix = this._entity.transform.worldMatrix;
       BoundingBox.transform(localBounds, worldMatrix, worldBounds);
     } else {
-      worldBounds.min.setValue(0, 0, 0);
-      worldBounds.max.setValue(0, 0, 0);
+      worldBounds.min.set(0, 0, 0);
+      worldBounds.max.set(0, 0, 0);
     }
   }
 }

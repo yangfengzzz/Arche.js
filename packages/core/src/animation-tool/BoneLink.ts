@@ -23,7 +23,7 @@ export class BoneLink {
   _bind() {
     const fromParent = this.fromIndex.parent;
     if (fromParent) {
-      fromParent.transform.worldRotationQuaternion.cloneTo(this.quatFromParent);
+      this.quatFromParent.copyFrom(fromParent.transform.worldRotationQuaternion);
     }
 
     const toParent = this.toIndex.parent;
@@ -34,6 +34,6 @@ export class BoneLink {
     Quaternion.invert(this.fromIndex.transform.worldRotationQuaternion, this.wquatFromTo);
     Quaternion.multiply(this.wquatFromTo, this.toIndex.transform.worldRotationQuaternion, this.wquatFromTo);
 
-    this.fromIndex.transform.worldRotationQuaternion.cloneTo(this.quatDotCheck);
+    this.quatDotCheck.copyFrom(this.fromIndex.transform.worldRotationQuaternion);
   }
 }

@@ -57,7 +57,7 @@ export class ZSolver extends SwingTwistBase {
     // Use the Axis X to rotate by Radian Angle
     Quaternion.pmulAxisAngle(ST.orthoDir, -rad, rot, rot);
     // Save For Next Bone as its WorldSpace Parent
-    rot.cloneTo(prot);
+    prot.copyFrom(rot);
     // To Local
     pt.getRotation(ZSolver.rot);
     Quaternion.pmulInvert(rot, ZSolver.rot, rot);
@@ -72,7 +72,7 @@ export class ZSolver extends SwingTwistBase {
     // Rotation that needs to be applied to bone, same as prev bone
     Quaternion.pmulAxisAngle(ST.orthoDir, rad, rot, rot);
     // Save for next bone
-    rot.cloneTo(prot2);
+    prot2.copyFrom(rot);
     // To Local
     Quaternion.pmulInvert(rot, prot, rot);
     // Save to Pose

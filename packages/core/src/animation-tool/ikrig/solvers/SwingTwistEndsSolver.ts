@@ -71,9 +71,9 @@ export class SwingTwistEndsSolver implements ISolver {
 
     // Get Starting Parent WS Rotation
     if (lnk.pidx != null) {
-      lnk.pidx.transform.worldRotationQuaternion.cloneTo(pRot);
+      pRot.copyFrom(lnk.pidx.transform.worldRotationQuaternion);
     } else {
-      lnk.idx.transform.worldRotationQuaternion.cloneTo(pRot);
+      pRot.copyFrom(lnk.idx.transform.worldRotationQuaternion);
     }
 
     for (let i = 0; i <= iEnd; i++) {
@@ -107,14 +107,14 @@ export class SwingTwistEndsSolver implements ISolver {
       // Apply Twist so now it matches our IK Pole direction
       Quaternion.multiply(rot, cRot, cRot);
       // Save as the next Parent Rotation
-      cRot.cloneTo(tmp);
+      tmp.copyFrom(cRot);
 
       // To Local Space
       Quaternion.pmulInvert(cRot, pRot, cRot);
       // Save back to pose
       lnk.idx.transform.rotationQuaternion = cRot;
       // Set WS Rotation for Next Bone.
-      if (i != iEnd) tmp.cloneTo(pRot);
+      if (i != iEnd) pRot.copyFrom(tmp);
     }
   }
 

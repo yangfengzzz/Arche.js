@@ -45,7 +45,7 @@ export class BlinnPhongMaterial extends BaseMaterial {
 
     const baseColor = this._baseColor;
     if (value !== baseColor) {
-      value.cloneTo(baseColor);
+      baseColor.copyFrom(value);
     }
   }
 
@@ -83,7 +83,7 @@ export class BlinnPhongMaterial extends BaseMaterial {
 
     const specularColor = this._specularColor;
     if (value !== specularColor) {
-      value.cloneTo(specularColor);
+      specularColor.copyFrom(value);
     }
   }
 
@@ -113,7 +113,7 @@ export class BlinnPhongMaterial extends BaseMaterial {
    */
   emissiveColor(color: Color): Color {
     const blinnPhongData = this._blinnPhongData;
-    color.setValue(blinnPhongData[8], blinnPhongData[9], blinnPhongData[10], blinnPhongData[11]);
+    color.set(blinnPhongData[8], blinnPhongData[9], blinnPhongData[10], blinnPhongData[11]);
     return color;
   }
 

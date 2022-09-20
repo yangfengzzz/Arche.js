@@ -14,17 +14,17 @@ export class SpringVec3 extends SpringBase {
   epsilon = 0.000001;
 
   setTarget(v: Vector3) {
-    v.cloneTo(this.tar);
+    this.tar.copyFrom(v);
     return this;
   }
 
   reset(v: Vector3) {
     if (v) {
-      v.cloneTo(this.val);
-      v.cloneTo(this.tar);
+      this.val.copyFrom(v);
+      this.tar.copyFrom(v);
     } else {
-      this.val.setValue(0, 0, 0);
-      this.tar.setValue(0, 0, 0);
+      this.val.set(0, 0, 0);
+      this.tar.set(0, 0, 0);
     }
 
     return this;
@@ -34,8 +34,8 @@ export class SpringVec3 extends SpringBase {
     if (Vector3.equals(this.vel, SpringVec3._zero) && Vector3.distanceSquared(this.tar, this.val) == 0) return false;
 
     if (this.vel.lengthSquared() < this.epsilon && Vector3.distanceSquared(this.tar, this.val) < this.epsilon) {
-      this.vel.setValue(0, 0, 0);
-      this.tar.cloneTo(this.val);
+      this.vel.set(0, 0, 0);
+      this.val.copyFrom(this.tar);
       return true;
     }
 

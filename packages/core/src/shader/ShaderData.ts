@@ -1,4 +1,4 @@
-import { IClone } from "../clone/IClone";
+import { IClone } from "@arche-engine/design";
 import { Color, Matrix, Vector2, Vector3, Vector4 } from "@arche-engine/math";
 import { IRefObject } from "../asset";
 import { ShaderDataGroup } from "./ShaderDataGroup";

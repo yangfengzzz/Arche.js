@@ -186,7 +186,7 @@ export class SkyboxSubpass extends Subpass {
 
     const vpMatrix = SkyboxSubpass._vpMatrix;
     const projectionMatrix = camera.projectionMatrix;
-    camera.viewMatrix.cloneTo(vpMatrix);
+    vpMatrix.copyFrom(camera.viewMatrix);
     if (this._type == SkyBoxType.Cuboid) {
       vpMatrix.elements[12] = 0;
       vpMatrix.elements[13] = 0;

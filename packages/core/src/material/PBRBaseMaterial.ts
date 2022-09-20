@@ -45,7 +45,7 @@ export abstract class PBRBaseMaterial extends BaseMaterial {
 
     const baseColor = this._baseColor;
     if (value !== baseColor) {
-      value.cloneTo(baseColor);
+      baseColor.copyFrom(value);
     }
   }
 
@@ -100,7 +100,7 @@ export abstract class PBRBaseMaterial extends BaseMaterial {
 
     const emissiveColor = this._emissiveColor;
     if (value !== emissiveColor) {
-      value.cloneTo(emissiveColor);
+      emissiveColor.copyFrom(value);
     }
   }
 

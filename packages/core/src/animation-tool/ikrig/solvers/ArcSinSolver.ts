@@ -49,7 +49,7 @@ export class ArcSinSolver extends SwingTwistBase {
       pt.getRotation(ArcSinSolver.rot);
       Quaternion.pmulInvert(rot, ArcSinSolver.rot, rot);
       // Save
-      chain.links[0].idx.transform.rotationQuaternion.cloneTo(rot);
+      rot.copyFrom(chain.links[0].idx.transform.rotationQuaternion);
       return;
     }
 
@@ -67,7 +67,7 @@ export class ArcSinSolver extends SwingTwistBase {
     this._resolveSlice(chain, 0, midIdx, ST.originPos, midPos, this.bendDir, ws, rot);
 
     // Compute the new Parent WS Transform as a starting point for the 2nd Arc
-    pt.cloneTo(ws);
+    ws.copyFrom(pt);
     for (let i = 0; i <= midIdx; i++) {
       Matrix.multiply(chain.links[i].idx.transform.localMatrix, ws, ws);
     }
@@ -122,7 +122,7 @@ export class ArcSinSolver extends SwingTwistBase {
       // Use Init Rotation instead
       // Move Bind to WorldSpace
       if (i == aIdx && initRot) {
-        initRot.cloneTo(rot);
+        rot.copyFrom(initRot);
       } else {
         Quaternion.multiply(ArcSinSolver.rot, ArcSinSolver.rot2, rot);
       }
@@ -130,7 +130,7 @@ export class ArcSinSolver extends SwingTwistBase {
       // Add Increment
       // Save as Root WS Rotation for Realignment
       Quaternion.multiply(q_inc, rot, rot);
-      if (i == aIdx) rot.cloneTo(root_rot);
+      if (i == aIdx) root_rot.copyFrom(rot);
 
       // To Local
       Quaternion.pmulInvert(rot, ArcSinSolver.rot, rot);

@@ -105,7 +105,7 @@ export class ColorPickerRenderPass extends RenderPass {
    */
   pick(offsetX: number, offsetY: number) {
     this._needPick = true;
-    this._pickPos.setValue(offsetX, offsetY);
+    this._pickPos.set(offsetX, offsetY);
   }
 
   draw(scene: Scene, camera: Camera, commandEncoder: GPUCommandEncoder) {

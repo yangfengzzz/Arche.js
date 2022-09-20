@@ -74,7 +74,7 @@ export class SwingTwistSolver implements ISolver {
     pt.decompose(SwingTwistSolver.pos, SwingTwistSolver.rot, SwingTwistSolver.scale);
     Quaternion.pmulInvert(rot, SwingTwistSolver.rot, rot);
     // Save to Pose
-    chain.links[0].idx.transform.rotationQuaternion.cloneTo(rot);
+    rot.copyFrom(chain.links[0].idx.transform.rotationQuaternion);
   }
 
   ikDataFromPose(chain: IKChain, out: Dir): void {
@@ -111,7 +111,7 @@ export class SwingTwistSolver implements ISolver {
     Vector3.cross(this.effectorDir, this.orthoDir, v);
     Vector3.normalize(v, this.poleDir);
 
-    origin.cloneTo(this.originPos);
+    this.originPos.copyFrom(origin);
   }
 
   getWorldRot(chain: IKChain): [Quaternion, Matrix] {
@@ -120,8 +120,8 @@ export class SwingTwistSolver implements ISolver {
     let lnk = chain.first();
 
     // Get the Starting Transform
-    if (lnk.pidx == null) lnk.idx.transform.worldMatrix.cloneTo(pt);
-    else lnk.pidx.transform.worldMatrix.cloneTo(pt);
+    if (lnk.pidx == null) pt.copyFrom(lnk.idx.transform.worldMatrix);
+    else pt.copyFrom(lnk.pidx.transform.worldMatrix);
 
     // Get Bone's BindPose position in relation to this pose
     Matrix.multiply(pt, lnk.bind, ct);

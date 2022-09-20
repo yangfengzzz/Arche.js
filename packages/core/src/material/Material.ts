@@ -1,4 +1,4 @@
-import { IClone } from "../clone/IClone";
+import { IClone } from "@arche-engine/design";
 import { RefObject } from "../asset";
 import { CloneManager } from "../clone/CloneManager";
 import { Engine } from "../Engine";

@@ -52,7 +52,7 @@ export class ParticleMaterial extends BaseMaterial {
 
   set birthGradient(gradient: Vector3) {
     if (gradient !== this._birthGradient) {
-      gradient.cloneTo(this._birthGradient);
+      this._birthGradient.copyFrom(gradient);
     }
     this._particleData[0] = gradient.x;
     this._particleData[1] = gradient.y;
@@ -66,7 +66,7 @@ export class ParticleMaterial extends BaseMaterial {
 
   set deathGradient(gradient: Vector3) {
     if (gradient !== this._deathGradient) {
-      gradient.cloneTo(this._deathGradient);
+      this._deathGradient.copyFrom(gradient);
     }
     this._particleData[4] = gradient.x;
     this._particleData[5] = gradient.y;

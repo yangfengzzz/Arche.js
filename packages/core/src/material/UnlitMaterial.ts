@@ -25,7 +25,7 @@ export class UnlitMaterial extends BaseMaterial {
   set baseColor(value: Color) {
     const baseColor = this._baseColor;
     if (value !== baseColor) {
-      value.cloneTo(baseColor);
+      baseColor.copyFrom(value);
     }
     this.shaderData.setColor(UnlitMaterial._baseColorProp, baseColor);
   }

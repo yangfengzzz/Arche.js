@@ -1,22 +1,20 @@
 import { BoundingBox, Matrix } from "@arche-engine/math";
 import { BoolUpdateFlag } from "./BoolUpdateFlag";
-import { Camera } from "./Camera";
 import { assignmentClone, deepClone, ignoreClone, shallowClone } from "./clone/CloneManager";
 import { Component } from "./Component";
-import { dependentComponents } from "./ComponentsDependencies";
 import { Entity } from "./Entity";
 import { Material } from "./material/Material";
 import { Shader, ShaderDataGroup } from "./shader";
 import { ShaderData } from "./shader/ShaderData";
 import { ShaderMacroCollection } from "./shader/ShaderMacroCollection";
-import { Transform } from "./Transform";
+import { RenderElement } from "./rendering/RenderElement";
+import { RenderQueueType } from "./material";
 
 /**
  * Basis for all renderers.
  * @decorator `@dependentComponents(Transform)`
  */
-@dependentComponents(Transform)
-export class Renderer extends Component {
+export abstract class Renderer extends Component {
   private static _receiveShadowMacro = Shader.getMacroByName("OASIS_RECEIVE_SHADOWS");
 
   private static _rendererProperty = Shader.getPropertyByName("u_rendererData");
@@ -306,8 +304,35 @@ export class Renderer extends Component {
   /**
    * @internal
    */
-  _render(camera: Camera): void {
-    throw "not implement";
+  abstract _render(
+    opaqueQueue: RenderElement[],
+    alphaTestQueue: RenderElement[],
+    transparentQueue: RenderElement[]
+  ): void;
+
+  /**
+   * @internal
+   * Push a render element to the render queue.
+   * @param element - Render element
+   * @param opaqueQueue
+   * @param alphaTestQueue
+   * @param transparentQueue
+   */
+  _pushPrimitive(
+    element: RenderElement,
+    opaqueQueue: RenderElement[],
+    alphaTestQueue: RenderElement[],
+    transparentQueue: RenderElement[]
+  ): void {
+    const renderQueueType = element.material.renderQueueType;
+
+    if (renderQueueType > (RenderQueueType.Transparent + RenderQueueType.AlphaTest) >> 1) {
+      transparentQueue.push(element);
+    } else if (renderQueueType > (RenderQueueType.AlphaTest + RenderQueueType.Opaque) >> 1) {
+      alphaTestQueue.push(element);
+    } else {
+      opaqueQueue.push(element);
+    }
   }
 
   /**

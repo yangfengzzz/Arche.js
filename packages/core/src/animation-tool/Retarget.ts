@@ -92,8 +92,8 @@ export class Retarget extends Script {
       const tBone = hip.toIndex;
 
       // Cache for Retargeting
-      fBone.transform.worldPosition.cloneTo(this.fromPosHip);
-      tBone.transform.worldPosition.cloneTo(this.toPosHip);
+      this.fromPosHip.copyFrom(fBone.transform.worldPosition);
+      this.toPosHip.copyFrom(tBone.transform.worldPosition);
       this.hipScale = Math.abs(this.toPosHip.y / this.fromPosHip.y); // Retarget Scale FROM -> TO
     }
   }

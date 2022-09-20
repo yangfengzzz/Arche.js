@@ -6,7 +6,7 @@ export class PositionOffset implements IIKPoseAdditive {
   pos = new Vector3();
 
   constructor(p: Vector3) {
-    p.cloneTo(this.pos);
+    this.pos.copyFrom(p);
   }
 
   apply(key: string, src: BipedIKPose): void {

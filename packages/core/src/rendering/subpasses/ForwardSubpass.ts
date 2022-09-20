@@ -110,11 +110,11 @@ export class ForwardSubpass extends Subpass {
     for (let i = 0, n = items.length; i < n; i++) {
       const { mesh, subMesh, material, renderer } = items[i];
       const shadowCount = ShadowManager.shadowCount();
-      if (renderer.receiveShadow && shadowCount != 0) {
+      if (renderer.receiveShadows && shadowCount != 0) {
         renderer.shaderData.enableMacro("SHADOW_MAP_COUNT", shadowCount.toString());
       }
       const cubeShadowCount = ShadowManager.cubeShadowCount();
-      if (renderer.receiveShadow && cubeShadowCount != 0) {
+      if (renderer.receiveShadows && cubeShadowCount != 0) {
         renderer.shaderData.enableMacro("CUBE_SHADOW_MAP_COUNT", cubeShadowCount.toString());
       }
 

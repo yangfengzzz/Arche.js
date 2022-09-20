@@ -1,7 +1,7 @@
 import { BlendShapeFrame } from "./BlendShapeFrame";
 import { Vector3 } from "@arche-engine/math";
-import { UpdateFlag } from "../UpdateFlag";
 import { UpdateFlagManager } from "../UpdateFlagManager";
+import { BoolUpdateFlag } from "../BoolUpdateFlag";
 
 /**
  * BlendShape.
@@ -66,7 +66,7 @@ export class BlendShape {
     } else {
       this._addFrame(frameOrWeight);
     }
-    this._updateFlagManager.distribute();
+    this._updateFlagManager.dispatch();
   }
 
   /**
@@ -74,7 +74,7 @@ export class BlendShape {
    */
   clearFrames(): void {
     this._frames.length = 0;
-    this._updateFlagManager.distribute();
+    this._updateFlagManager.dispatch();
     this._useBlendShapeNormal = false;
     this._useBlendShapeTangent = false;
   }
@@ -82,8 +82,8 @@ export class BlendShape {
   /**
    * @internal
    */
-  _registerChangeFlag(): UpdateFlag {
-    return this._updateFlagManager.register();
+  _registerChangeFlag(): BoolUpdateFlag {
+    return this._updateFlagManager.createFlag(BoolUpdateFlag);
   }
 
   private _addFrame(frame: BlendShapeFrame): void {

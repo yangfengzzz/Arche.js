@@ -112,7 +112,7 @@ export class TrapezoidSolver extends SwingTwistBase {
     // Add rotation to SwingTwist
     Quaternion.pmulAxisAngle(ST.orthoDir, -ang[0] * this.bendDir, rot, rot);
     // Save WS for Next Bone
-    rot.cloneTo(qnext);
+    qnext.copyFrom(rot);
     // To Local
     Quaternion.pmulInvert(rot, qprev, rot);
 
@@ -120,14 +120,14 @@ export class TrapezoidSolver extends SwingTwistBase {
 
     // SECOND BONE
     // Shift Next to Prev, used for To Local
-    qnext.cloneTo(qprev);
+    qprev.copyFrom(qnext);
     // Move Local Bind to WorldSpace
     b1.bind.getRotation(TrapezoidSolver.rot);
     Quaternion.multiply(qprev, TrapezoidSolver.rot, rot);
     // Rotation that needs to be applied to bone.
     Quaternion.pmulAxisAngle(ST.orthoDir, -(Math.PI + ang[1] * this.bendDir), rot, rot);
     // Save WS for Next Bone
-    rot.cloneTo(qnext);
+    qnext.copyFrom(rot);
     // To Local
     Quaternion.pmulInvert(rot, qprev, rot);
 

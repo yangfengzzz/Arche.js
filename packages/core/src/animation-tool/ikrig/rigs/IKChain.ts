@@ -27,7 +27,7 @@ export class IKLink {
 
   static fromBone(b: Entity): IKLink {
     const l = new IKLink(b);
-    b.transform.localMatrix.cloneTo(l.bind);
+    l.bind.copyFrom(b.transform.localMatrix);
     l.pidx = b.parent;
     return l;
   }
@@ -86,7 +86,7 @@ export class IKChain {
   bindToPose(): this {
     let lnk: IKLink;
     for (lnk of this.links) {
-      lnk.idx.transform.localMatrix.cloneTo(lnk.bind);
+      lnk.bind.copyFrom(lnk.idx.transform.localMatrix);
     }
     return this;
   }
@@ -221,10 +221,10 @@ export class IKChain {
       Quaternion.invert(l.idx.transform.worldRotationQuaternion, inv);
 
       Vector3.transformByQuat(effectorDir, inv, v);
-      v.cloneTo(l.effectorDir);
+      l.effectorDir.copyFrom(v);
 
       Vector3.transformByQuat(poleDir, inv, v);
-      v.cloneTo(l.poleDir);
+      l.poleDir.copyFrom(v);
     }
 
     return this;
@@ -233,8 +233,8 @@ export class IKChain {
   setAltDirections(effectorDir: Vector3, poleDir: Vector3): this {
     let l: IKLink;
     for (l of this.links) {
-      effectorDir.cloneTo(l.effectorDir);
-      poleDir.cloneTo(l.poleDir);
+      l.effectorDir.copyFrom(effectorDir);
+      l.poleDir.copyFrom(poleDir);
     }
     return this;
   }

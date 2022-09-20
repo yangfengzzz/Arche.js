@@ -5,7 +5,7 @@ import { VertexAttribute, VertexBufferLayout } from "../webgpu";
 import { Attributes } from "../shaderlib";
 import { SampledTexture2D } from "../texture";
 import { BlendShape } from "./BlendShape";
-import { UpdateFlag } from "../UpdateFlag";
+import { BoolUpdateFlag } from "../BoolUpdateFlag";
 
 /**
  * Mesh containing common vertex elements of the model.
@@ -46,7 +46,7 @@ export class ModelMesh extends Mesh {
   private _boneWeights: Vector4[] | null = null;
   private _boneIndices: Vector4[] | null = null;
   private _blendShapes: BlendShape[] = [];
-  private _blendShapeUpdateFlags: UpdateFlag[] = [];
+  private _blendShapeUpdateFlags: BoolUpdateFlag[] = [];
 
   /**
    * Whether to access data of the mesh.
@@ -781,12 +781,10 @@ export class ModelMesh extends Mesh {
               }
               offset += 3;
             }
-            blendShapeUpdateFlag.flag = false;
           }
         }
       }
     }
-
     this._vertexChangeFlag = 0;
   }
 

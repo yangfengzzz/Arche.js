@@ -36,8 +36,7 @@ export abstract class Subpass extends EngineObject {
   static _compareFromNearToFar(a: RenderElement, b: RenderElement): number {
     return (
       a.material.renderQueueType - b.material.renderQueueType ||
-      a.renderer._distanceForSort - b.renderer._distanceForSort ||
-      b.renderer._renderSortId - a.renderer._renderSortId
+      a.renderer._distanceForSort - b.renderer._distanceForSort
     );
   }
 
@@ -47,8 +46,7 @@ export abstract class Subpass extends EngineObject {
   static _compareFromFarToNear(a: RenderElement, b: RenderElement): number {
     return (
       a.material.renderQueueType - b.material.renderQueueType ||
-      b.renderer._distanceForSort - a.renderer._distanceForSort ||
-      b.renderer._renderSortId - a.renderer._renderSortId
+      b.renderer._distanceForSort - a.renderer._distanceForSort
     );
   }
 }

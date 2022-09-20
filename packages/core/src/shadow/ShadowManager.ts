@@ -236,7 +236,7 @@ export class ShadowManager extends RenderPass {
           }
           const viewProjectionMatrix = material.viewProjectionMatrix;
           const shadowData = ShadowManager._shadowData;
-          viewProjectionMatrix.setValue(
+          viewProjectionMatrix.set(
             shadowData[4],
             shadowData[5],
             shadowData[6],
@@ -303,7 +303,7 @@ export class ShadowManager extends RenderPass {
           const stride = i * 16;
           const viewProjectionMatrix = material.viewProjectionMatrix;
           const shadowData = ShadowManager._shadowData;
-          viewProjectionMatrix.setValue(
+          viewProjectionMatrix.set(
             shadowData[4 + stride],
             shadowData[5 + stride],
             shadowData[6 + stride],
@@ -389,7 +389,7 @@ export class ShadowManager extends RenderPass {
           const stride = i * 16;
           const viewProjectionMatrix = material.viewProjectionMatrix;
           const shadowData = ShadowManager._cubeShadowData;
-          viewProjectionMatrix.setValue(
+          viewProjectionMatrix.set(
             shadowData[4 + stride],
             shadowData[5 + stride],
             shadowData[6 + stride],
@@ -468,7 +468,7 @@ export class ShadowManager extends RenderPass {
     shadowData[2] = light.shadowIntensity;
 
     const worldPos = ShadowManager._tempWorldPos;
-    light.entity.transform.worldPosition.cloneTo(worldPos);
+    worldPos.copyFrom(light.entity.transform.worldPosition);
 
     const nearClip = camera.nearClipPlane;
     const farClip = camera.farClipPlane;
@@ -515,10 +515,10 @@ export class ShadowManager extends RenderPass {
       const _frustumCorners = ShadowManager._frustumCorners;
       for (let i = 0; i < 4; i++) {
         Vector3.subtract(frustumCorners[i + 4], frustumCorners[i], vector);
-        frustumCorners[i].cloneTo(_frustumCorners[i + 4]);
+        _frustumCorners[i + 4].copyFrom(frustumCorners[i]);
         _frustumCorners[i + 4].add(vector.scale(splitDist));
 
-        frustumCorners[i].cloneTo(_frustumCorners[i]);
+        _frustumCorners[i].copyFrom(frustumCorners[i]);
         _frustumCorners[i].add(vector.scale(lastSplitDist / splitDist));
       }
 
@@ -563,7 +563,7 @@ export class ShadowManager extends RenderPass {
       posZ = Math.floor(posZ);
       posZ *= fWorldUnitsPerTexel;
 
-      vector.setValue(posX, posY, posZ);
+      vector.set(posX, posY, posZ);
       Vector3.transformCoordinate(vector, lightMat, vector);
       light.entity.transform.worldPosition = vector;
 

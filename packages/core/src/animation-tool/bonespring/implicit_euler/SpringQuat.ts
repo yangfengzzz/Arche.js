@@ -14,7 +14,7 @@ export class SpringQuat extends SpringBase {
   epsilon = 0.00001;
 
   setTarget(v: Quaternion, doNorm: boolean = false): this {
-    v.cloneTo(this.tar);
+    this.tar.copyFrom(v);
     if (doNorm) this.tar.normalize();
     return this;
   }
@@ -23,8 +23,8 @@ export class SpringQuat extends SpringBase {
     this.vel.identity();
 
     if (v) {
-      v.cloneTo(this.val);
-      v.cloneTo(this.tar);
+      this.val.copyFrom(v);
+      this.tar.copyFrom(v);
     } else {
       this.val.identity();
       this.tar.identity();
@@ -38,8 +38,8 @@ export class SpringQuat extends SpringBase {
       return false;
 
     if (this.vel.lengthSquared() < this.epsilon && Quaternion.distanceSquared(this.tar, this.val) < this.epsilon) {
-      this.vel.setValue(0, 0, 0, 0);
-      this.tar.cloneTo(this.val);
+      this.vel.set(0, 0, 0, 0);
+      this.val.copyFrom(this.tar);
       return true;
     }
 

@@ -9,7 +9,7 @@ export class ShadowMaterial extends BaseMaterial {
 
   set viewProjectionMatrix(vp: Matrix) {
     if (vp !== this._vp) {
-      vp.cloneTo(this._vp);
+      this._vp.copyFrom(vp);
     }
     this.shaderData.setMatrix(ShadowMaterial._shadowViewProjectionProp, this._vp);
   }

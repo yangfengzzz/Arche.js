@@ -208,7 +208,7 @@ export class ParticleRenderer extends Renderer {
 
   set emitterPosition(position: Vector3) {
     if (position !== this._emitterPosition) {
-      position.cloneTo(this._emitterPosition);
+      this._emitterPosition.copyFrom(position);
     }
     this._emitterData[0] = position.x;
     this._emitterData[1] = position.y;
@@ -222,7 +222,7 @@ export class ParticleRenderer extends Renderer {
 
   set emitterDirection(direction: Vector3) {
     if (direction !== this._emitterDirection) {
-      direction.cloneTo(this._emitterDirection);
+      this._emitterDirection.copyFrom(direction);
     }
     this._emitterData[4] = direction.x;
     this._emitterData[5] = direction.y;

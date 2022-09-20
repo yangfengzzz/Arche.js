@@ -3,10 +3,10 @@ import { RefObject } from "../asset";
 import { Engine } from "../Engine";
 import { IndexBufferBinding } from "./IndexBufferBinding";
 import { SubMesh } from "./SubMesh";
-import { UpdateFlag } from "../UpdateFlag";
 import { UpdateFlagManager } from "../UpdateFlagManager";
 import { Buffer } from "./Buffer";
 import { VertexBufferLayout } from "../webgpu";
+import { BoolUpdateFlag } from "../BoolUpdateFlag";
 
 /**
  * Mesh.
@@ -116,8 +116,8 @@ export abstract class Mesh extends RefObject {
    * Register update flag, update flag will be true if the vertex layout changes.
    * @returns Update flag
    */
-  registerUpdateFlag(): UpdateFlag {
-    return this._updateFlagManager.register();
+  registerUpdateFlag(): BoolUpdateFlag {
+    return this._updateFlagManager.createFlag(BoolUpdateFlag);
   }
 
   /**
@@ -171,6 +171,6 @@ export abstract class Mesh extends RefObject {
 
   private _addVertexLayout(layout: VertexBufferLayout): void {
     this._vertexBufferLayouts.push(layout);
-    this._updateFlagManager.distribute();
+    this._updateFlagManager.dispatch();
   }
 }

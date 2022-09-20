@@ -5,7 +5,6 @@ import { assignmentClone, ignoreClone } from "../clone/CloneManager";
 import { Component } from "../Component";
 import { Entity } from "../Entity";
 import { SkinnedMeshRenderer } from "../mesh";
-import { ClassPool } from "../RenderPipeline/ClassPool";
 import { Transform } from "../Transform";
 import { AnimationCurve } from "./AnimationCurve";
 import { AnimatorController } from "./AnimatorController";
@@ -25,6 +24,7 @@ import { AnimatorStatePlayData } from "./internal/AnimatorStatePlayData";
 import { CrossCurveData } from "./internal/CrossCurveData";
 import { AnimatorTempValue } from "./internal/AnimatorTempValue";
 import { InterpolableValue, UnionInterpolableKeyframe } from "./KeyFrame";
+import { ClassPool } from "../rendering/ClassPool";
 /**
  * The controller of the animation system.
  */

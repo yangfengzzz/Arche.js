@@ -41,7 +41,7 @@ export class LimbSolver extends SwingTwistBase {
     // Use the Axis X to rotate by Radian Angle
     Quaternion.pmulAxisAngle(ST.orthoDir, -rad * this.bendDir, rot, rot);
     // Save For Next Bone as Starting Point.
-    rot.cloneTo(prot);
+    prot.copyFrom(rot);
     // To Local
     pt.getRotation(LimbSolver.rot);
     Quaternion.pmulInvert(rot, LimbSolver.rot, rot);

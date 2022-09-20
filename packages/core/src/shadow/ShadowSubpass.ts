@@ -121,7 +121,7 @@ export class ShadowSubpass extends Subpass {
     const material = this._material;
     for (let i = 0, n = items.length; i < n; i++) {
       const { mesh, subMesh, renderer } = items[i];
-      if (renderer.castShadow) {
+      if (renderer.castShadows) {
         const camera = this._camera;
         renderer._updateShaderData(camera.viewMatrix, camera.projectionMatrix);
 

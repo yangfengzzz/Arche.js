@@ -7,8 +7,8 @@ export class DirScale {
 
   copy(v: DirScale): void {
     this.lenScale = v.lenScale;
-    v.effectorDir.cloneTo(this.effectorDir);
-    v.poleDir.cloneTo(this.poleDir);
+    this.effectorDir.copyFrom(v.effectorDir);
+    this.poleDir.copyFrom(v.poleDir);
   }
 
   clone(): DirScale {
@@ -23,8 +23,8 @@ export class Dir {
   poleDir = new Vector3();
 
   copy(v: Dir): void {
-    v.effectorDir.cloneTo(this.effectorDir);
-    v.poleDir.cloneTo(this.poleDir);
+    this.effectorDir.copyFrom(v.effectorDir);
+    this.poleDir.copyFrom(v.poleDir);
   }
 }
 
@@ -35,10 +35,10 @@ export class DirEnds {
   endPoleDir = new Vector3();
 
   copy(v: DirEnds): void {
-    v.startEffectorDir.cloneTo(this.startEffectorDir);
-    v.startPoleDir.cloneTo(this.startPoleDir);
-    v.endEffectorDir.cloneTo(this.endEffectorDir);
-    v.endPoleDir.cloneTo(this.endPoleDir);
+    this.startEffectorDir.copyFrom(v.startEffectorDir);
+    this.startPoleDir.copyFrom(v.startPoleDir);
+    this.endEffectorDir.copyFrom(v.endEffectorDir);
+    this.endPoleDir.copyFrom(v.endPoleDir);
   }
 }
 
@@ -52,8 +52,8 @@ export class Hip {
   copy(v: Hip): void {
     this.bindHeight = v.bindHeight;
     this.isAbsolute = v.isAbsolute;
-    v.effectorDir.cloneTo(this.effectorDir);
-    v.poleDir.cloneTo(this.poleDir);
-    v.pos.cloneTo(this.pos);
+    this.effectorDir.copyFrom(v.effectorDir);
+    this.poleDir.copyFrom(v.poleDir);
+    this.pos.copyFrom(v.pos);
   }
 }
