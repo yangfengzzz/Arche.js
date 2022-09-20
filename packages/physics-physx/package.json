@@ -1,6 +1,10 @@
 {
   "name": "@arche-engine/physics-physx",
   "version": "0.0.15",
+  "publishConfig": {
+    "access": "public",
+    "registry": "https://registry.npmjs.org"
+  },
   "license": "MIT",
   "main": "dist/main.js",
   "module": "dist/module.js",
@@ -12,13 +16,14 @@
   },
   "files": [
     "dist/**/*",
+    "libs/**/*",
     "types/**/*"
   ],
-  "dependencies": {
-    "@arche-engine/design": "^0.0.15",
-    "arche-engine": "^0.0.15"
+  "devDependencies": {
+    "@arche-engine/design": "workspace:*",
+    "arche-engine": "workspace:*"
   },
-  "publishConfig": {
-    "access": "public"
+  "peerDependencies": {
+    "arche-engine": "workspace:*"
   }
 }

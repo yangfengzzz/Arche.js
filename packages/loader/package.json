@@ -1,6 +1,10 @@
 {
   "name": "@arche-engine/loader",
   "version": "0.0.15",
+  "publishConfig": {
+    "access": "public",
+    "registry": "https://registry.npmjs.org"
+  },
   "license": "MIT",
   "types": "types/index.d.ts",
   "scripts": {
@@ -14,9 +18,8 @@
     "types/**/*"
   ],
   "dependencies": {
-    "@arche-engine/core": "^0.0.15",
-    "@arche-engine/math": "^0.0.15",
-    "@arche-engine/draco": "^0.0.15",
-    "@webgpu/types": "latest"
+    "@arche-engine/core": "workspace:*",
+    "@arche-engine/draco": "workspace:*",
+    "@arche-engine/math": "workspace:*"
   }
 }

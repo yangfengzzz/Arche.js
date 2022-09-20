@@ -7,7 +7,6 @@ import babel from "@rollup/plugin-babel";
 import glslify from "rollup-plugin-glslify";
 import { terser } from "rollup-plugin-terser";
 import serve from "rollup-plugin-serve";
-import miniProgramPlugin from "./rollup.miniprogram.plugin";
 import replace from "@rollup/plugin-replace";
 
 const camelCase = require("camelcase");
@@ -38,7 +37,7 @@ const mainFields = NODE_ENV === "development" ? ["debug", "module", "main"] : un
 const commonPlugins = [
   resolve({ extensions, preferBuiltins: true, mainFields }),
   glslify({
-    include: [/\.wgsl$/]
+    include: [/\.glsl$/]
   }),
   babel({
     extensions,
@@ -56,7 +55,8 @@ const commonPlugins = [
 
 function config({ location, pkgJson }) {
   const input = path.join(location, "src", "index.ts");
-  const external = Object.keys(pkgJson.dependencies || {});
+  const dependencies = Object.assign({}, pkgJson.dependencies ?? {}, pkgJson.peerDependencies ?? {});
+  const external = Object.keys(dependencies);
   const name = pkgJson.name;
   commonPlugins.push(
     replace({
@@ -96,23 +96,6 @@ function config({ location, pkgJson }) {
         plugins
       };
     },
-    mini: () => {
-      const plugins = [...commonPlugins, ...miniProgramPlugin];
-      return {
-        input,
-        output: [
-          {
-            format: "cjs",
-            file: path.join(location, "dist/miniprogram.js"),
-            sourcemap: false
-          }
-        ],
-        external: Object.keys(pkgJson.dependencies || {})
-          .concat("@arche-engine/miniprogram-adapter")
-          .map((name) => `${name}/dist/miniprogram`),
-        plugins
-      };
-    },
     module: () => {
       const plugins = [...commonPlugins];
       return {
@@ -126,6 +109,7 @@ function config({ location, pkgJson }) {
           },
           {
             file: path.join(location, pkgJson.main),
+            sourcemap: true,
             format: "commonjs"
           }
         ],
@@ -147,9 +131,6 @@ switch (BUILD_TYPE) {
     break;
   case "MODULE":
     promises.push(...getModule());
-    break;
-  case "MINI":
-    promises.push(...getMini());
     break;
   case "ALL":
     promises.push(...getAll());
@@ -179,13 +160,8 @@ function getModule() {
   return configs.map((config) => makeRollupConfig({ ...config, type: "module" }));
 }
 
-function getMini() {
-  const configs = [...pkgs];
-  return configs.map((config) => makeRollupConfig({ ...config, type: "mini" }));
-}
-
 function getAll() {
-  return [...getModule(), ...getMini(), ...getUMD()];
+  return [...getModule(), ...getUMD()];
 }
 
 export default Promise.all(promises);

@@ -1,6 +1,10 @@
 {
   "name": "@arche-engine/core",
   "version": "0.0.15",
+  "publishConfig": {
+    "access": "public",
+    "registry": "https://registry.npmjs.org"
+  },
   "license": "MIT",
   "main": "dist/main.js",
   "module": "dist/module.js",
@@ -14,7 +18,9 @@
     "types/**/*"
   ],
   "dependencies": {
-    "@arche-engine/math": "^0.0.15",
-    "@webgpu/types": "latest"
+    "@arche-engine/math": "workspace:*"
+  },
+  "devDependencies": {
+    "@arche-engine/design": "workspace:*"
   }
 }
