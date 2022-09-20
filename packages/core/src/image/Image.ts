@@ -1,6 +1,15 @@
-import { Extent3DDict, TextureDescriptor } from "../webgpu";
+import {
+  Extent3DDict,
+  Extent3DDictStrict,
+  ImageCopyExternalImage,
+  ImageCopyTextureTagged,
+  Origin3DDict,
+  TextureDescriptor
+} from "../webgpu";
 import { ImageView } from "./ImageView";
-import { murmurhash3_32_gc } from "../base";
+import { murmurhash3_32_gc, TypedArray } from "../base";
+import { RefObject } from "../asset";
+import { Engine } from "../Engine";
 
 /**
  * @brief Mipmap information
@@ -16,59 +25,170 @@ export class Mipmap {
   extent = new Extent3DDict();
 }
 
-export class Image {
+class imageBitmapOptions implements ImageBitmapOptions {
+  colorSpaceConversion?: ColorSpaceConversion;
+  imageOrientation?: ImageOrientation;
+  premultiplyAlpha?: PremultiplyAlpha;
+  resizeHeight?: number;
+  resizeQuality?: ResizeQuality;
+  resizeWidth?: number;
+}
+
+export class Image extends RefObject {
   private static _textureDescriptor = new TextureDescriptor();
 
-  private _data: Uint8Array;
+  private static _imageBitmapOptions = new imageBitmapOptions();
+  private static _imageCopyExternalImage: ImageCopyExternalImage = new ImageCopyExternalImage();
+  private static _imageCopyTextureTagged = new ImageCopyTextureTagged();
+  private static _extent3DDictStrict = new Extent3DDictStrict();
+
+  private _data: TypedArray;
   private _format: GPUTextureFormat;
   private _layers = 1;
   private readonly _mipmaps: Array<Mipmap>;
   // Offsets stored like offsets[array_layer][mipmap_layer]
   private _offsets: Array<Array<number>>;
-  private _texture: GPUTexture;
   private _image_views: Map<number, ImageView>;
+
+  protected _texture: GPUTexture;
 
   name: string;
 
-  get data(): Uint8Array {
+  /**
+   * Raw Data
+   */
+  get data(): TypedArray {
     return this._data;
   }
 
+  set data(value: TypedArray) {
+    this._data = value;
+  }
+
+  /**
+   * texture format
+   */
   get format(): GPUTextureFormat {
     return this._format;
   }
 
-  get extent(): Extent3DDict {
-    return this._mipmaps[0].extent;
+  set format(format: GPUTextureFormat) {
+    this._format = format;
   }
 
-  get layers(): number {
-    return this._layers;
-  }
-
+  /**
+   * MipMaps
+   */
   get mipmaps(): Array<Mipmap> {
     return this._mipmaps;
   }
 
+  /**
+   * Extent
+   */
+  get extent(): Extent3DDict {
+    return this._mipmaps[0].extent;
+  }
+
+  set width(width: number) {
+    this._mipmaps.at(0).extent.width = width;
+  }
+
+  set height(height: number) {
+    this._mipmaps.at(0).extent.height = height;
+  }
+
+  set depth(depth: number) {
+    this._mipmaps.at(0).extent.depthOrArrayLayers = depth;
+  }
+
+  /**
+   * Layers
+   */
+  get layers(): number {
+    return this._layers;
+  }
+
+  set layers(layers: number) {
+    this._layers = layers;
+  }
+
+  /**
+   * Offsets
+   */
   get offsets(): Array<Array<number>> {
     return this._offsets;
+  }
+
+  set offsets(offsets: Array<Array<number>>) {
+    this._offsets = offsets;
   }
 
   get texture(): GPUTexture {
     return this._texture;
   }
 
-  constructor(name: string, data: Uint8Array, mipmaps: Array<Mipmap>) {
+  constructor(engine: Engine, name: string) {
+    super(engine);
     this.name = name;
-    this._data = data;
-    this._mipmaps = mipmaps;
   }
 
+  /**
+   * Load external image
+   * @param element - HTML element
+   */
+  loadExternalImage(element: HTMLImageElement) {
+    this.format = "rgba8unorm";
+    this.width = element.width;
+    this.height = element.height;
+    this.depth = 1;
+    this.createTexture();
+
+    const imageBitmapOptions = Image._imageBitmapOptions;
+    const levelCount = Math.max(Math.log2(element.width) + 1, Math.log2(element.height) + 1);
+    for (let level = 0; level < levelCount; level++) {
+      imageBitmapOptions.resizeWidth = Math.max(1, element.width / Math.pow(2, level));
+      imageBitmapOptions.resizeHeight = Math.max(1, element.height / Math.pow(2, level));
+      createImageBitmap(element, imageBitmapOptions).then((imageSource) => {
+        const imageCopyExternalImage = Image._imageCopyExternalImage;
+        imageCopyExternalImage.source = imageSource;
+        if (imageCopyExternalImage.origin == undefined) {
+          imageCopyExternalImage.origin = new Origin3DDict();
+        }
+        imageCopyExternalImage.origin.x = 0;
+        imageCopyExternalImage.origin.y = 0;
+
+        const imageCopyTextureTagged = Image._imageCopyTextureTagged;
+        imageCopyTextureTagged.texture = this._texture;
+        imageCopyTextureTagged.aspect = "all";
+        imageCopyTextureTagged.mipLevel = level;
+        imageCopyTextureTagged.premultipliedAlpha = false;
+
+        const extent3DDictStrict = Image._extent3DDictStrict;
+        extent3DDictStrict.width = Math.max(1, this.extent.width / Math.pow(2, level));
+        extent3DDictStrict.height = Math.max(1, this.extent.height / Math.pow(2, level));
+
+        this._engine.device.queue.copyExternalImageToTexture(
+          imageCopyExternalImage,
+          imageCopyTextureTagged,
+          extent3DDictStrict
+        );
+      });
+    }
+  }
+
+  /**
+   * Clear data
+   */
   clear(): void {
-    this._data = new Uint8Array();
+    this._data = null;
   }
 
-  createTexture(device: GPUDevice, usage: number = GPUTextureUsage.TEXTURE_BINDING | GPUTextureUsage.COPY_DST) {
+  /**
+   * Create webgpu texture
+   * @param usage - Texture Usage
+   */
+  createTexture(usage: number = GPUTextureUsage.TEXTURE_BINDING | GPUTextureUsage.COPY_DST) {
     Image._textureDescriptor.label = this.name;
     Image._textureDescriptor.usage = usage;
     Image._textureDescriptor.format = this._format;
@@ -77,9 +197,17 @@ export class Image {
       Image._textureDescriptor.size.depthOrArrayLayers = this._layers;
     }
     Image._textureDescriptor.mipLevelCount = this._mipmaps.length;
-    this._texture = device.createTexture(Image._textureDescriptor);
+    this._texture = this.engine.device.createTexture(Image._textureDescriptor);
   }
 
+  /**
+   * Create image view
+   * @param view_type - Texture view dimension
+   * @param base_mip_level - base mipmap level
+   * @param base_array_layer - base array layer
+   * @param n_mip_levels - mipmap level count
+   * @param n_array_layers - array layer count
+   */
   getImageView(
     view_type: GPUTextureViewDimension = "2d",
     base_mip_level: number = 0,
@@ -101,59 +229,17 @@ export class Image {
     return view;
   }
 
+  /**
+   * Generate mipmaps
+   */
   generateMipmaps(): void {
     // todo
   }
 
   /**
-   * @internal
+   * @override
    */
-  _setData(raw_data: Uint8Array, size: number): void {
-    if (this._data.length !== size) {
-      this._data = new Uint8Array(size);
-      this._data.set(raw_data);
-    }
-  }
-
-  /**
-   * @internal
-   */
-  _setFormat(format: GPUTextureFormat): void {
-    this._format = format;
-  }
-
-  /**
-   * @internal
-   */
-  _setWidth(width: number): void {
-    this._mipmaps.at(0).extent.width = width;
-  }
-
-  /**
-   * @internal
-   */
-  _setHeight(height: number): void {
-    this._mipmaps.at(0).extent.height = height;
-  }
-
-  /**
-   * @internal
-   */
-  _setDepth(depth: number): void {
-    this._mipmaps.at(0).extent.depthOrArrayLayers = depth;
-  }
-
-  /**
-   * @internal
-   */
-  _setLayers(layers: number): void {
-    this._layers = layers;
-  }
-
-  /**
-   * @internal
-   */
-  _setOffsets(offsets: Array<Array<number>>): void {
-    this._offsets = offsets;
+  _onDestroy() {
+    this._texture && this._texture.destroy();
   }
 }
