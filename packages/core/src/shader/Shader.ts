@@ -24,6 +24,15 @@ export class Shader {
   /**
    * Create a shader.
    * @param name - Name of the shader
+   * @param vertexSource - vertex source code
+   * @param fragmentSource - shader stage
+   * @returns Shader
+   */
+  static create(name: string, vertexSource: string, fragmentSource: string): Shader;
+
+  /**
+   * Create a shader.
+   * @param name - Name of the shader
    * @param source - source code
    * @param stage - shader stage
    * @returns Shader
@@ -38,12 +47,16 @@ export class Shader {
    */
   static create(name: string, shaderPasses: ShaderPass[]): Shader;
 
-  static create(name: string, sourceOrShaderPasses: string | ShaderPass[], stage?: ShaderStage): Shader {
+  static create(
+    name: string,
+    sourceOrShaderPasses: string | ShaderPass[],
+    fragmentSource?: string | ShaderStage
+  ): Shader {
     const shaderMap = Shader._shaderMap;
     if (shaderMap[name]) {
       throw `Shader named "${name}" already exists.`;
     }
-    return (shaderMap[name] = new Shader(name, sourceOrShaderPasses, stage));
+    return (shaderMap[name] = new Shader(name, sourceOrShaderPasses, fragmentSource));
   }
 
   /**
@@ -146,11 +159,15 @@ export class Shader {
 
   private _passes: ShaderPass[] = [];
 
-  private constructor(name: string, sourceOrShaderPasses: string | ShaderPass[], stage?: ShaderStage) {
+  private constructor(
+    name: string,
+    sourceOrShaderPasses: string | ShaderPass[],
+    fragmentSource?: string | ShaderStage
+  ) {
     this.name = name;
 
     if (typeof sourceOrShaderPasses === "string") {
-      this._passes.push(new ShaderPass(sourceOrShaderPasses, stage));
+      this._passes.push(new ShaderPass(sourceOrShaderPasses, fragmentSource));
     } else {
       const passCount = sourceOrShaderPasses.length;
       if (passCount < 1) {

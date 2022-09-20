@@ -14,14 +14,22 @@ export class ShaderPass {
   /** @internal */
   _shaderPassId: number = 0;
 
-  private readonly _source: string;
-  private readonly _stage: ShaderStage;
+  private readonly _vertexOrComputeSource: string;
+  private readonly _fragmentSource: string = null;
+  private readonly _stage: ShaderStage = null;
 
-  constructor(source: string, stage: ShaderStage) {
+  constructor(vertexOrComputeSource: string, fragmentSourceOrStage: string | ShaderStage) {
     this._shaderPassId = ShaderPass._shaderPassCounter++;
 
-    this._source = source;
-    this._stage = stage;
+    this._vertexOrComputeSource = vertexOrComputeSource;
+    if (typeof fragmentSourceOrStage == "string") {
+      this._fragmentSource = fragmentSourceOrStage;
+    } else {
+      if (fragmentSourceOrStage === ShaderStage.FRAGMENT) {
+        throw "Fragment Shader can't use alone.";
+      }
+      this._stage = fragmentSourceOrStage;
+    }
   }
 
   /**
@@ -48,14 +56,24 @@ export class ShaderPass {
     #endif
     `;
 
-    let source = ShaderFactory.parseIncludes(
+    const vertexOrComputeSource = ShaderFactory.parseIncludes(
       ` ${versionStr}
         ${precisionStr}
         ${macroNameStr}
-      ` + this._source
+      ` + this._vertexOrComputeSource
     );
 
-    shaderProgram = new ShaderProgram(engine, source, this._stage);
+    if (this._fragmentSource) {
+      const fragmentSource = ShaderFactory.parseIncludes(
+        ` ${versionStr}
+        ${precisionStr}
+        ${macroNameStr}
+      ` + this._fragmentSource
+      );
+      shaderProgram = new ShaderProgram(engine, vertexOrComputeSource, fragmentSource);
+    } else {
+      shaderProgram = new ShaderProgram(engine, vertexOrComputeSource, this._stage);
+    }
 
     shaderProgramPool.cache(shaderProgram);
     return shaderProgram;

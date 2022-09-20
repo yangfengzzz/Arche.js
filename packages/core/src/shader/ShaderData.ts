@@ -6,14 +6,14 @@ import { Shader } from "./Shader";
 import { ShaderMacro } from "./ShaderMacro";
 import { ShaderMacroCollection } from "./ShaderMacroCollection";
 import { ShaderProperty } from "./ShaderProperty";
-import { SampledTexture2D } from "../texture";
-import { SampledTexture } from "../texture/SampledTexture";
 import { Buffer } from "../graphic";
 import { Engine } from "../Engine";
 import { MacroName } from "./InternalMacroName";
 import { ignoreClone } from "../clone/CloneManager";
+import { ImageView } from "../image/ImageView";
+import { SamplerDescriptor } from "../webgpu";
 
-export type ShaderPropertyResourceType = Buffer | SampledTexture;
+export type ShaderPropertyResourceType = Buffer | ImageView | SamplerDescriptor;
 
 /**
  * Shader data collection,Correspondence includes shader properties data and macros data.
