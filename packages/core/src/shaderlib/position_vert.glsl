@@ -1,0 +1,1 @@
+    gl_Position = vp_mat * u_modelMat * position;
