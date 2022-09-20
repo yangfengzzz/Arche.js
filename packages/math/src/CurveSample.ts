@@ -45,7 +45,7 @@ export class CurveSample {
   }
 
   set(i: number, pnt: Vector3): void {
-    pnt.cloneTo(this._aryPos[i]);
+    this._aryPos[i].copyFrom(pnt);
   }
 
   updateLengths(): void {
@@ -65,8 +65,8 @@ export class CurveSample {
     const ainc = this._aryInc;
     out ??= new Vector3();
 
-    if (len <= 0) this._aryPos[0].cloneTo(out);
-    else if (len >= this._totalLen - 0.001) this._aryPos[this._sampleCnt - 1].cloneTo(out);
+    if (len <= 0) out.copyFrom(this._aryPos[0]);
+    else if (len >= this._totalLen - 0.001) out.copyFrom(this._aryPos[this._sampleCnt - 1]);
     else {
       for (let i = this._sampleCnt - 1; i >= 0; i--) {
         if (alen[i] < len) {

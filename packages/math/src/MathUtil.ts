@@ -57,11 +57,4 @@ export class MathUtil {
   static degreeToRadian(d: number): number {
     return d * MathUtil.degreeToRadFactor;
   }
-
-  // Special Modulus that can take in Negative Number
-  // and Loop Around as the result
-  static mod(a: number, b: number): number {
-    const v = a % b;
-    return v < 0 ? b + v : v;
-  }
 }

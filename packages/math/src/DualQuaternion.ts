@@ -241,7 +241,7 @@ export class DualQuaternion {
       az1 = az * bw + aw * bz + ax * by - ay * bx,
       aw1 = aw * bw - ax * bx - ay * by - az * bz;
 
-    DualQuaternion._temp.setValue(a.elements[0], a.elements[1], a.elements[2], a.elements[3]);
+    DualQuaternion._temp.set(a.elements[0], a.elements[1], a.elements[2], a.elements[3]);
     Quaternion.rotateX(DualQuaternion._temp, rad, DualQuaternion._temp2);
     out.elements[0] = DualQuaternion._temp2.x;
     out.elements[1] = DualQuaternion._temp2.y;
@@ -281,7 +281,7 @@ export class DualQuaternion {
       az1 = az * bw + aw * bz + ax * by - ay * bx,
       aw1 = aw * bw - ax * bx - ay * by - az * bz;
 
-    DualQuaternion._temp.setValue(a.elements[0], a.elements[1], a.elements[2], a.elements[3]);
+    DualQuaternion._temp.set(a.elements[0], a.elements[1], a.elements[2], a.elements[3]);
     Quaternion.rotateY(DualQuaternion._temp, rad, DualQuaternion._temp2);
     out.elements[0] = DualQuaternion._temp2.x;
     out.elements[1] = DualQuaternion._temp2.y;
@@ -321,7 +321,7 @@ export class DualQuaternion {
       az1 = az * bw + aw * bz + ax * by - ay * bx,
       aw1 = aw * bw - ax * bx - ay * by - az * bz;
 
-    DualQuaternion._temp.setValue(a.elements[0], a.elements[1], a.elements[2], a.elements[3]);
+    DualQuaternion._temp.set(a.elements[0], a.elements[1], a.elements[2], a.elements[3]);
     Quaternion.rotateZ(DualQuaternion._temp, rad, DualQuaternion._temp2);
     out.elements[0] = DualQuaternion._temp2.x;
     out.elements[1] = DualQuaternion._temp2.y;
