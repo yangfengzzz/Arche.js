@@ -6,8 +6,7 @@ import { Token } from "./wgsl_scanner.js";
 
 export class WgslReflect {
   constructor(code) {
-    if (code)
-      this.initialize(code);
+    if (code) this.initialize(code);
   }
 
   initialize(code) {
@@ -36,11 +35,9 @@ export class WgslReflect {
     };
 
     for (const node of this.ast) {
-      if (node._type == "struct")
-        this.structs.push(node);
+      if (node._type == "struct") this.structs.push(node);
 
-      if (node._type == "alias")
-        this.aliases.push(node);
+      if (node._type == "alias") this.aliases.push(node);
 
       if (this.isUniformVar(node)) {
         const group = this.getAttribute(node, "group");
@@ -82,10 +79,8 @@ export class WgslReflect {
         const stage = vertexStage || fragmentStage || computeStage;
         if (stage) {
           node.inputs = this._getInputs(node);
-          if (this.entry[stage.name])
-            this.entry[stage.name].push(node);
-          else
-            this.entry[stage.name] = [node];
+          if (this.entry[stage.name]) this.entry[stage.name].push(node);
+          else this.entry[stage.name] = [node];
         }
       }
     }
@@ -108,18 +103,14 @@ export class WgslReflect {
   }
 
   _getInputs(args, inputs) {
-    if (args._type == "function")
-      args = args.args;
-    if (!inputs)
-      inputs = [];
+    if (args._type == "function") args = args.args;
+    if (!inputs) inputs = [];
 
     for (const arg of args) {
       const input = this._getInputInfo(arg);
-      if (input)
-        inputs.push(input);
+      if (input) inputs.push(input);
       const struct = this.getStruct(arg.type);
-      if (struct)
-        this._getInputs(struct.members, inputs);
+      if (struct) this._getInputs(struct.members, inputs);
     }
 
     return inputs;
@@ -136,8 +127,7 @@ export class WgslReflect {
         location: this._parseInt(location.value)
       };
       const interpolation = this.getAttribute(node, "interpolation");
-      if (interpolation)
-        input.interpolation = interpolation.value;
+      if (interpolation) input.interpolation = interpolation.value;
       return input;
     }
     return null;
@@ -151,13 +141,11 @@ export class WgslReflect {
   getAlias(name) {
     if (!name) return null;
     if (name.constructor === AST) {
-      if (name._type != "type")
-        return null;
+      if (name._type != "type") return null;
       name = name.name;
     }
     for (const u of this.aliases) {
-      if (u.name == name)
-        return u.alias;
+      if (u.name == name) return u.alias;
     }
     return null;
   }
@@ -165,15 +153,12 @@ export class WgslReflect {
   getStruct(name) {
     if (!name) return null;
     if (name.constructor === AST) {
-      if (name._type == "struct")
-        return name;
-      if (name._type != "type")
-        return null;
+      if (name._type == "struct") return name;
+      if (name._type != "type") return null;
       name = name.name;
     }
     for (const u of this.structs) {
-      if (u.name == name)
-        return u;
+      if (u.name == name) return u;
     }
     return null;
   }
@@ -181,8 +166,7 @@ export class WgslReflect {
   getAttribute(node, name) {
     if (!node || !node.attributes) return null;
     for (let a of node.attributes) {
-      if (a.name == name)
-        return a;
+      if (a.name == name) return a;
     }
     return null;
   }
@@ -191,13 +175,10 @@ export class WgslReflect {
     const groups = [];
 
     function _makeRoom(group, binding) {
-      if (group >= groups.length)
-        groups.length = group + 1;
-      if (groups[group] === undefined)
-        groups[group] = [];
+      if (group >= groups.length) groups.length = group + 1;
+      if (groups[group] === undefined) groups[group] = [];
 
-      if (binding >= groups[group].length)
-        groups[group].length = binding + 1;
+      if (binding >= groups[group].length) groups[group].length = binding + 1;
     }
 
     for (const u of this.uniforms) {
@@ -228,8 +209,7 @@ export class WgslReflect {
   }
 
   getStorageBufferInfo(node) {
-    if (!this.isStorageVar(node))
-      return null;
+    if (!this.isStorageVar(node)) return null;
 
     let group = this.getAttribute(node, "group");
     let binding = this.getAttribute(node, "binding");
@@ -241,8 +221,7 @@ export class WgslReflect {
   }
 
   getUniformBufferInfo(node) {
-    if (!this.isUniformVar(node))
-      return null;
+    if (!this.isUniformVar(node)) return null;
 
     let group = this.getAttribute(node, "group");
     let binding = this.getAttribute(node, "binding");
@@ -263,8 +242,7 @@ export class WgslReflect {
       let name = member.name;
 
       let info = this.getTypeInfo(member);
-      if (!info)
-        continue;
+      if (!info) continue;
 
       let type = member.type;
       let align = info.align;
@@ -287,16 +265,13 @@ export class WgslReflect {
   getTypeInfo(type) {
     let explicitSize = 0;
     const sizeAttr = this.getAttribute(type, "size");
-    if (sizeAttr)
-      explicitSize = parseInt(sizeAttr.value);
+    if (sizeAttr) explicitSize = parseInt(sizeAttr.value);
 
     let explicitAlign = 0;
     const alignAttr = this.getAttribute(type, "align");
-    if (alignAttr)
-      explicitAlign = parseInt(alignAttr.value);
+    if (alignAttr) explicitAlign = parseInt(alignAttr.value);
 
-    if (type._type == "member")
-      type = type.type;
+    if (type._type == "member") type = type.type;
 
     if (type._type == "type") {
       const alias = this.getAlias(type.name);
@@ -304,8 +279,7 @@ export class WgslReflect {
         type = alias;
       } else {
         const struct = this.getStruct(type.name);
-        if (struct)
-          type = struct;
+        if (struct) type = struct;
       }
     }
 
@@ -345,8 +319,7 @@ export class WgslReflect {
         size = N * this._roundUp(align, size);
       }
 
-      if (explicitSize)
-        size = explicitSize;
+      if (explicitSize) size = explicitSize;
 
       return {
         align: Math.max(explicitAlign, align),
@@ -386,7 +359,6 @@ export class WgslReflect {
   }
 }
 
-
 // Type                 AlignOf(T)          Sizeof(T)
 // i32, u32, or f32     4                   4
 // atomic<T>            4                   4
@@ -403,22 +375,22 @@ export class WgslReflect {
 // mat3x4<f32>          16                  48
 // mat4x4<f32>          16                  64
 WgslReflect.TypeInfo = {
-  "i32": { align: 4, size: 4 },
-  "u32": { align: 4, size: 4 },
-  "f32": { align: 4, size: 4 },
-  "atomic": { align: 4, size: 4 },
-  "vec2": { align: 8, size: 8 },
-  "vec3": { align: 16, size: 12 },
-  "vec4": { align: 16, size: 16 },
-  "mat2x2": { align: 8, size: 16 },
-  "mat3x2": { align: 8, size: 24 },
-  "mat4x2": { align: 8, size: 32 },
-  "mat2x3": { align: 16, size: 32 },
-  "mat3x3": { align: 16, size: 48 },
-  "mat4x3": { align: 16, size: 64 },
-  "mat2x4": { align: 16, size: 32 },
-  "mat3x4": { align: 16, size: 48 },
-  "mat4x4": { align: 16, size: 64 }
+  i32: { align: 4, size: 4 },
+  u32: { align: 4, size: 4 },
+  f32: { align: 4, size: 4 },
+  atomic: { align: 4, size: 4 },
+  vec2: { align: 8, size: 8 },
+  vec3: { align: 16, size: 12 },
+  vec4: { align: 16, size: 16 },
+  mat2x2: { align: 8, size: 16 },
+  mat3x2: { align: 8, size: 24 },
+  mat4x2: { align: 8, size: 32 },
+  mat2x3: { align: 16, size: 32 },
+  mat3x3: { align: 16, size: 48 },
+  mat4x3: { align: 16, size: 64 },
+  mat2x4: { align: 16, size: 32 },
+  mat3x4: { align: 16, size: 48 },
+  mat4x4: { align: 16, size: 64 }
 };
 
 WgslReflect.TextureTypes = Token.any_texture_type.map((t) => {

@@ -2,25 +2,21 @@ import { ShaderDataGroup } from "./ShaderDataGroup";
 import { ShaderMacro } from "./ShaderMacro";
 import { ShaderMacroCollection } from "./ShaderMacroCollection";
 import { ShaderProperty } from "./ShaderProperty";
-import { BindGroupInfo, WGSL } from "../shaderlib";
 import { Engine } from "../Engine";
-import { ShaderProgram } from "./ShaderProgram";
-import { BindGroupLayoutDescriptor, BindGroupLayoutEntry, ShaderStage } from "../webgpu";
-import { MacroName } from "./InternalMacroName";
-
-type BindGroupLayoutEntryVecMap = Map<number, BindGroupLayoutEntry[]>;
-type BindGroupLayoutDescriptorMap = Map<number, BindGroupLayoutDescriptor>;
+import { ShaderPass } from "./ShaderPass";
+import { ShaderStage } from "../webgpu";
 
 /**
  * Shader containing vertex and fragment source.
  */
 export class Shader {
   /** @internal */
-  private static _shaderCounter: number = 0;
+  static readonly _compileMacros: ShaderMacroCollection = new ShaderMacroCollection();
+  /** @internal */
+  static _propertyIdMap: Record<number, ShaderProperty> = Object.create(null);
+
   private static _shaderMap: Record<string, Shader> = Object.create(null);
   private static _propertyNameMap: Record<string, ShaderProperty> = Object.create(null);
-  private static _propertyGroupMap: Record<number, ShaderProperty> = Object.create(null);
-
   private static _macroMaskMap: string[][] = [];
   private static _macroCounter: number = 0;
   private static _macroMap: Record<string, ShaderMacro> = Object.create(null);
@@ -28,16 +24,26 @@ export class Shader {
   /**
    * Create a shader.
    * @param name - Name of the shader
-   * @param source - Vertex source code
-   * @param stage - Shader Stage
-   * @param fragmentSource - Fragment source code
+   * @param source - source code
+   * @param stage - shader stage
+   * @returns Shader
    */
-  static create(name: string, source: WGSL, stage: ShaderStage, fragmentSource?: WGSL): Shader {
+  static create(name: string, source: string, stage: ShaderStage): Shader;
+
+  /**
+   * Create a shader.
+   * @param name - Name of the shader
+   * @param shaderPasses - Shader passes
+   * @returns Shader
+   */
+  static create(name: string, shaderPasses: ShaderPass[]): Shader;
+
+  static create(name: string, sourceOrShaderPasses: string | ShaderPass[], stage?: ShaderStage): Shader {
     const shaderMap = Shader._shaderMap;
     if (shaderMap[name]) {
       throw `Shader named "${name}" already exists.`;
     }
-    return (shaderMap[name] = new Shader(name, source, stage, fragmentSource));
+    return (shaderMap[name] = new Shader(name, sourceOrShaderPasses, stage));
   }
 
   /**
@@ -48,29 +54,37 @@ export class Shader {
     return Shader._shaderMap[name];
   }
 
-  static getMacroByName(name: MacroName): ShaderMacro;
-
-  static getMacroByName(name: string): ShaderMacro;
-
   /**
    * Get shader macro by name.
    * @param name - Name of the shader macro
    * @returns Shader macro
    */
-  static getMacroByName(name: string): ShaderMacro {
-    let macro = Shader._macroMap[name];
+  static getMacroByName(name: string): ShaderMacro;
+
+  /**
+   * Get shader macro by name.
+   * @param name - Name of the shader macro
+   * @param value - Value of the shader macro
+   * @returns Shader macro
+   */
+  static getMacroByName(name: string, value: string): ShaderMacro;
+
+  static getMacroByName(name: string, value?: string): ShaderMacro {
+    const key = value ? name + ` ` + value : name;
+    let macro = Shader._macroMap[key];
     if (!macro) {
       const maskMap = Shader._macroMaskMap;
       const counter = Shader._macroCounter;
       const index = Math.floor(counter / 32);
       const bit = counter % 32;
-      macro = new ShaderMacro(name, index, 1 << bit);
-      Shader._macroMap[name] = macro;
+
+      macro = new ShaderMacro(name, value, index, 1 << bit);
+      Shader._macroMap[key] = macro;
       if (index == maskMap.length) {
         maskMap.length++;
         maskMap[index] = new Array<string>(32);
       }
-      maskMap[index][bit] = name;
+      maskMap[index][bit] = key;
       Shader._macroCounter++;
     }
     return macro;
@@ -83,40 +97,69 @@ export class Shader {
    */
   static getPropertyByName(name: string): ShaderProperty {
     const propertyNameMap = Shader._propertyNameMap;
-    const propertyGroupMap = Shader._propertyGroupMap;
     if (propertyNameMap[name] != null) {
       return propertyNameMap[name];
     } else {
       const property = new ShaderProperty(name);
       propertyNameMap[name] = property;
-      propertyGroupMap[property._uniqueId] = property;
+      Shader._propertyIdMap[property._uniqueId] = property;
       return property;
     }
   }
 
-  static getShaderPropertyGroup(uniqueID: number): ShaderDataGroup | null {
-    return Shader._propertyGroupMap[uniqueID]?._group;
+  /**
+   * @internal
+   */
+  static _getShaderPropertyGroup(propertyName: string): ShaderDataGroup | null {
+    const shaderProperty = Shader._propertyNameMap[propertyName];
+    return shaderProperty?._group;
+  }
+
+  /**
+   * @internal
+   */
+  static _getNamesByMacros(macros: ShaderMacroCollection, out: string[]): void {
+    const maskMap = Shader._macroMaskMap;
+    const mask = macros._mask;
+    out.length = 0;
+    for (let i = 0, n = macros._length; i < n; i++) {
+      const subMaskMap = maskMap[i];
+      const subMask = mask[i];
+      const n = subMask < 0 ? 32 : Math.floor(Math.log2(subMask)) + 1; // if is negative must contain 1 << 31.
+      for (let j = 0; j < n; j++) {
+        if (subMask & (1 << j)) {
+          out.push(subMaskMap[j]);
+        }
+      }
+    }
   }
 
   /** The name of shader. */
   readonly name: string;
 
-  /** @internal */
-  _shaderId: number = 0;
+  /**
+   *  Shader passes.
+   */
+  get passes(): ReadonlyArray<ShaderPass> {
+    return this._passes;
+  }
 
-  private _source: WGSL;
-  private readonly _stage: ShaderStage;
-  private readonly _fragmentSource?: WGSL;
-  private _bindGroupInfo: BindGroupInfo = new Map<number, Set<number>>();
-  private _bindGroupLayoutEntryVecMap: BindGroupLayoutEntryVecMap = new Map<number, BindGroupLayoutEntry[]>();
-  private _bindGroupLayoutDescriptorMap: BindGroupLayoutDescriptorMap = new Map<number, BindGroupLayoutDescriptor>();
+  private _passes: ShaderPass[] = [];
 
-  private constructor(name: string, source: WGSL, stage: ShaderStage, fragmentSource?: WGSL) {
-    this._shaderId = Shader._shaderCounter++;
+  private constructor(name: string, sourceOrShaderPasses: string | ShaderPass[], stage?: ShaderStage) {
     this.name = name;
-    this._source = source;
-    this._stage = stage;
-    this._fragmentSource = fragmentSource;
+
+    if (typeof sourceOrShaderPasses === "string") {
+      this._passes.push(new ShaderPass(sourceOrShaderPasses, stage));
+    } else {
+      const passCount = sourceOrShaderPasses.length;
+      if (passCount < 1) {
+        throw "Shader pass count must large than 0.";
+      }
+      for (let i = 0; i < passCount; i++) {
+        this._passes.push(sourceOrShaderPasses[i]);
+      }
+    }
   }
 
   /**
@@ -126,102 +169,19 @@ export class Shader {
    * Usually a shader contains some macros,any combination of macros is called shader variant.
    *
    * @param engine - Engine to which the shader variant belongs
-   * @param macroCollection - Macro name list
+   * @param macros - Macro name list
+   * @returns Is the compiled shader variant valid
    */
-  getShaderProgram(engine: Engine, macroCollection: ShaderMacroCollection): ShaderProgram {
-    const shaderProgramPool = engine._getShaderProgramPool(this);
-    let shaderProgram = shaderProgramPool.get(macroCollection);
-    if (shaderProgram) {
-      return shaderProgram;
+  compileVariant(engine: Engine, macros: string[]): void {
+    const compileMacros = Shader._compileMacros;
+    compileMacros.clear();
+    for (let i = 0, n = macros.length; i < n; i++) {
+      compileMacros.enable(Shader.getMacroByName(macros[i]));
     }
 
-    // merge info
-    const vertexCode = this._source.compile(macroCollection);
-    vertexCode[1].forEach((bindings, group) => {
-      bindings.forEach((binding) => {
-        if (!this._bindGroupInfo.has(group)) {
-          this._bindGroupInfo.set(group, new Set<number>());
-        }
-        this._bindGroupInfo.get(group).add(binding);
-      });
-    });
-
-    let fragmentCode: [string, BindGroupInfo] = null;
-    if (this._fragmentSource) {
-      fragmentCode = this._fragmentSource.compile(macroCollection);
-      fragmentCode[1].forEach((bindings, group) => {
-        bindings.forEach((binding) => {
-          if (!this._bindGroupInfo.has(group)) {
-            this._bindGroupInfo.set(group, new Set<number>());
-          }
-          this._bindGroupInfo.get(group).add(binding);
-        });
-      });
-    }
-
-    // console.log(vertexCode[0]);
-    // if (fragmentCode) {
-    //   console.log(fragmentCode[0]);
-    // }
-    // debugger;
-
-    // move to vecMap
-    this._bindGroupInfo.forEach((bindings, group) => {
-      bindings.forEach((binding) => {
-        if (!this._bindGroupLayoutEntryVecMap.has(group)) {
-          this._bindGroupLayoutEntryVecMap.set(group, []);
-        }
-        this._bindGroupLayoutEntryVecMap.get(group).push(this._findEntry(group, binding));
-      });
-    });
-
-    // generate map
-    this._bindGroupLayoutEntryVecMap.forEach((entries, group) => {
-      const desc = new BindGroupLayoutDescriptor();
-      desc.entries = entries;
-      this._bindGroupLayoutDescriptorMap.set(group, desc);
-    });
-
-    shaderProgram = new ShaderProgram(
-      engine.device,
-      vertexCode[0],
-      this._stage,
-      this._bindGroupLayoutDescriptorMap,
-      fragmentCode ? fragmentCode[0] : null
-    );
-    shaderProgramPool.cache(shaderProgram);
-    return shaderProgram;
-  }
-
-  flush() {
-    this._bindGroupInfo.clear();
-    this._bindGroupLayoutEntryVecMap.clear();
-    this._bindGroupLayoutDescriptorMap.clear();
-  }
-
-  _findEntry(group: number, binding: number): BindGroupLayoutEntry {
-    let entry: BindGroupLayoutEntry = undefined;
-
-    const entryMap = this._source.bindGroupLayoutEntryMap;
-    if (entryMap.has(group) && entryMap.get(group).has(binding)) {
-      entry = entryMap.get(group).get(binding);
-    }
-
-    if (this._fragmentSource) {
-      const entryMap = this._fragmentSource.bindGroupLayoutEntryMap;
-      if (entryMap.has(group) && entryMap.get(group).has(binding)) {
-        if (entry !== undefined) {
-          entry.visibility |= GPUShaderStage.FRAGMENT;
-        } else {
-          entry = entryMap.get(group).get(binding);
-        }
-      }
-    }
-
-    if (entry !== undefined) {
-      return entry;
-    } else {
-      throw "have bug!";
+    const passes = this._passes;
+    for (let i = 0, n = passes.length; i < n; i++) {
+      passes[i]._getShaderProgram(engine, compileMacros);
     }
   }
 }

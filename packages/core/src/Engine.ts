@@ -20,6 +20,8 @@ import { PhysicsManager } from "./physics";
 import { IPhysics } from "@arche-engine/design";
 import { ParticleManager } from "./particle/ParticleManager";
 import { InputManager } from "./input";
+import { ShaderPass } from "./shader/ShaderPass";
+import init from "./shader/transcode/glsl_wgsl_compiler";
 
 ShaderPool.init();
 
@@ -214,7 +216,10 @@ export class Engine extends EventDispatcher {
               PhysicsManager._nativePhysics = physics;
               this.physicsManager = new PhysicsManager(this);
             }
-            resolve();
+
+            init("shader/transcode/glsl_wgsl_compiler_bg.wasm").then(() => {
+              resolve();
+            });
           });
         });
     });
@@ -333,8 +338,8 @@ export class Engine extends EventDispatcher {
   /**
    * @internal
    */
-  _getShaderProgramPool(shader: Shader): ShaderProgramPool {
-    const index = shader._shaderId;
+  _getShaderProgramPool(shaderPass: ShaderPass): ShaderProgramPool {
+    const index = shaderPass._shaderPassId;
     const shaderProgramPools = this._shaderProgramPools;
     let pool = shaderProgramPools[index];
     if (!pool) {

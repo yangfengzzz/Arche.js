@@ -1,6 +1,7 @@
-import { BindGroupLayoutDescriptor, ShaderModuleDescriptor, ShaderStage } from "../webgpu";
-
-type BindGroupLayoutDescriptorMap = Map<number, BindGroupLayoutDescriptor>;
+import { ShaderModuleDescriptor, ShaderStage } from "../webgpu";
+import { Engine } from "../Engine";
+import { glsl_compile } from "./transcode/glsl_wgsl_compiler";
+import { WgslReflect } from "./introspector/wgsl_reflect";
 
 /**
  * Shader program, corresponding to the GPU shader program.
@@ -8,72 +9,45 @@ type BindGroupLayoutDescriptorMap = Map<number, BindGroupLayoutDescriptor>;
  */
 export class ShaderProgram {
   private static _shaderModuleDescriptor: ShaderModuleDescriptor = new ShaderModuleDescriptor();
+  private static _counter: number = 0;
 
-  private readonly _bindGroupLayoutDescriptorMap: BindGroupLayoutDescriptorMap;
-  private readonly _stage: ShaderStage;
+  id: number;
+
   private _shader: GPUShaderModule;
-  private _fragmentShader: GPUShaderModule;
+  private _engine: Engine;
   private _device: GPUDevice;
+  private _introspection: WgslReflect;
 
-  get vertexShader(): GPUShaderModule {
-    if (this._stage === GPUShaderStage.VERTEX) {
-      return this._shader;
-    } else {
-      return null;
-    }
+  /**
+   * introspect info
+   */
+  get introspection(): WgslReflect {
+    return this._introspection;
   }
 
-  get computeShader(): GPUShaderModule {
-    if (this._stage === GPUShaderStage.COMPUTE) {
-      return this._shader;
-    } else {
-      return null;
-    }
+  /**
+   * webgpu shader
+   */
+  get shader(): GPUShaderModule {
+    return this._shader;
   }
 
-  get fragmentShader(): GPUShaderModule {
-    return this._fragmentShader;
-  }
+  constructor(engine: Engine, source: string, stage: ShaderStage) {
+    this._engine = engine;
+    this._device = engine.device;
+    this._createProgram(source, stage);
 
-  get bindGroupLayoutDescriptorMap(): BindGroupLayoutDescriptorMap {
-    return this._bindGroupLayoutDescriptorMap;
-  }
-
-  constructor(
-    device: GPUDevice,
-    source: string,
-    stage: ShaderStage,
-    bindGroupLayoutDescriptorMap: BindGroupLayoutDescriptorMap = null,
-    fragmentSource: string = null
-  ) {
-    if (bindGroupLayoutDescriptorMap) {
-      this._bindGroupLayoutDescriptorMap = new Map<number, BindGroupLayoutDescriptor>();
-      bindGroupLayoutDescriptorMap.forEach((descriptor, group) => {
-        const bindGroupLayoutDescriptor = new BindGroupLayoutDescriptor();
-        descriptor.cloneTo(bindGroupLayoutDescriptor);
-        this._bindGroupLayoutDescriptorMap.set(group, bindGroupLayoutDescriptor);
-      });
-    }
-
-    // console.log(source);
-    // console.log(fragmentSource);
-    // debugger;
-
-    this._stage = stage;
-    this._device = device;
-    this._createProgram(source, fragmentSource);
+    this.id = ShaderProgram._counter++;
   }
 
   /**
    * init and link program with shader.
    */
-  private _createProgram(source: string, fragmentSource: string = null) {
-    ShaderProgram._shaderModuleDescriptor.code = source;
+  private _createProgram(source: string, stage: ShaderStage) {
+    const wgsl = glsl_compile(source, stage, false);
+    // console.log(wgsl);
+    ShaderProgram._shaderModuleDescriptor.code = wgsl;
     this._shader = this._device.createShaderModule(ShaderProgram._shaderModuleDescriptor);
-
-    if (fragmentSource) {
-      ShaderProgram._shaderModuleDescriptor.code = fragmentSource;
-      this._fragmentShader = this._device.createShaderModule(ShaderProgram._shaderModuleDescriptor);
-    }
+    this._introspection = new WgslReflect(wgsl);
   }
 }
