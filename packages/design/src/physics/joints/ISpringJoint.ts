@@ -1,9 +1,15 @@
 import { IJoint } from "./IJoint";
+import { Vector3 } from "@arche-engine/math";
 
 /**
  * a joint that maintains an upper or lower bound (or both) on the distance between two points on different objects
  */
 export interface ISpringJoint extends IJoint {
+  /**
+   * The swing offset.
+   */
+  setSwingOffset(value: Vector3): void;
+
   /**
    * Set the allowed minimum distance for the joint.
    * @param distance the minimum distance
@@ -33,11 +39,4 @@ export interface ISpringJoint extends IJoint {
    * @param damping the degree of damping of the joint spring of the joint
    */
   setDamping(damping: number): void;
-
-  /**
-   * Set a single flag specific to a Distance Joint to true or false.
-   * @param flag The flag to set or clear.
-   * @param value the value to which to set the flag
-   */
-  setDistanceJointFlag(flag: number, value: boolean): void;
 }

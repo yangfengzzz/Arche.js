@@ -1,43 +1,22 @@
 import { PhysXJoint } from "./PhysXJoint";
 import { IFixedJoint } from "@arche-engine/design";
 import { PhysXCollider } from "../PhysXCollider";
-import { Quaternion, Vector3 } from "arche-engine";
 import { PhysXPhysics } from "../PhysXPhysics";
 
 /**
- * A fixed joint permits no relative movement between two bodies. ie the bodies are glued together.
+ * A fixed joint permits no relative movement between two colliders. ie the bodies are glued together.
  */
 export class PhysXFixedJoint extends PhysXJoint implements IFixedJoint {
-  constructor(
-    actor0: PhysXCollider,
-    position0: Vector3,
-    rotation0: Quaternion,
-    actor1: PhysXCollider,
-    position1: Vector3,
-    rotation1: Quaternion
-  ) {
+  constructor(collider: PhysXCollider) {
     super();
+    this._collider = collider;
     this._pxJoint = PhysXPhysics._pxPhysics.createFixedJoint(
-      actor0?._pxActor,
-      position0,
-      rotation0,
-      actor1?._pxActor,
-      position1,
-      rotation1
+      null,
+      PhysXJoint._defaultVec,
+      PhysXJoint._defaultQuat,
+      collider._pxActor,
+      PhysXJoint._defaultVec,
+      PhysXJoint._defaultQuat
     );
-  }
-
-  /**
-   * {@inheritDoc IFixedJoint.setProjectionLinearTolerance }
-   */
-  setProjectionLinearTolerance(tolerance: number) {
-    this._pxJoint.setProjectionLinearTolerance(tolerance);
-  }
-
-  /**
-   * {@inheritDoc IFixedJoint.setProjectionAngularTolerance }
-   */
-  setProjectionAngularTolerance(tolerance: number) {
-    this._pxJoint.setProjectionAngularTolerance(tolerance);
   }
 }

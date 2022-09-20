@@ -5,15 +5,8 @@ import { IDynamicCollider } from "./IDynamicCollider";
 import { IStaticCollider } from "./IStaticCollider";
 import { Quaternion, Vector3 } from "@arche-engine/math";
 import { ICollider } from "./ICollider";
-import {
-  IConfigurableJoint,
-  IFixedJoint,
-  IHingeJoint,
-  ISphericalJoint,
-  ISpringJoint,
-  ITranslationalJoint
-} from "./joints";
-import { ICapsuleCharacterControllerDesc } from "./characterkinematic";
+import { ICharacterController } from "./ICharacterController";
+import { IFixedJoint, IHingeJoint, ISpringJoint } from "./joints";
 
 /**
  * The interface of physics creation.
@@ -50,6 +43,11 @@ export interface IPhysics {
    * @param rotation - The global rotation
    */
   createStaticCollider(position: Vector3, rotation: Quaternion): IStaticCollider;
+
+  /**
+   * Create character controller.
+   */
+  createCharacterController(): ICharacterController;
 
   /**
    * Create physics material.
@@ -104,61 +102,21 @@ export interface IPhysics {
     material: IPhysicsMaterial
   ): ICapsuleColliderShape;
 
-  //MARK: - Joint
-  createFixedJoint(
-    actor0: ICollider,
-    position0: Vector3,
-    rotation0: Quaternion,
-    actor1: ICollider,
-    position1: Vector3,
-    rotation1: Quaternion
-  ): IFixedJoint;
+  /**
+   * Create fixed joint.
+   * @param collider - Affector of joint
+   */
+  createFixedJoint(collider: ICollider): IFixedJoint;
 
-  createHingeJoint(
-    actor0: ICollider,
-    position0: Vector3,
-    rotation0: Quaternion,
-    actor1: ICollider,
-    position1: Vector3,
-    rotation1: Quaternion
-  ): IHingeJoint;
+  /**
+   * Create hinge joint.
+   * @param collider - Affector of joint
+   */
+  createHingeJoint(collider: ICollider): IHingeJoint;
 
-  createSphericalJoint(
-    actor0: ICollider,
-    position0: Vector3,
-    rotation0: Quaternion,
-    actor1: ICollider,
-    position1: Vector3,
-    rotation1: Quaternion
-  ): ISphericalJoint;
-
-  createSpringJoint(
-    actor0: ICollider,
-    position0: Vector3,
-    rotation0: Quaternion,
-    actor1: ICollider,
-    position1: Vector3,
-    rotation1: Quaternion
-  ): ISpringJoint;
-
-  createTranslationalJoint(
-    actor0: ICollider,
-    position0: Vector3,
-    rotation0: Quaternion,
-    actor1: ICollider,
-    position1: Vector3,
-    rotation1: Quaternion
-  ): ITranslationalJoint;
-
-  createConfigurableJoint(
-    actor0: ICollider,
-    position0: Vector3,
-    rotation0: Quaternion,
-    actor1: ICollider,
-    position1: Vector3,
-    rotation1: Quaternion
-  ): IConfigurableJoint;
-
-  //MARK: - Character Controller
-  createCapsuleCharacterControllerDesc(): ICapsuleCharacterControllerDesc;
+  /**
+   * Create spring joint
+   * @param collider - Affector of joint
+   */
+  createSpringJoint(collider: ICollider): ISpringJoint;
 }

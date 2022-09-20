@@ -1,7 +1,7 @@
 import { Ray, Vector3 } from "@arche-engine/math";
+import { ICharacterController } from "./ICharacterController";
 import { ICollider } from "./ICollider";
 import { IColliderShape } from "./shape";
-import { ICharacterController, ICharacterControllerManager } from "./characterkinematic";
 
 /**
  * Interface for physics manager.
@@ -48,11 +48,6 @@ export interface IPhysicsManager {
    * @param characterController The Character Controller.
    */
   removeCharacterController(characterController: ICharacterController): void;
-
-  /**
-   * Create Character Controller Manager
-   */
-  createControllerManager(): ICharacterControllerManager;
 
   /**
    * Call on every frame to update pose of objects.

@@ -1,4 +1,4 @@
-import { Vector3, Quaternion } from "@arche-engine/math";
+import { Vector3 } from "@arche-engine/math";
 import { ICollider } from "../ICollider";
 
 /**
@@ -6,55 +6,43 @@ import { ICollider } from "../ICollider";
  */
 export interface IJoint {
   /**
-   * Set the actors for this joint.
-   * @param actor0 the first actor.
-   * @param actor1 the second actor
+   * The connected collider.
    */
-  setActors(actor0?: ICollider, actor1?: ICollider): void;
+  setConnectedCollider(value: ICollider): void;
 
   /**
-   * Set the joint local pose for an actor.
-   * @param actor 0 for the first actor, 1 for the second actor.
-   * @param position the local position for the actor this joint
-   * @param rotation the local rotation for the actor this joint
+   * The connected anchor position.
+   * @remarks If connectedCollider is set, this anchor is relative offset, or the anchor is world position.
    */
-  setLocalPose(actor: number, position: Vector3, rotation: Quaternion): void;
+  setConnectedAnchor(value: Vector3): void;
 
   /**
-   * set the break force for this joint.
-   * @param force the maximum force the joint can apply before breaking
-   * @param torque the maximum torque the joint can apply before breaking
+   *  The scale to apply to the inverse mass of collider 0 for resolving this constraint.
    */
-  setBreakForce(force: number, torque: number): void;
+  setConnectedMassScale(value: number): void;
 
   /**
-   * set a constraint flags for this joint to a specified value.
-   * @param flags the constraint flag
-   * @param value the value to which to set the flag
+   * The scale to apply to the inverse inertia of collider0 for resolving this constraint.
    */
-  setConstraintFlag(flags: number, value: boolean): void;
+  setConnectedInertiaScale(value: number): void;
 
   /**
-   * set the inverse mass scale for actor0.
-   * @param invMassScale the scale to apply to the inverse mass of actor 0 for resolving this constraint
+   * The scale to apply to the inverse mass of collider 1 for resolving this constraint.
    */
-  setInvMassScale0(invMassScale: number): void;
+  setMassScale(value: number): void;
 
   /**
-   * set the inverse inertia scale for actor0.
-   * @param invInertiaScale the scale to apply to the inverse inertia of actor0 for resolving this constraint
+   * The scale to apply to the inverse inertia of collider1 for resolving this constraint.
    */
-  setInvInertiaScale0(invInertiaScale: number): void;
+  setInertiaScale(value: number): void;
 
   /**
-   * set the inverse mass scale for actor1.
-   * @param invMassScale the scale to apply to the inverse mass of actor 1 for resolving this constraint
+   * The maximum force the joint can apply before breaking.
    */
-  setInvMassScale1(invMassScale: number): void;
+  setBreakForce(value: number): void;
 
   /**
-   * set the inverse inertia scale for actor1.
-   * @param invInertiaScale the scale to apply to the inverse inertia of actor1 for resolving this constraint
+   * The maximum torque the joint can apply before breaking.
    */
-  setInvInertiaScale1(invInertiaScale: number): void;
+  setBreakTorque(value: number): void;
 }

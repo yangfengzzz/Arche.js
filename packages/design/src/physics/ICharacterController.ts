@@ -1,9 +1,10 @@
 import { Vector3 } from "@arche-engine/math";
+import { ICollider } from "./ICollider";
 
 /**
  * Base class for character controllers.
  */
-export interface ICharacterController {
+export interface ICharacterController extends ICollider {
   /**
    * Moves the character using a "collide-and-slide" algorithm.
    * @param disp Displacement vector
@@ -13,29 +14,16 @@ export interface ICharacterController {
   move(disp: Vector3, minDist: number, elapsedTime: number): number;
 
   /**
-   * Test whether flags contain certain flag
-   * @param flags flags number
-   * @param flag certain flag
-   */
-  isSetControllerCollisionFlag(flags: number, flag: number): boolean;
-
-  /**
-   * Sets controller's position.
+   * Sets controller's world position.
    * @param position The new (center) position for the controller.
    */
-  setPosition(position: Vector3): boolean;
+  setWorldPosition(position: Vector3): boolean;
 
   /**
-   * Retrieve the raw position of the controller.
+   * Retrieve the world position of the controller.
    * @param position The controller's center position
    */
-  getPosition(position: Vector3): void;
-
-  /**
-   * Set controller's foot position.
-   * @param position The new (bottom) position for the controller.
-   */
-  setFootPosition(position: Vector3): void;
+  getWorldPosition(position: Vector3): void;
 
   /**
    * The step height.
@@ -50,12 +38,6 @@ export interface ICharacterController {
   setNonWalkableMode(flag: number): void;
 
   /**
-   * Sets the contact offset.
-   * @param offset The contact offset for the controller.
-   */
-  setContactOffset(offset: number): void;
-
-  /**
    * Sets the 'up' direction.
    * @param up The up direction for the controller.
    */
@@ -66,21 +48,4 @@ export interface ICharacterController {
    * @param slopeLimit The slope limit for the controller.
    */
   setSlopeLimit(slopeLimit: number): void;
-
-  /**
-   * Flushes internal geometry cache.
-   */
-  invalidateCache(): void;
-
-  /**
-   * Resizes the controller.
-   * @param height
-   */
-  resize(height: number): void;
-
-  /**
-   * Set unique id of the collider shape.
-   * @param id unique id
-   */
-  setUniqueID(id: number): void;
 }

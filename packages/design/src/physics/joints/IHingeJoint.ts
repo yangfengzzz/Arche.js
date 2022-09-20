@@ -1,9 +1,30 @@
 import { IJoint } from "./IJoint";
+import { Vector3 } from "@arche-engine/math";
 
 /**
  * A joint which behaves in a similar way to a hinge or axle.
  */
 export interface IHingeJoint extends IJoint {
+  /**
+   * The anchor rotation.
+   */
+  setAxis(value: Vector3): void;
+
+  /**
+   * The swing offset.
+   */
+  setSwingOffset(value: Vector3): void;
+
+  /**
+   * The current angle in degrees of the joint relative to its rest position.
+   */
+  getAngle(): number;
+
+  /**
+   * The angular velocity of the joint in degrees per second.
+   */
+  getVelocity(): Readonly<Vector3>;
+
   /**
    * Set a cone hard limit.
    * @param lowerLimit The lower angle of the limit
@@ -40,21 +61,9 @@ export interface IHingeJoint extends IJoint {
   setDriveGearRatio(ratio: number): void;
 
   /**
-   * sets a single flag specific to a Revolute Joint.
+   * sets a single flag specific to a Hinge Joint.
    * @param flag The flag to set or clear.
    * @param value the value to which to set the flag
    */
-  setRevoluteJointFlag(flag: number, value: boolean): void;
-
-  /**
-   * Set the linear tolerance threshold for projection.
-   * @param tolerance the linear tolerance threshold
-   */
-  setProjectionLinearTolerance(tolerance: number): void;
-
-  /**
-   * Set the angular tolerance threshold for projection.
-   * @param tolerance the angular tolerance threshold in radians
-   */
-  setProjectionAngularTolerance(tolerance: number): void;
+  setHingeJointFlag(flag: number, value: boolean): void;
 }
