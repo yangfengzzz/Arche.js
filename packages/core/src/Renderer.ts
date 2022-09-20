@@ -1,19 +1,24 @@
-import { BoundingBox, Matrix, Vector3 } from "@arche-engine/math";
-import { deepClone, ignoreClone, shallowClone } from "./clone/CloneManager";
+import { BoundingBox, Matrix } from "@arche-engine/math";
+import { BoolUpdateFlag } from "./BoolUpdateFlag";
+import { Camera } from "./Camera";
+import { assignmentClone, deepClone, ignoreClone, shallowClone } from "./clone/CloneManager";
 import { Component } from "./Component";
+import { dependentComponents } from "./ComponentsDependencies";
 import { Entity } from "./Entity";
-import { Material, RenderQueueType } from "./material";
-import { Shader } from "./shader";
-import { ShaderDataGroup } from "./shader/ShaderDataGroup";
-import { ShaderData } from "./shader";
+import { Material } from "./material/Material";
+import { Shader, ShaderDataGroup } from "./shader";
+import { ShaderData } from "./shader/ShaderData";
 import { ShaderMacroCollection } from "./shader/ShaderMacroCollection";
-import { UpdateFlag } from "./UpdateFlag";
-import { RenderElement } from "./rendering/RenderElement";
+import { Transform } from "./Transform";
 
 /**
- * Renderable component.
+ * Basis for all renderers.
+ * @decorator `@dependentComponents(Transform)`
  */
-export abstract class Renderer extends Component {
+@dependentComponents(Transform)
+export class Renderer extends Component {
+  private static _receiveShadowMacro = Shader.getMacroByName("OASIS_RECEIVE_SHADOWS");
+
   private static _rendererProperty = Shader.getPropertyByName("u_rendererData");
 
   /** ShaderData related to renderer. */
@@ -22,11 +27,6 @@ export abstract class Renderer extends Component {
   /** Whether it is clipped by the frustum, needs to be turned on camera.enableFrustumCulling. */
   @ignoreClone
   isCulled: boolean = false;
-
-  /** Set whether the renderer to receive shadows. */
-  receiveShadow = false;
-  /** Set whether the renderer to cast shadows. */
-  castShadow = false;
 
   /** @internal */
   @ignoreClone
@@ -40,20 +40,18 @@ export abstract class Renderer extends Component {
   /** @internal */
   @ignoreClone
   _globalShaderMacro: ShaderMacroCollection = new ShaderMacroCollection();
-
-  /** @internal temp solution. */
+  /** @internal */
   @ignoreClone
-  _renderSortId: number = 0;
+  _transformChangeFlag: BoolUpdateFlag;
+  /** @internal */
+  @deepClone
+  _bounds: BoundingBox = new BoundingBox();
 
   @ignoreClone
   protected _overrideUpdate: boolean = false;
   @shallowClone
   protected _materials: Material[] = [];
 
-  @ignoreClone
-  private _transformChangeFlag: UpdateFlag;
-  @deepClone
-  private _bounds: BoundingBox = new BoundingBox(new Vector3(), new Vector3());
   @ignoreClone
   private _mvMatrix: Matrix = new Matrix();
   @ignoreClone
@@ -64,9 +62,31 @@ export abstract class Renderer extends Component {
   private _normalMatrix: Matrix = new Matrix();
   @ignoreClone
   private _materialsInstanced: boolean[] = [];
-  // localMat, modelMat, MVMat, MVPMat, MVInvMat, normalMat
   @ignoreClone
+  private _priority: number = 0;
+  @assignmentClone
+  private _receiveShadows: boolean = false;
   private _rendererData: Float32Array = new Float32Array(96);
+  /**
+   * Whether receive shadow.
+   */
+  get receiveShadows(): boolean {
+    return this._receiveShadows;
+  }
+
+  set receiveShadows(value: boolean) {
+    if (this._receiveShadows !== value) {
+      if (value) {
+        this.shaderData.enableMacro(Renderer._receiveShadowMacro);
+      } else {
+        this.shaderData.disableMacro(Renderer._receiveShadowMacro);
+      }
+      this._receiveShadows = value;
+    }
+  }
+
+  /** whether cast shadow */
+  castShadows: boolean = false;
 
   /**
    * Material count.
@@ -93,6 +113,17 @@ export abstract class Renderer extends Component {
       changeFlag.flag = false;
     }
     return this._bounds;
+  }
+
+  /**
+   * The render priority of the renderer, lower values are rendered first and higher values are rendered last.
+   */
+  get priority(): number {
+    return this._priority;
+  }
+
+  set priority(value: number) {
+    this._priority = value;
   }
 
   /**
@@ -168,26 +199,10 @@ export abstract class Renderer extends Component {
   setMaterial(index: number, material: Material): void;
 
   setMaterial(indexOrMaterial: number | Material, material: Material = null): void {
-    let index;
     if (typeof indexOrMaterial === "number") {
-      index = indexOrMaterial;
+      this._setMaterial(indexOrMaterial, material);
     } else {
-      index = 0;
-      material = indexOrMaterial;
-    }
-
-    const materials = this._materials;
-    if (index >= materials.length) {
-      materials.length = index + 1;
-    }
-
-    const materialsInstance = this._materialsInstanced;
-    const internalMaterial = materials[index];
-    if (internalMaterial !== material) {
-      materials[index] = material;
-      index < materialsInstance.length && (materialsInstance[index] = false);
-      internalMaterial && internalMaterial._addRefCount(-1);
-      material && material._addRefCount(1);
+      this._setMaterial(0, indexOrMaterial);
     }
   }
 
@@ -291,35 +306,8 @@ export abstract class Renderer extends Component {
   /**
    * @internal
    */
-  abstract _render(
-    opaqueQueue: RenderElement[],
-    alphaTestQueue: RenderElement[],
-    transparentQueue: RenderElement[]
-  ): void;
-
-  /**
-   * @internal
-   * Push a render element to the render queue.
-   * @param element - Render element
-   * @param opaqueQueue
-   * @param alphaTestQueue
-   * @param transparentQueue
-   */
-  _pushPrimitive(
-    element: RenderElement,
-    opaqueQueue: RenderElement[],
-    alphaTestQueue: RenderElement[],
-    transparentQueue: RenderElement[]
-  ): void {
-    const renderQueueType = element.material.renderQueueType;
-
-    if (renderQueueType > (RenderQueueType.Transparent + RenderQueueType.AlphaTest) >> 1) {
-      transparentQueue.push(element);
-    } else if (renderQueueType > (RenderQueueType.AlphaTest + RenderQueueType.Opaque) >> 1) {
-      alphaTestQueue.push(element);
-    } else {
-      opaqueQueue.push(element);
-    }
+  _render(camera: Camera): void {
+    throw "not implement";
   }
 
   /**
@@ -334,8 +322,9 @@ export abstract class Renderer extends Component {
 
     this.shaderData._addRefCount(-1);
 
-    for (let i = 0, n = this._materials.length; i < n; i++) {
-      this._materials[i]._addRefCount(-1);
+    const materials = this._materials;
+    for (let i = 0, n = materials.length; i < n; i++) {
+      materials[i]?._addRefCount(-1);
     }
   }
 
@@ -349,5 +338,22 @@ export abstract class Renderer extends Component {
     this._materialsInstanced[index] = true;
     this._materials[index] = insMaterial;
     return insMaterial;
+  }
+
+  private _setMaterial(index: number, material: Material): void {
+    const materials = this._materials;
+    if (index >= materials.length) {
+      materials.length = index + 1;
+    }
+
+    const internalMaterial = materials[index];
+    if (internalMaterial !== material) {
+      const materialsInstance = this._materialsInstanced;
+      index < materialsInstance.length && (materialsInstance[index] = false);
+
+      internalMaterial && internalMaterial._addRefCount(-1);
+      material && material._addRefCount(1);
+      materials[index] = material;
+    }
   }
 }

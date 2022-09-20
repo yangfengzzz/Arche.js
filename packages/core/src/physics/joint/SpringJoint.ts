@@ -1,7 +1,8 @@
 import { Joint } from "./Joint";
 import { ISpringJoint } from "@arche-engine/design";
-import { Collider } from "../Collider";
 import { PhysicsManager } from "../PhysicsManager";
+import { Collider } from "../Collider";
+import { Vector3 } from "@arche-engine/math";
 
 /**
  * A joint that maintains an upper or lower bound (or both) on the distance between two points on different objects.
@@ -9,9 +10,24 @@ import { PhysicsManager } from "../PhysicsManager";
 export class SpringJoint extends Joint {
   private _minDistance: number = 0;
   private _maxDistance: number = 0;
-  private _tolerance: number = 0;
+  private _tolerance: number = 0.25;
   private _stiffness: number = 0;
   private _damping: number = 0;
+
+  /**
+   * The swing offset.
+   */
+  get swingOffset(): Vector3 {
+    return this._collider.localPosition;
+  }
+
+  set swingOffset(value: Vector3) {
+    const swingOffset = this._collider.localPosition;
+    if (value !== swingOffset) {
+      swingOffset.copyFrom(value);
+    }
+    (<ISpringJoint>this._nativeJoint).setSwingOffset(value);
+  }
 
   /**
    * The minimum distance.
@@ -20,9 +36,9 @@ export class SpringJoint extends Joint {
     return this._minDistance;
   }
 
-  set minDistance(newValue: number) {
-    this._minDistance = newValue;
-    (<ISpringJoint>this._nativeJoint).setMinDistance(newValue);
+  set minDistance(value: number) {
+    this._minDistance = value;
+    (<ISpringJoint>this._nativeJoint).setMinDistance(value);
   }
 
   /**
@@ -32,9 +48,9 @@ export class SpringJoint extends Joint {
     return this._maxDistance;
   }
 
-  set maxDistance(newValue: number) {
-    this._maxDistance = newValue;
-    (<ISpringJoint>this._nativeJoint).setMaxDistance(newValue);
+  set maxDistance(value: number) {
+    this._maxDistance = value;
+    (<ISpringJoint>this._nativeJoint).setMaxDistance(value);
   }
 
   /**
@@ -44,9 +60,9 @@ export class SpringJoint extends Joint {
     return this._tolerance;
   }
 
-  set tolerance(newValue: number) {
-    this._tolerance = newValue;
-    (<ISpringJoint>this._nativeJoint).setTolerance(newValue);
+  set tolerance(value: number) {
+    this._tolerance = value;
+    (<ISpringJoint>this._nativeJoint).setTolerance(value);
   }
 
   /**
@@ -56,9 +72,9 @@ export class SpringJoint extends Joint {
     return this._stiffness;
   }
 
-  set stiffness(newValue: number) {
-    this._stiffness = newValue;
-    (<ISpringJoint>this._nativeJoint).setStiffness(newValue);
+  set stiffness(value: number) {
+    this._stiffness = value;
+    (<ISpringJoint>this._nativeJoint).setStiffness(value);
   }
 
   /**
@@ -68,39 +84,19 @@ export class SpringJoint extends Joint {
     return this._damping;
   }
 
-  set damping(newValue: number) {
-    this._damping = newValue;
-    (<ISpringJoint>this._nativeJoint).setDamping(newValue);
-  }
-
-  constructor(collider0: Collider, collider1: Collider) {
-    super();
-    const jointActor0 = this._jointActor0;
-    const jointActor1 = this._jointActor1;
-    jointActor0._collider = collider0;
-    jointActor1._collider = collider1;
-    this._nativeJoint = PhysicsManager._nativePhysics.createSpringJoint(
-      collider0?._nativeCollider,
-      jointActor0._localPosition,
-      jointActor0._localRotation,
-      collider1?._nativeCollider,
-      jointActor1._localPosition,
-      jointActor1._localRotation
-    );
+  set damping(value: number) {
+    this._damping = value;
+    (<ISpringJoint>this._nativeJoint).setDamping(value);
   }
 
   /**
-   * Set a single flag specific to a Distance Joint to true or false.
-   * @param flag The flag to set or clear.
-   * @param value the value to which to set the flag
+   * @override
+   * @internal
    */
-  setDistanceJointFlag(flag: SpringJointFlag, value: boolean) {
-    (<ISpringJoint>this._nativeJoint).setDistanceJointFlag(flag, value);
+  _onAwake() {
+    const collider = this._collider;
+    collider.localPosition = new Vector3();
+    collider.collider = this.entity.getComponent(Collider);
+    this._nativeJoint = PhysicsManager._nativePhysics.createSpringJoint(collider.collider._nativeCollider);
   }
-}
-
-enum SpringJointFlag {
-  MAX_DISTANCE_ENABLED = 2,
-  MIN_DISTANCE_ENABLED = 4,
-  SPRING_ENABLED = 8
 }

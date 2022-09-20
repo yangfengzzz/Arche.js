@@ -1,4 +1,4 @@
-import { Logger, Time } from "./base";
+import { EventDispatcher, Logger, Time, Event } from "./base";
 import { WebCanvas } from "./WebCanvas";
 import { EngineSettings } from "./EngineSettings";
 import { ColorSpace } from "./enums/ColorSpace";
@@ -19,13 +19,15 @@ import { ShadowManager } from "./shadow";
 import { PhysicsManager } from "./physics";
 import { IPhysics } from "@arche-engine/design";
 import { ParticleManager } from "./particle/ParticleManager";
+import { InputManager } from "./input";
 
 ShaderPool.init();
 
-export class Engine {
+export class Engine extends EventDispatcher {
   /** @internal */
   static _gammaMacro: ShaderMacro = Shader.getMacroByName("OASIS_COLORSPACE_GAMMA");
 
+  readonly inputManager: InputManager;
   /** Physics manager of Engine. */
   physicsManager: PhysicsManager;
   _shadowManager: ShadowManager;
@@ -164,6 +166,7 @@ export class Engine {
   }
 
   constructor(canvas: WebCanvas, settings?: EngineSettings) {
+    super();
     this._canvas = canvas;
 
     const colorSpace = settings?.colorSpace || ColorSpace.Linear;
@@ -209,7 +212,7 @@ export class Engine {
             this._particleManager = new ParticleManager(this);
             if (physics) {
               PhysicsManager._nativePhysics = physics;
-              this.physicsManager = new PhysicsManager();
+              this.physicsManager = new PhysicsManager(this);
             }
             resolve();
           });
@@ -233,20 +236,26 @@ export class Engine {
    */
   destroy(): void {
     if (this._sceneManager) {
+      this.inputManager._destroy();
+      this.trigger(new Event("shutdown", this));
+
       // -- cancel animation
       this.pause();
 
       this._animate = null;
 
-      this._sceneManager._activeScene.destroy();
+      this._sceneManager._destroy();
       this._resourceManager._destroy();
-      // If engine destroy, callComponentDestroy() maybe will not call anymore.
-      this._componentsManager.callComponentDestroy();
+      // If engine destroy, applyScriptsInvalid() maybe will not call anymore.
+      this._componentsManager.handlingInvalidScripts();
       this._sceneManager = null;
       this._resourceManager = null;
 
       this._canvas = null;
+
       this._time = null;
+
+      this.removeAllEventListeners();
     }
   }
 
@@ -266,19 +275,14 @@ export class Engine {
       scene._activeCameras.sort((camera1, camera2) => camera1.priority - camera2.priority);
 
       componentsManager.callScriptOnStart();
-      if (this.physicsManager) {
-        componentsManager.callColliderOnUpdate();
-        this.physicsManager._update(deltaTime / 1000.0);
-        componentsManager.callCharacterControllerOnLateUpdate();
-        componentsManager.callColliderOnLateUpdate();
-      }
+      this.physicsManager._initialized && this.physicsManager._update(deltaTime / 1000.0);
+      this.inputManager._update();
       componentsManager.callScriptOnUpdate(deltaTime);
       componentsManager.callAnimationUpdate(deltaTime);
       componentsManager.callScriptOnLateUpdate(deltaTime);
-
       this._render(scene);
+      componentsManager.handlingInvalidScripts();
     }
-    this._componentsManager.callComponentDestroy();
   }
 
   _render(scene: Scene): void {

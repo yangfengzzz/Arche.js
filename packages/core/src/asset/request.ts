@@ -12,8 +12,8 @@ const mimeType = {
   jpg: "image"
 };
 
-const defaultRetryCount = 4;
-const defaultTimeout = 15000;
+const defaultRetryCount = 1;
+const defaultTimeout = Infinity;
 const defaultInterval = 500;
 
 export type RequestConfig = {
@@ -66,9 +66,12 @@ function requestImage<T>(url: string, config: RequestConfig): AssetPromise<T> {
 
     img.onabort = onerror;
 
-    const timeoutId = setTimeout(() => {
-      reject(new Error(`request ${url} timeout`));
-    }, timeout);
+    let timeoutId = -1;
+    if (timeout != Infinity) {
+      timeoutId = window.setTimeout(() => {
+        reject(new Error(`request ${url} timeout`));
+      }, timeout);
+    }
 
     img.onload = ((timeoutId) => {
       return () => {
@@ -122,7 +125,8 @@ function requestRes<T>(url: string, config: RequestConfig): AssetPromise<T> {
         xhr.setRequestHeader(name, headers[name]);
       });
     }
-    xhr.send(config.body as any);
+    // @ts-ignore
+    xhr.send(config.body as XMLHttpRequestBodyInit);
   });
 }
 
@@ -134,7 +138,6 @@ function getMimeTypeFromUrl(url: string) {
 export class MultiExecutor {
   private _timeoutId: number = -100;
   private _currentCount = 0;
-
   constructor(
     private execFunc: (count?: number) => Promise<any>,
     private totalCount: number,
@@ -144,7 +147,6 @@ export class MultiExecutor {
   }
 
   private done: Function;
-
   start(done?: Function): void {
     this.done = done;
     this.exec();

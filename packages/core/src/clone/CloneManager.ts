@@ -1,4 +1,4 @@
-import { IClone } from "./IClone";
+import { IClone } from "@arche-engine/design";
 import { CloneMode } from "./enums/CloneMode";
 
 type TypeArray =

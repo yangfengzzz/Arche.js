@@ -6,7 +6,6 @@ import { Script } from "./Script";
 import { ShaderMacroCollection } from "./shader";
 import { BoundingFrustum, Vector3 } from "@arche-engine/math";
 import { RenderElement } from "./rendering/RenderElement";
-import { Collider, CharacterController } from "./physics";
 
 /**
  * The manager of the components.
@@ -14,26 +13,25 @@ import { Collider, CharacterController } from "./physics";
 export class ComponentsManager {
   private static _tempVector0 = new Vector3();
   private static _tempVector1 = new Vector3();
+  /** @internal */
+  _renderers: DisorderedArray<Renderer> = new DisorderedArray();
 
   // Script
   private _onStartScripts: DisorderedArray<Script> = new DisorderedArray();
   private _onUpdateScripts: DisorderedArray<Script> = new DisorderedArray();
   private _onLateUpdateScripts: DisorderedArray<Script> = new DisorderedArray();
-  private _destroyComponents: Script[] = [];
+  private _onPhysicsUpdateScripts: DisorderedArray<Script> = new DisorderedArray();
+  private _disableScripts: Script[] = [];
+  private _destroyScripts: Script[] = [];
 
   // Animation
   private _onUpdateAnimations: DisorderedArray<Component> = new DisorderedArray();
 
   // Render
-  private _renderers: DisorderedArray<Renderer> = new DisorderedArray();
   private _onUpdateRenderers: DisorderedArray<Renderer> = new DisorderedArray();
 
   // Delay dispose active/inActive Pool
   private _componentsContainerPool: Component[][] = [];
-
-  // Physics
-  private _colliders: DisorderedArray<Collider> = new DisorderedArray();
-  private _characterControllers: DisorderedArray<CharacterController> = new DisorderedArray();
 
   addRenderer(renderer: Renderer) {
     renderer._rendererIndex = this._renderers.length;
@@ -44,28 +42,6 @@ export class ComponentsManager {
     const replaced = this._renderers.deleteByIndex(renderer._rendererIndex);
     replaced && (replaced._rendererIndex = renderer._rendererIndex);
     renderer._rendererIndex = -1;
-  }
-
-  addCollider(collider: Collider) {
-    collider._index = this._colliders.length;
-    this._colliders.add(collider);
-  }
-
-  removeCollider(collider: Collider): void {
-    const replaced = this._colliders.deleteByIndex(collider._index);
-    replaced && (replaced._index = collider._index);
-    collider._index = -1;
-  }
-
-  addCharacterController(controller: CharacterController) {
-    controller._index = this._characterControllers.length;
-    this._characterControllers.add(controller);
-  }
-
-  removeCharacterController(controller: CharacterController) {
-    let replaced = this._characterControllers.deleteByIndex(controller._index);
-    replaced && (replaced!._index = controller._index);
-    controller._index = -1;
   }
 
   addOnStartScript(script: Script) {
@@ -101,6 +77,17 @@ export class ComponentsManager {
     script._onLateUpdateIndex = -1;
   }
 
+  addOnPhysicsUpdateScript(script: Script): void {
+    script._onPhysicsUpdateIndex = this._onPhysicsUpdateScripts.length;
+    this._onPhysicsUpdateScripts.add(script);
+  }
+
+  removeOnPhysicsUpdateScript(script: Script): void {
+    const replaced = this._onPhysicsUpdateScripts.deleteByIndex(script._onPhysicsUpdateIndex);
+    replaced && (replaced._onPhysicsUpdateIndex = script._onPhysicsUpdateIndex);
+    script._onPhysicsUpdateIndex = -1;
+  }
+
   addOnUpdateAnimations(animation: Component): void {
     //@ts-ignore
     animation._onUpdateIndex = this._onUpdateAnimations.length;
@@ -127,8 +114,12 @@ export class ComponentsManager {
     renderer._onUpdateIndex = -1;
   }
 
-  addDestroyComponent(component): void {
-    this._destroyComponents.push(component);
+  addDisableScript(component: Script): void {
+    this._disableScripts.push(component);
+  }
+
+  addDestroyScript(component: Script): void {
+    this._destroyScripts.push(component);
   }
 
   callScriptOnStart(): void {
@@ -138,35 +129,47 @@ export class ComponentsManager {
       // The 'onStartScripts.length' maybe add if you add some Script with addComponent() in some Script's onStart()
       for (let i = 0; i < onStartScripts.length; i++) {
         const script = elements[i];
-        script._started = true;
-        script._onStartIndex = -1;
-        script.onStart();
+        if (!script._waitHandlingInValid) {
+          script._started = true;
+          script._onStartIndex = -1;
+          script.onStart();
+        }
       }
       onStartScripts.length = 0;
     }
   }
 
-  callScriptOnUpdate(deltaTime): void {
+  callScriptOnUpdate(deltaTime: number): void {
     const elements = this._onUpdateScripts._elements;
     for (let i = this._onUpdateScripts.length - 1; i >= 0; --i) {
       const element = elements[i];
-      if (element._started) {
+      if (!element._waitHandlingInValid && element._started) {
         element.onUpdate(deltaTime);
       }
     }
   }
 
-  callScriptOnLateUpdate(deltaTime): void {
+  callScriptOnLateUpdate(deltaTime: number): void {
     const elements = this._onLateUpdateScripts._elements;
     for (let i = this._onLateUpdateScripts.length - 1; i >= 0; --i) {
       const element = elements[i];
-      if (element._started) {
+      if (!element._waitHandlingInValid && element._started) {
         element.onLateUpdate(deltaTime);
       }
     }
   }
 
-  callAnimationUpdate(deltaTime): void {
+  callScriptOnPhysicsUpdate(): void {
+    const elements = this._onPhysicsUpdateScripts._elements;
+    for (let i = this._onPhysicsUpdateScripts.length - 1; i >= 0; --i) {
+      const element = elements[i];
+      if (!element._waitHandlingInValid && element._started) {
+        element.onPhysicsUpdate();
+      }
+    }
+  }
+
+  callAnimationUpdate(deltaTime: number): void {
     const elements = this._onUpdateAnimations._elements;
     for (let i = this._onUpdateAnimations.length - 1; i >= 0; --i) {
       //@ts-ignore
@@ -178,6 +181,27 @@ export class ComponentsManager {
     const elements = this._onUpdateRenderers._elements;
     for (let i = this._onUpdateRenderers.length - 1; i >= 0; --i) {
       elements[i].update(deltaTime);
+    }
+  }
+
+  handlingInvalidScripts(): void {
+    const { _disableScripts: disableScripts, _destroyScripts: destroyScripts } = this;
+
+    let length = disableScripts.length;
+    if (length > 0) {
+      for (let i = length - 1; i >= 0; i--) {
+        const disableScript = disableScripts[i];
+        disableScript._waitHandlingInValid && disableScript._handlingInValid();
+      }
+      disableScripts.length = 0;
+    }
+
+    length = destroyScripts.length;
+    if (length > 0) {
+      for (let i = length - 1; i >= 0; i--) {
+        destroyScripts[i].onDestroy();
+      }
+      destroyScripts.length = 0;
     }
   }
 
@@ -244,51 +268,19 @@ export class ComponentsManager {
     }
   }
 
-  callComponentDestroy(): void {
-    const destroyComponents = this._destroyComponents;
-    const length = destroyComponents.length;
-    if (length > 0) {
-      for (let i = length - 1; i >= 0; --i) {
-        destroyComponents[i].onDestroy();
-      }
-      destroyComponents.length = 0;
+  callCameraOnBeginRender(camera: Camera): void {
+    const scripts = camera.entity._scripts;
+    for (let i = scripts.length - 1; i >= 0; --i) {
+      const script = scripts.get(i);
+      script._waitHandlingInValid || script.onBeginRender(camera);
     }
   }
 
-  callCameraOnBeginRender(camera: Camera) {
-    const camComps = camera.entity._components;
-    for (let i = camComps.length - 1; i >= 0; --i) {
-      const camComp = camComps[i];
-      (camComp as any).onBeginRender && (camComp as any).onBeginRender(camera);
-    }
-  }
-
-  callCameraOnEndRender(camera: Camera) {
-    const camComps = camera.entity._components;
-    for (let i = camComps.length - 1; i >= 0; --i) {
-      const camComp = camComps[i];
-      (camComp as any).onEndRender && (camComp as any).onEndRender(camera);
-    }
-  }
-
-  callColliderOnUpdate() {
-    const elements = this._colliders._elements;
-    for (let i = this._colliders.length - 1; i >= 0; --i) {
-      elements[i]._onUpdate();
-    }
-  }
-
-  callColliderOnLateUpdate() {
-    const elements = this._colliders._elements;
-    for (let i = this._colliders.length - 1; i >= 0; --i) {
-      elements[i]._onLateUpdate();
-    }
-  }
-
-  callCharacterControllerOnLateUpdate() {
-    let elements = this._characterControllers._elements;
-    for (let i = this._characterControllers.length - 1; i >= 0; --i) {
-      elements[i]!._onLateUpdate();
+  callCameraOnEndRender(camera: Camera): void {
+    const scripts = camera.entity._scripts;
+    for (let i = scripts.length - 1; i >= 0; --i) {
+      const script = scripts.get(i);
+      script._waitHandlingInValid || script.onEndRender(camera);
     }
   }
 

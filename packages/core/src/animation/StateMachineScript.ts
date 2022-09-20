@@ -1,5 +1,5 @@
-import { Animator } from "./Animator";
-import { AnimatorState } from "./AnimatorState";
+import { Animator } from "../animation/Animator";
+import { AnimatorState } from "../animation/AnimatorState";
 
 /**
  * StateMachineScript is a component that can be added to a animator state. It's the base class every script on a state derives from.

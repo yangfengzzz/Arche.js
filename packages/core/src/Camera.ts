@@ -1,7 +1,9 @@
 import { BoundingFrustum, MathUtil, Matrix, Ray, Vector2, Vector3, Vector4 } from "@arche-engine/math";
+import { Logger } from "./base";
+import { BoolUpdateFlag } from "./BoolUpdateFlag";
 import { deepClone, ignoreClone } from "./clone/CloneManager";
 import { Component } from "./Component";
-import { dependencies } from "./ComponentsDependencies";
+import { dependentComponents } from "./ComponentsDependencies";
 import { Entity } from "./Entity";
 import { CameraClearFlags } from "./enums/CameraClearFlags";
 import { Layer } from "./Layer";
@@ -9,7 +11,6 @@ import { ShaderDataGroup } from "./shader/ShaderDataGroup";
 import { Shader, ShaderData } from "./shader";
 import { ShaderMacroCollection } from "./shader/ShaderMacroCollection";
 import { Transform } from "./Transform";
-import { UpdateFlag } from "./UpdateFlag";
 
 class MathTemp {
   static tempVec4 = new Vector4();
@@ -19,8 +20,9 @@ class MathTemp {
 
 /**
  * Camera component, as the entrance to the three-dimensional world.
+ * @decorator `@dependentComponents(Transform)`
  */
-@dependencies(Transform)
+@dependentComponents(Transform)
 export class Camera extends Component {
   private static _cameraProperty = Shader.getPropertyByName("u_cameraData");
 
@@ -35,9 +37,9 @@ export class Camera extends Component {
 
   /**
    * Determining what to clear when rendering by a Camera.
-   * @defaultValue `CameraClearFlags.DepthColor`
+   * @defaultValue `CameraClearFlags.All`
    */
-  clearFlags: CameraClearFlags = CameraClearFlags.DepthColor;
+  clearFlags: CameraClearFlags = CameraClearFlags.All;
 
   /**
    * Culling mask - which layers the camera renders.
@@ -54,7 +56,7 @@ export class Camera extends Component {
   private _isOrthographic: boolean = false;
   private _isProjMatSetting = false;
   private _nearClipPlane: number = 0.1;
-  private _farClipPlane: number = 500;
+  private _farClipPlane: number = 100;
   private _fieldOfView: number = 45;
   private _orthographicSize: number = 10;
   private _isProjectionDirty = true;
@@ -63,13 +65,13 @@ export class Camera extends Component {
   private _customAspectRatio: number | undefined = undefined;
 
   @ignoreClone
-  private _frustumViewChangeFlag: UpdateFlag;
+  private _frustumViewChangeFlag: BoolUpdateFlag;
   @ignoreClone
   private _transform: Transform;
   @ignoreClone
-  private _isViewMatrixDirty: UpdateFlag;
+  private _isViewMatrixDirty: BoolUpdateFlag;
   @ignoreClone
-  private _isInvViewProjDirty: UpdateFlag;
+  private _isInvViewProjDirty: BoolUpdateFlag;
   @deepClone
   private _projectionMatrix: Matrix = new Matrix();
   @deepClone
@@ -148,7 +150,7 @@ export class Camera extends Component {
 
   set viewport(value: Vector4) {
     if (value !== this._viewport) {
-      value.cloneTo(this._viewport);
+      this._viewport.copyFrom(value);
     }
     this._projMatChange();
   }
@@ -181,10 +183,15 @@ export class Camera extends Component {
    * View matrix.
    */
   get viewMatrix(): Readonly<Matrix> {
-    // Remove scale
     if (this._isViewMatrixDirty.flag) {
       this._isViewMatrixDirty.flag = false;
-      Matrix.invert(this._transform.worldMatrix, this._viewMatrix);
+      // Ignore scale.
+      Matrix.rotationTranslation(
+        this._transform.worldRotationQuaternion,
+        this._transform.worldPosition,
+        this._viewMatrix
+      );
+      this._viewMatrix.invert();
     }
     return this._viewMatrix;
   }
@@ -287,7 +294,7 @@ export class Camera extends Component {
     Vector3.transformToVec4(cameraPoint, this.projectionMatrix, viewportPoint);
 
     const w = viewportPoint.w;
-    out.setValue((viewportPoint.x / w + 1.0) * 0.5, (1.0 - viewportPoint.y / w) * 0.5, -cameraPoint.z);
+    out.set((viewportPoint.x / w + 1.0) * 0.5, (1.0 - viewportPoint.y / w) * 0.5, -cameraPoint.z);
     return out;
   }
 
@@ -312,7 +319,7 @@ export class Camera extends Component {
       z = z / pointZ;
     }
 
-    Camera._innerViewportToWorldPoint(point.x, point.y, (z + 1.0) / 2.0, this._getInvViewProjMat(), out);
+    this._innerViewportToWorldPoint(point.x, point.y, (z + 1.0) / 2.0, this._getInvViewProjMat(), out);
     return out;
   }
 
@@ -325,9 +332,9 @@ export class Camera extends Component {
   viewportPointToRay(point: Vector2, out: Ray): Ray {
     const invViewProjMat = this._getInvViewProjMat();
     // Use the intersection of the near clipping plane as the origin point.
-    const origin = Camera._innerViewportToWorldPoint(point.x, point.y, 0.0, invViewProjMat, out.origin);
+    const origin = this._innerViewportToWorldPoint(point.x, point.y, 0.0, invViewProjMat, out.origin);
     // Use the intersection of the far clipping plane as the origin point.
-    const direction = Camera._innerViewportToWorldPoint(point.x, point.y, 1.0, invViewProjMat, out.direction);
+    const direction = this._innerViewportToWorldPoint(point.x, point.y, 1.0, invViewProjMat, out.direction);
     Vector3.subtract(direction, origin, direction);
     direction.normalize();
     return out;
@@ -447,7 +454,7 @@ export class Camera extends Component {
    * @override
    * @inheritdoc
    */
-  _onActive() {
+  _onEnable(): void {
     this.entity.scene._attachRenderCamera(this);
   }
 
@@ -455,7 +462,7 @@ export class Camera extends Component {
    * @override
    * @inheritdoc
    */
-  _onInActive() {
+  _onDisable(): void {
     this.entity.scene._detachRenderCamera(this);
   }
 
@@ -469,24 +476,18 @@ export class Camera extends Component {
     this.shaderData._addRefCount(-1);
   }
 
-  private _projMatChange() {
+  private _projMatChange(): void {
     this._isFrustumProjectDirty = true;
     this._isProjectionDirty = true;
     this._isInvProjMatDirty = true;
     this._isInvViewProjDirty.flag = true;
   }
 
-  private static _innerViewportToWorldPoint(
-    x: number,
-    y: number,
-    z: number,
-    invViewProjMat: Matrix,
-    out: Vector3
-  ): Vector3 {
+  private _innerViewportToWorldPoint(x: number, y: number, z: number, invViewProjMat: Matrix, out: Vector3): Vector3 {
     // Depth is a normalized value, 0 is nearPlane, 1 is farClipPlane.
     // Transform to clipping space matrix
     const clipPoint = MathTemp.tempVec3;
-    clipPoint.setValue(x * 2 - 1, 1 - y * 2, z * 2 - 1);
+    clipPoint.set(x * 2 - 1, 1 - y * 2, z * 2 - 1);
     Vector3.transformCoordinate(clipPoint, invViewProjMat, out);
     return out;
   }

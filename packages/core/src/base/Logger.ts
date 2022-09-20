@@ -3,8 +3,7 @@
  * @private
  */
 /* tslint:disable */
-const noop = (message?: any, ...optionalParams: any[]) => {
-};
+const noop = (message?: any, ...optionalParams: any[]) => {};
 const debug = console.log.bind(console);
 const info = console.info.bind(console);
 const warn = console.warn.bind(console);

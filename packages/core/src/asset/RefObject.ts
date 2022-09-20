@@ -1,4 +1,4 @@
-import { EngineObject } from "../base";
+import { EngineObject } from "../base/EngineObject";
 import { Engine } from "../Engine";
 import { IRefObject } from "./IRefObject";
 
