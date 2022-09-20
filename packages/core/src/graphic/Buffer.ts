@@ -54,6 +54,9 @@ export class Buffer extends RefObject implements GPUBufferBinding {
     bufferDescriptor.usage = bufferUsage;
     bufferDescriptor.size = this._size;
     this._nativeBuffer = engine.device.createBuffer(bufferDescriptor);
+    if (typeof byteLengthOrData !== "number") {
+      this.uploadData(byteLengthOrData);
+    }
   }
 
   map(mode: GPUMapModeFlags): Promise<undefined> {

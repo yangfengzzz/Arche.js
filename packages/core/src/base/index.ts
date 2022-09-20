@@ -6,3 +6,4 @@ export { Util, ObjectValues } from "./Util";
 export { EngineObject } from "./EngineObject";
 
 export * from "./Constant";
+export * from "./MurmurHash3";

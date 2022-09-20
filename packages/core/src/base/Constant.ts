@@ -7,4 +7,6 @@ export type TypedArray =
   | Uint32Array
   | Uint8ClampedArray
   | Float32Array
-  | Float64Array;
+  | Float64Array
+  | ArrayBuffer
+  | ArrayBufferView;
