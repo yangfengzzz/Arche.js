@@ -11,7 +11,7 @@ import { Scene } from "./Scene";
 import { ShaderMacro } from "./shader/ShaderMacro";
 import { Shader, ShaderPool, ShaderMacroCollection } from "./shader";
 import { RenderElement } from "./rendering/RenderElement";
-import { ClassPool } from "./rendering/ClassPool";
+import { ClassPool } from "./ClassPool";
 import { ShaderProgramPool } from "./shader/ShaderProgramPool";
 import { LightManager } from "./lighting";
 import { ForwardRenderPass } from "./rendering";
@@ -22,6 +22,7 @@ import { ParticleManager } from "./particle/ParticleManager";
 import { InputManager } from "./input";
 import { ShaderPass } from "./shader/ShaderPass";
 import init from "./shader/transcode/glsl_wgsl_compiler";
+import { ResourceCache } from "./rendering/ResourceCache";
 
 ShaderPool.init();
 
@@ -37,6 +38,7 @@ export class Engine extends EventDispatcher {
   _particleManager: ParticleManager;
   _componentsManager: ComponentsManager = new ComponentsManager();
   _renderElementPool: ClassPool<RenderElement> = new ClassPool(RenderElement);
+  _resourceCache: ResourceCache = new ResourceCache(this);
 
   /** @internal */
   _shaderProgramPools: ShaderProgramPool[] = [];

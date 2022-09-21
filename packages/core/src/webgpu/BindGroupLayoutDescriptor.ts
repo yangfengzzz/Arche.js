@@ -1,55 +1,24 @@
 export class BindGroupLayoutDescriptor implements GPUBindGroupLayoutDescriptor {
   label?: string;
   entries: BindGroupLayoutEntry[] = [];
-
-  cloneTo(desc: BindGroupLayoutDescriptor): BindGroupLayoutDescriptor {
-    desc.label = this.label;
-    desc.entries.length = this.entries.length;
-    for (let i = 0, n = this.entries.length; i < n; i++) {
-      const entry = this.entries[i];
-      desc.entries[i] = new BindGroupLayoutEntry();
-      entry.cloneTo(desc.entries[i]);
-    }
-    return desc;
-  }
 }
 
 export class BindGroupLayoutEntry implements GPUBindGroupLayoutEntry {
   binding: GPUIndex32;
   visibility: GPUShaderStageFlags;
-  buffer?: BufferBindingLayout;
-  sampler?: SamplerBindingLayout;
-  texture?: TextureBindingLayout;
-  storageTexture?: StorageTextureBindingLayout;
-  externalTexture?: ExternalTextureBindingLayout;
+  buffer: BufferBindingLayout = new BufferBindingLayout();
+  sampler: SamplerBindingLayout = new SamplerBindingLayout();
+  texture: TextureBindingLayout = new TextureBindingLayout();
+  storageTexture: StorageTextureBindingLayout = new StorageTextureBindingLayout();
+  externalTexture: ExternalTextureBindingLayout = new ExternalTextureBindingLayout();
 
-  cloneTo(entry: BindGroupLayoutEntry): BindGroupLayoutEntry {
-    const { buffer, sampler, texture, storageTexture, externalTexture } = this;
-
-    entry.binding = this.binding;
-    entry.visibility = this.visibility;
-    if (buffer !== undefined) {
-      entry.buffer = new BufferBindingLayout();
-      buffer.cloneTo(entry.buffer);
-    }
-    if (sampler !== undefined) {
-      entry.sampler = new SamplerBindingLayout();
-      sampler.cloneTo(entry.sampler);
-    }
-    if (texture !== undefined) {
-      entry.texture = new TextureBindingLayout();
-      texture.cloneTo(entry.texture);
-    }
-    if (storageTexture !== undefined) {
-      entry.storageTexture = new StorageTextureBindingLayout();
-      storageTexture.cloneTo(entry.storageTexture);
-    }
-    if (externalTexture !== undefined) {
-      entry.externalTexture = new ExternalTextureBindingLayout();
-      externalTexture.cloneTo(entry.externalTexture);
-    }
-
-    return entry;
+  reset() {
+    this.binding = 0;
+    this.visibility = 0;
+    this.buffer.reset();
+    this.sampler.reset();
+    this.texture.reset();
+    this.storageTexture.reset();
   }
 }
 
@@ -58,26 +27,20 @@ export class BufferBindingLayout implements GPUBufferBindingLayout {
   hasDynamicOffset?: boolean;
   minBindingSize?: GPUSize64;
 
-  cloneTo(layout: BufferBindingLayout): BufferBindingLayout {
-    layout.type = this.type;
-    layout.hasDynamicOffset = this.hasDynamicOffset;
-    layout.minBindingSize = this.minBindingSize;
-    return layout;
+  reset() {
+    this.type = null;
+    this.hasDynamicOffset = null;
+    this.minBindingSize = null;
   }
 }
 
-export class ExternalTextureBindingLayout implements GPUExternalTextureBindingLayout {
-  cloneTo(layout: ExternalTextureBindingLayout): ExternalTextureBindingLayout {
-    return layout;
-  }
-}
+export class ExternalTextureBindingLayout implements GPUExternalTextureBindingLayout {}
 
 export class SamplerBindingLayout implements GPUSamplerBindingLayout {
   type?: GPUSamplerBindingType;
 
-  cloneTo(layout: SamplerBindingLayout): SamplerBindingLayout {
-    layout.type = this.type;
-    return layout;
+  reset() {
+    this.type = null;
   }
 }
 
@@ -86,11 +49,10 @@ export class StorageTextureBindingLayout implements GPUStorageTextureBindingLayo
   access?: GPUStorageTextureAccess;
   viewDimension?: GPUTextureViewDimension;
 
-  cloneTo(layout: StorageTextureBindingLayout): StorageTextureBindingLayout {
-    layout.format = this.format;
-    layout.access = this.access;
-    layout.viewDimension = this.viewDimension;
-    return layout;
+  reset() {
+    this.format = null;
+    this.access = null;
+    this.viewDimension = null;
   }
 }
 
@@ -99,10 +61,9 @@ export class TextureBindingLayout implements GPUTextureBindingLayout {
   viewDimension?: GPUTextureViewDimension;
   multisampled?: boolean;
 
-  cloneTo(layout: TextureBindingLayout): TextureBindingLayout {
-    layout.sampleType = this.sampleType;
-    layout.viewDimension = this.viewDimension;
-    layout.multisampled = this.multisampled;
-    return layout;
+  reset() {
+    this.sampleType = null;
+    this.viewDimension = null;
+    this.multisampled = null;
   }
 }

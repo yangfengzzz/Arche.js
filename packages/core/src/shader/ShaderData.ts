@@ -8,7 +8,8 @@ import { ShaderProperty } from "./ShaderProperty";
 import { Buffer } from "../graphic";
 import { Engine } from "../Engine";
 import { ImageView } from "../image/ImageView";
-import { SamplerDescriptor } from "../webgpu";
+import { BindGroupEntry, BindGroupLayoutEntry, SamplerDescriptor } from "../webgpu";
+import { ClassPool } from "../ClassPool";
 
 export type ShaderPropertyResourceType = Buffer | ImageView | SamplerDescriptor;
 
@@ -27,6 +28,8 @@ export class ShaderData implements IRefObject, IClone {
   /** @internal */
   _macroCollection: ShaderMacroCollection = new ShaderMacroCollection();
 
+  private _bindGroupLayoutEntryPool: ClassPool<BindGroupLayoutEntry>;
+  private _bindGroupEntryPool: ClassPool<BindGroupEntry>;
   private _macroMap: Record<number, ShaderMacro> = Object.create(null);
   private _refCount: number = 0;
   private readonly _engine: Engine;
@@ -37,6 +40,55 @@ export class ShaderData implements IRefObject, IClone {
   constructor(group: ShaderDataGroup, engine: Engine) {
     this._engine = engine;
     this._group = group;
+  }
+
+  /**
+   * Reset pool.
+   */
+  resetPool(): void {
+    this._bindGroupLayoutEntryPool.resetPool();
+    this._bindGroupEntryPool.resetPool();
+  }
+
+  bindData(
+    stage: number,
+    resources,
+    bindGroupLayoutEntryVecMap: Map<number, Array<BindGroupLayoutEntry>>,
+    bindGroupEntryVecMap: Map<number, Array<BindGroupEntry>>
+  ): void {
+    for (const u of resources.uniforms) {
+      const propertyResource = this._propertyResources[u.name];
+      if (propertyResource) {
+        this.bindBuffer(stage, u, <Buffer>propertyResource, bindGroupLayoutEntryVecMap, bindGroupEntryVecMap, true);
+      }
+    }
+
+    for (const u of resources.storage) {
+      const propertyResource = this._propertyResources[u.name];
+      if (propertyResource) {
+        this.bindBuffer(stage, u, <Buffer>propertyResource, bindGroupLayoutEntryVecMap, bindGroupEntryVecMap, false);
+      }
+    }
+
+    for (const t of resources.textures) {
+      const propertyResource = this._propertyResources[t.name];
+      if (propertyResource) {
+        this.bindTexture(stage, t, <ImageView>propertyResource, bindGroupLayoutEntryVecMap, bindGroupEntryVecMap);
+      }
+    }
+
+    for (const t of resources.samplers) {
+      const propertyResource = this._propertyResources[t.name];
+      if (propertyResource) {
+        this.bindSampler(
+          stage,
+          t,
+          <SamplerDescriptor>propertyResource,
+          bindGroupLayoutEntryVecMap,
+          bindGroupEntryVecMap
+        );
+      }
+    }
   }
 
   /**
@@ -375,6 +427,153 @@ export class ShaderData implements IRefObject, IClone {
   }
 
   //--------------------------------------------------------------------------------------------------------------------
+  bindBuffer(
+    stage: number,
+    resource: any,
+    buffer: Buffer,
+    bindGroupLayoutEntryVecMap: Map<number, Array<BindGroupLayoutEntry>>,
+    bindGroupEntryVecMap: Map<number, Array<BindGroupEntry>>,
+    isUniform: boolean
+  ): void {
+    const insertFunctor = () => {
+      const entry = this._bindGroupEntryPool.getFromPool();
+      entry.reset();
+      entry.binding = resource.binding;
+      entry.buffer = buffer.buffer;
+      entry.size = buffer.size;
+      bindGroupEntryVecMap[resource.group].push_back(entry);
+
+      const layout_entry = this._bindGroupLayoutEntryPool.getFromPool();
+      layout_entry.binding = resource.binding;
+      layout_entry.visibility = stage;
+      if (!isUniform) {
+        layout_entry.buffer.type = "storage";
+      } else {
+        layout_entry.buffer.type = "uniform";
+      }
+      bindGroupLayoutEntryVecMap[resource.group].push_back(layout_entry);
+    };
+
+    const bindGroupLayoutEntryVec = bindGroupLayoutEntryVecMap.get(resource.group);
+    if (bindGroupLayoutEntryVec !== null) {
+      let alreadyExist = false;
+      for (const bindGroupLayout of bindGroupLayoutEntryVec) {
+        if (bindGroupLayout.binding == resource.binding) {
+          bindGroupLayout.visibility |= resource.stages;
+          alreadyExist = true;
+          break;
+        }
+      }
+      if (!alreadyExist) {
+        insertFunctor();
+      }
+    } else {
+      bindGroupLayoutEntryVecMap[resource.group] = {};
+      bindGroupEntryVecMap[resource.group] = {};
+      insertFunctor();
+    }
+  }
+
+  bindTexture(
+    stage: number,
+    resource: any,
+    imageView: ImageView,
+    bindGroupLayoutEntryVecMap: Map<number, Array<BindGroupLayoutEntry>>,
+    bindGroupEntryVecMap: Map<number, Array<BindGroupEntry>>
+  ): void {
+    const insertFunctor = () => {
+      const entry = this._bindGroupEntryPool.getFromPool();
+      entry.reset();
+      entry.binding = resource.binding;
+      entry.resource = imageView.handle;
+      bindGroupEntryVecMap[resource.group].push_back(entry);
+
+      const layout_entry = this._bindGroupLayoutEntryPool.getFromPool();
+      layout_entry.binding = resource.binding;
+      layout_entry.visibility = stage;
+      if (resource.type == "") {
+        layout_entry.storageTexture.format = imageView.format;
+        layout_entry.storageTexture.access = "write-only";
+        layout_entry.storageTexture.viewDimension = imageView.dimension;
+      } else {
+        switch (imageView.format) {
+          case "depth16unorm":
+          case "depth32float":
+          case "depth24plus":
+          case "depth24plus-stencil8":
+          case "depth32float-stencil8":
+            layout_entry.texture.sampleType = "depth";
+            break;
+          default:
+            layout_entry.texture.sampleType = "float";
+        }
+        layout_entry.texture.multisampled = imageView.sampleCount > 1;
+        layout_entry.texture.viewDimension = imageView.dimension;
+      }
+      bindGroupLayoutEntryVecMap[resource.group].push_back(layout_entry);
+    };
+
+    const bindGroupLayoutEntryVec = bindGroupLayoutEntryVecMap.get(resource.group);
+    if (bindGroupLayoutEntryVec !== null) {
+      let alreadyExist = false;
+      for (const bindGroupLayout of bindGroupLayoutEntryVec) {
+        if (bindGroupLayout.binding == resource.binding) {
+          bindGroupLayout.visibility |= resource.stages;
+          alreadyExist = true;
+          break;
+        }
+      }
+      if (!alreadyExist) {
+        insertFunctor();
+      }
+    } else {
+      bindGroupLayoutEntryVecMap[resource.group] = {};
+      bindGroupEntryVecMap[resource.group] = {};
+      insertFunctor();
+    }
+  }
+
+  bindSampler(
+    stage: number,
+    resource: any,
+    sampler: SamplerDescriptor,
+    bindGroupLayoutEntryVecMap: Map<number, Array<BindGroupLayoutEntry>>,
+    bindGroupEntryVecMap: Map<number, Array<BindGroupEntry>>
+  ): void {
+    const insertFunctor = () => {
+      const entry = this._bindGroupEntryPool.getFromPool();
+      entry.reset();
+      entry.binding = resource.binding;
+      entry.resource = this._engine._resourceCache.requestSampler(sampler);
+      bindGroupEntryVecMap[resource.group].push_back(entry);
+
+      const layout_entry = this._bindGroupLayoutEntryPool.getFromPool();
+      layout_entry.binding = resource.binding;
+      layout_entry.visibility = stage;
+      layout_entry.sampler.type = sampler.compare != null ? "comparison" : "filtering";
+      bindGroupLayoutEntryVecMap[resource.group].push_back(layout_entry);
+    };
+
+    const bindGroupLayoutEntryVec = bindGroupLayoutEntryVecMap.get(resource.group);
+    if (bindGroupLayoutEntryVec !== null) {
+      let alreadyExist = false;
+      for (const bindGroupLayout of bindGroupLayoutEntryVec) {
+        if (bindGroupLayout.binding == resource.binding) {
+          bindGroupLayout.visibility |= resource.stages;
+          alreadyExist = true;
+          break;
+        }
+      }
+      if (!alreadyExist) {
+        insertFunctor();
+      }
+    } else {
+      bindGroupLayoutEntryVecMap[resource.group] = {};
+      bindGroupEntryVecMap[resource.group] = {};
+      insertFunctor();
+    }
+  }
+
   clone(): ShaderData {
     const shaderData = new ShaderData(this._group, this._engine);
     this.cloneTo(shaderData);
