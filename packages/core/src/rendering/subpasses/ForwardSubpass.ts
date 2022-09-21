@@ -12,34 +12,36 @@ import {
   RenderPipelineDescriptor,
   VertexState,
   ColorTargetState,
-  BindGroupLayout
+  BindGroupLayout,
+  BindGroupLayoutEntry,
+  BindGroupLayoutDescriptor,
+  ShaderStage
 } from "../../webgpu";
 import { Engine } from "../../Engine";
 import { RenderElement } from "../RenderElement";
-import { Shader, ShaderDataGroup } from "../../shader";
 import { ShaderMacroCollection } from "../../shader";
-import { Material } from "../../material";
-import { Renderer } from "../../Renderer";
-import { ShadowManager } from "../../shadow";
 
-export class ForwardSubpass extends Subpass {
+export abstract class ForwardSubpass extends Subpass {
   static readonly _compileMacros: ShaderMacroCollection = new ShaderMacroCollection();
 
-  private _scene: Scene;
-  private _camera: Camera;
-  private _opaqueQueue: RenderElement[] = [];
-  private _alphaTestQueue: RenderElement[] = [];
-  private _transparentQueue: RenderElement[] = [];
+  protected _scene: Scene;
+  protected _camera: Camera;
 
   private _forwardPipelineDescriptor: RenderPipelineDescriptor = new RenderPipelineDescriptor();
   private _depthStencilState = new DepthStencilState();
   private _fragment = new FragmentState();
+  private _colorTargetState = new ColorTargetState();
   private _primitive = new PrimitiveState();
   private _multisample = new MultisampleState();
   private _vertex = new VertexState();
 
+  private _bindGroupLayoutEntryVecMap: Map<number, Array<BindGroupLayoutEntry>> = new Map<
+    number,
+    Array<BindGroupLayoutEntry>
+  >();
+  private _bindGroupLayoutDescriptor = new BindGroupLayoutDescriptor();
+  private _bindGroupEntryVecMap: Map<number, Array<BindGroupEntry>> = new Map<number, Array<BindGroupEntry>>();
   private _bindGroupDescriptor = new BindGroupDescriptor();
-  private _bindGroupEntries: BindGroupEntry[] = [];
 
   private _pipelineLayoutDescriptor = new PipelineLayoutDescriptor();
   private _pipelineLayout: GPUPipelineLayout;
@@ -49,22 +51,30 @@ export class ForwardSubpass extends Subpass {
   }
 
   prepare(): void {
-    this._forwardPipelineDescriptor.depthStencil = this._depthStencilState;
-    this._forwardPipelineDescriptor.fragment = this._fragment;
-    this._forwardPipelineDescriptor.primitive = this._primitive;
-    this._forwardPipelineDescriptor.multisample = this._multisample;
-    this._forwardPipelineDescriptor.vertex = this._vertex;
-    this._forwardPipelineDescriptor.label = "Forward Pipeline";
+    const {
+      _forwardPipelineDescriptor: forwardPipelineDescriptor,
+      _depthStencilState: depthStencilState,
+      _fragment: fragment,
+      _primitive: primitive,
+      _multisample: multisample,
+      _vertex: vertex,
+      _colorTargetState: colorTargetState
+    } = this;
+    forwardPipelineDescriptor.depthStencil = depthStencilState;
+    forwardPipelineDescriptor.fragment = fragment;
+    forwardPipelineDescriptor.primitive = primitive;
+    forwardPipelineDescriptor.multisample = multisample;
+    forwardPipelineDescriptor.vertex = vertex;
+    forwardPipelineDescriptor.label = "Forward Pipeline";
     {
-      this._depthStencilState.format = this._engine.renderContext.depthStencilTextureFormat();
-
-      this._fragment.targets.length = 1;
-      const colorTargetState = new ColorTargetState();
+      depthStencilState.format = this._engine.renderContext.depthStencilTextureFormat();
       colorTargetState.format = this._engine.renderContext.drawableTextureFormat();
-      this._fragment.targets[0] = colorTargetState;
 
-      this._vertex.entryPoint = "main";
-      this._fragment.entryPoint = "main";
+      fragment.targets.length = 1;
+      fragment.targets[0] = colorTargetState;
+
+      vertex.entryPoint = "main";
+      fragment.entryPoint = "main";
     }
   }
 
@@ -73,203 +83,134 @@ export class ForwardSubpass extends Subpass {
     this._camera = camera;
 
     renderPassEncoder.pushDebugGroup("Draw Element");
-    renderPassEncoder.setViewport(
-      0,
-      0,
-      Math.floor(this._engine.canvas.width),
-      Math.floor(this._engine.canvas.height),
-      0,
-      1
-    );
     this._drawMeshes(renderPassEncoder);
     renderPassEncoder.popDebugGroup();
   }
 
-  private _drawMeshes(renderPassEncoder: GPURenderPassEncoder): void {
-    this._opaqueQueue = [];
-    this._alphaTestQueue = [];
-    this._transparentQueue = [];
-    this._engine._componentsManager.callRender(
-      this._camera,
-      this._opaqueQueue,
-      this._alphaTestQueue,
-      this._transparentQueue
-    );
-    this._opaqueQueue.sort(Subpass._compareFromNearToFar);
-    this._alphaTestQueue.sort(Subpass._compareFromNearToFar);
-    this._transparentQueue.sort(Subpass._compareFromFarToNear);
+  abstract _drawMeshes(renderPassEncoder: GPURenderPassEncoder);
 
-    this._drawElement(renderPassEncoder, this._opaqueQueue);
-    this._drawElement(renderPassEncoder, this._alphaTestQueue);
-    this._drawElement(renderPassEncoder, this._transparentQueue);
-  }
-
-  private _drawElement(renderPassEncoder: GPURenderPassEncoder, items: RenderElement[]) {
+  protected _drawElement(renderPassEncoder: GPURenderPassEncoder, item: RenderElement) {
     const compileMacros = ForwardSubpass._compileMacros;
 
-    for (let i = 0, n = items.length; i < n; i++) {
-      const { mesh, subMesh, material, renderer } = items[i];
-      const shadowCount = ShadowManager.shadowCount();
-      if (renderer.receiveShadows && shadowCount != 0) {
-        renderer.shaderData.enableMacro("SHADOW_MAP_COUNT", shadowCount.toString());
-      }
-      const cubeShadowCount = ShadowManager.cubeShadowCount();
-      if (renderer.receiveShadows && cubeShadowCount != 0) {
-        renderer.shaderData.enableMacro("CUBE_SHADOW_MAP_COUNT", cubeShadowCount.toString());
-      }
+    const { mesh, subMesh, material, renderer, renderState, shaderPass, multiRenderData } = item;
+    const {
+      _bindGroupLayoutEntryVecMap: bindGroupLayoutEntryVecMap,
+      _bindGroupEntryVecMap: bindGroupEntryVecMap,
+      _bindGroupDescriptor: bindGroupDescriptor,
+      _bindGroupLayoutDescriptor: bindGroupLayoutDescriptor,
+      _camera: camera,
+      _vertex: vertex
+    } = this;
+    const device = this._engine.device;
 
-      const camera = this._camera;
-      renderer._updateShaderData(camera.viewMatrix, camera.projectionMatrix);
-      // union render global macro and material self macro.
-      ShaderMacroCollection.unionCollection(
-        camera._globalShaderMacro,
-        renderer.shaderData._macroCollection,
-        compileMacros
+    renderer._updateShaderData(camera.viewMatrix, camera.projectionMatrix);
+    // union render global macro and material self macro.
+    ShaderMacroCollection.unionCollection(
+      camera._globalShaderMacro,
+      renderer.shaderData._macroCollection,
+      compileMacros
+    );
+    ShaderMacroCollection.unionCollection(compileMacros, material.shaderData._macroCollection, compileMacros);
+
+    // PSO
+    {
+      bindGroupLayoutEntryVecMap.clear();
+      bindGroupEntryVecMap.clear();
+
+      const shaderProgram = shaderPass._getShaderProgram(this._engine, compileMacros);
+      vertex.module = shaderProgram.vertxShader;
+
+      this._scene.shaderData.bindData(
+        ShaderStage.VERTEX,
+        shaderProgram.computeIntrospection,
+        bindGroupLayoutEntryVecMap,
+        bindGroupEntryVecMap
+      );
+      this._camera.shaderData.bindData(
+        ShaderStage.VERTEX,
+        shaderProgram.computeIntrospection,
+        bindGroupLayoutEntryVecMap,
+        bindGroupEntryVecMap
+      );
+      renderer.shaderData.bindData(
+        ShaderStage.VERTEX,
+        shaderProgram.computeIntrospection,
+        bindGroupLayoutEntryVecMap,
+        bindGroupEntryVecMap
+      );
+      material.shaderData.bindData(
+        ShaderStage.VERTEX,
+        shaderProgram.computeIntrospection,
+        bindGroupLayoutEntryVecMap,
+        bindGroupEntryVecMap
       );
 
-      ShaderMacroCollection.unionCollection(compileMacros, material.shaderData._macroCollection, compileMacros);
-
-      const device = this._engine.device;
-      // PSO
-      {
-        const shader = material.shader;
-        const program = shader.getShaderProgram(this._engine, compileMacros);
-        this._vertex.module = program.vertexShader;
-        this._fragment.module = program.fragmentShader;
-
-        const bindGroupDescriptor = this._bindGroupDescriptor;
-        const bindGroupEntries = this._bindGroupEntries;
-
-        const bindGroupLayoutDescriptors = program.bindGroupLayoutDescriptorMap;
-        let bindGroupLayouts: BindGroupLayout[] = [];
-        bindGroupLayoutDescriptors.forEach((descriptor, group) => {
-          const bindGroupLayout = device.createBindGroupLayout(descriptor);
-          this._bindGroupEntries = [];
-          bindGroupEntries.length = descriptor.entries.length;
-          for (let i = 0, n = descriptor.entries.length; i < n; i++) {
-            const entry = descriptor.entries[i];
-            bindGroupEntries[i] = new BindGroupEntry(); // cache
-            bindGroupEntries[i].binding = entry.binding;
-            if (entry.buffer !== undefined) {
-              this._bindingData(bindGroupEntries[i], material, renderer);
-            } else if (entry.texture !== undefined || entry.storageTexture !== undefined) {
-              this._bindingTexture(bindGroupEntries[i], material, renderer);
-            } else if (entry.sampler !== undefined) {
-              this._bindingSampler(bindGroupEntries[i], material, renderer);
-            }
-          }
-          bindGroupDescriptor.layout = bindGroupLayout;
-          bindGroupDescriptor.entries = bindGroupEntries;
-          const uniformBindGroup = device.createBindGroup(bindGroupDescriptor);
-          renderPassEncoder.setBindGroup(group, uniformBindGroup);
-          bindGroupLayouts.push(bindGroupLayout);
-        });
-        shader.flush();
-
-        this._pipelineLayoutDescriptor.bindGroupLayouts = bindGroupLayouts;
-        this._pipelineLayout = device.createPipelineLayout(this._pipelineLayoutDescriptor);
-        this._forwardPipelineDescriptor.layout = this._pipelineLayout;
-
-        material.renderState._apply(this._forwardPipelineDescriptor, renderPassEncoder, false);
-
-        this._vertex.buffers.length = mesh._vertexBufferLayouts.length;
-        for (let j = 0, m = mesh._vertexBufferLayouts.length; j < m; j++) {
-          this._vertex.buffers[j] = mesh._vertexBufferLayouts[j];
-        }
-        this._forwardPipelineDescriptor.primitive.topology = subMesh.topology;
-
-        const renderPipeline = device.createRenderPipeline(this._forwardPipelineDescriptor);
-        renderPassEncoder.setPipeline(renderPipeline);
+      if (shaderProgram.fragmentShader) {
+        this._fragment.module = shaderProgram.fragmentShader;
+        this._scene.shaderData.bindData(
+          ShaderStage.FRAGMENT,
+          shaderProgram.computeIntrospection,
+          bindGroupLayoutEntryVecMap,
+          bindGroupEntryVecMap
+        );
+        this._camera.shaderData.bindData(
+          ShaderStage.FRAGMENT,
+          shaderProgram.computeIntrospection,
+          bindGroupLayoutEntryVecMap,
+          bindGroupEntryVecMap
+        );
+        renderer.shaderData.bindData(
+          ShaderStage.FRAGMENT,
+          shaderProgram.computeIntrospection,
+          bindGroupLayoutEntryVecMap,
+          bindGroupEntryVecMap
+        );
+        material.shaderData.bindData(
+          ShaderStage.FRAGMENT,
+          shaderProgram.computeIntrospection,
+          bindGroupLayoutEntryVecMap,
+          bindGroupEntryVecMap
+        );
       }
 
-      for (let j = 0, m = mesh._vertexBufferBindings.length; j < m; j++) {
-        renderPassEncoder.setVertexBuffer(j, mesh._vertexBufferBindings[j].buffer);
+      let bindGroupLayouts: BindGroupLayout[] = [];
+      bindGroupLayoutEntryVecMap.forEach((entries, group) => {
+        bindGroupLayoutDescriptor.entries = entries;
+        const bindGroupLayout = this.engine.device.createBindGroupLayout(bindGroupLayoutDescriptor);
+
+        const bindGroupEntryVec = bindGroupEntryVecMap.get(group);
+        bindGroupDescriptor.layout = bindGroupLayout;
+        bindGroupDescriptor.entries = bindGroupEntryVec;
+        const uniformBindGroup = this.engine.device.createBindGroup(bindGroupDescriptor);
+        renderPassEncoder.setBindGroup(group, uniformBindGroup);
+        bindGroupLayouts.push(bindGroupLayout);
+      });
+
+      this._pipelineLayoutDescriptor.bindGroupLayouts = bindGroupLayouts;
+      this._pipelineLayout = device.createPipelineLayout(this._pipelineLayoutDescriptor);
+      this._forwardPipelineDescriptor.layout = this._pipelineLayout;
+
+      renderState._apply(this._forwardPipelineDescriptor, renderPassEncoder, false);
+
+      vertex.buffers.length = mesh._vertexBufferLayouts.length;
+      for (let j = 0, m = mesh._vertexBufferLayouts.length; j < m; j++) {
+        vertex.buffers[j] = mesh._vertexBufferLayouts[j];
       }
-      const indexBufferBinding = mesh._indexBufferBinding;
-      if (indexBufferBinding) {
-        renderPassEncoder.setIndexBuffer(indexBufferBinding.buffer.buffer, indexBufferBinding.format);
-        renderPassEncoder.drawIndexed(subMesh.count, mesh._instanceCount, subMesh.start, 0, 0);
-      } else {
-        renderPassEncoder.draw(subMesh.count, mesh._instanceCount);
-      }
+      this._forwardPipelineDescriptor.primitive.topology = subMesh.topology;
+
+      const renderPipeline = device.createRenderPipeline(this._forwardPipelineDescriptor);
+      renderPassEncoder.setPipeline(renderPipeline);
     }
-  }
 
-  _bindingData(entry: BindGroupEntry, mat: Material, renderer: Renderer) {
-    const group = Shader.getShaderPropertyGroup(entry.binding);
-    if (group != null) {
-      switch (group) {
-        case ShaderDataGroup.Scene:
-          entry.resource = this._scene.shaderData._getDataBuffer(entry.binding);
-          break;
-
-        case ShaderDataGroup.Camera:
-          entry.resource = this._camera.shaderData._getDataBuffer(entry.binding);
-          break;
-
-        case ShaderDataGroup.Renderer:
-          entry.resource = renderer.shaderData._getDataBuffer(entry.binding);
-          break;
-
-        case ShaderDataGroup.Material:
-          entry.resource = mat.shaderData._getDataBuffer(entry.binding);
-          break;
-
-        default:
-          break;
-      }
+    for (let j = 0, m = mesh._vertexBufferBindings.length; j < m; j++) {
+      renderPassEncoder.setVertexBuffer(j, mesh._vertexBufferBindings[j].buffer);
     }
-  }
-
-  _bindingTexture(entry: BindGroupEntry, mat: Material, renderer: Renderer) {
-    const group = Shader.getShaderPropertyGroup(entry.binding);
-    if (group != null) {
-      switch (group) {
-        case ShaderDataGroup.Scene:
-          entry.resource = this._scene.shaderData.getTextureView(entry.binding);
-          break;
-
-        case ShaderDataGroup.Camera:
-          entry.resource = this._camera.shaderData.getTextureView(entry.binding);
-          break;
-
-        case ShaderDataGroup.Renderer:
-          entry.resource = renderer.shaderData.getTextureView(entry.binding);
-          break;
-
-        case ShaderDataGroup.Material:
-          entry.resource = mat.shaderData.getTextureView(entry.binding);
-          break;
-
-        default:
-          break;
-      }
-    }
-  }
-
-  _bindingSampler(entry: BindGroupEntry, mat: Material, renderer: Renderer) {
-    const group = Shader.getShaderPropertyGroup(entry.binding);
-    if (group != null) {
-      switch (group) {
-        case ShaderDataGroup.Scene:
-          entry.resource = this._scene.shaderData.getSampler(entry.binding);
-          break;
-
-        case ShaderDataGroup.Camera:
-          entry.resource = this._camera.shaderData.getSampler(entry.binding);
-          break;
-
-        case ShaderDataGroup.Renderer:
-          entry.resource = renderer.shaderData.getSampler(entry.binding);
-          break;
-
-        case ShaderDataGroup.Material:
-          entry.resource = mat.shaderData.getSampler(entry.binding);
-          break;
-
-        default:
-          break;
-      }
+    const indexBufferBinding = mesh._indexBufferBinding;
+    if (indexBufferBinding) {
+      renderPassEncoder.setIndexBuffer(indexBufferBinding.buffer.buffer, indexBufferBinding.format);
+      renderPassEncoder.drawIndexed(subMesh.count, mesh._instanceCount, subMesh.start, 0, 0);
+    } else {
+      renderPassEncoder.draw(subMesh.count, mesh._instanceCount);
     }
   }
 }

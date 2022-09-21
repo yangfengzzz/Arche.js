@@ -11,8 +11,6 @@ import { RenderElement } from "./rendering/RenderElement";
  * The manager of the components.
  */
 export class ComponentsManager {
-  private static _tempVector0 = new Vector3();
-  private static _tempVector1 = new Vector3();
   /** @internal */
   _renderers: DisorderedArray<Renderer> = new DisorderedArray();
 
@@ -202,69 +200,6 @@ export class ComponentsManager {
         destroyScripts[i].onDestroy();
       }
       destroyScripts.length = 0;
-    }
-  }
-
-  callRender(
-    camera: Camera,
-    opaqueQueue: RenderElement[],
-    alphaTestQueue: RenderElement[],
-    transparentQueue: RenderElement[]
-  ): void {
-    const elements = this._renderers._elements;
-    for (let i = this._renderers.length - 1; i >= 0; --i) {
-      const element = elements[i];
-
-      // filter by camera culling mask.
-      if (!(camera.cullingMask & element._entity.layer)) {
-        continue;
-      }
-
-      // filter by camera frustum.
-      if (camera.enableFrustumCulling) {
-        element.isCulled = !camera._frustum.intersectsBox(element.bounds);
-        if (element.isCulled) {
-          continue;
-        }
-      }
-
-      const transform = camera.entity.transform;
-      const position = transform.worldPosition;
-      const center = element.bounds.getCenter(ComponentsManager._tempVector0);
-      if (camera.isOrthographic) {
-        const forward = transform.getWorldForward(ComponentsManager._tempVector1);
-        Vector3.subtract(center, position, center);
-        element._distanceForSort = Vector3.dot(center, forward);
-      } else {
-        element._distanceForSort = Vector3.distanceSquared(center, position);
-      }
-
-      element._updateShaderData(camera.viewMatrix, camera.projectionMatrix);
-
-      element._render(opaqueQueue, alphaTestQueue, transparentQueue);
-
-      // union camera global macro and renderer macro.
-      ShaderMacroCollection.unionCollection(
-        camera._globalShaderMacro,
-        element.shaderData._macroCollection,
-        element._globalShaderMacro
-      );
-    }
-  }
-
-  callFrustumRender(
-    frustum: BoundingFrustum,
-    opaqueQueue: RenderElement[],
-    alphaTestQueue: RenderElement[],
-    transparentQueue: RenderElement[]
-  ): void {
-    const elements = this._renderers._elements;
-    for (let i = this._renderers.length - 1; i >= 0; --i) {
-      const renderer = elements[i];
-      // filter by renderer castShadow and frustum cull
-      if (frustum.intersectsBox(renderer.bounds)) {
-        renderer._render(opaqueQueue, alphaTestQueue, transparentQueue);
-      }
     }
   }
 
