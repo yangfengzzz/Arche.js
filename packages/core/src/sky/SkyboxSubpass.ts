@@ -1,11 +1,10 @@
-import { Subpass } from "../Subpass";
-import { Engine } from "../../Engine";
-import { Scene } from "../../Scene";
-import { Camera } from "../../Camera";
-import { SampledTextureCube } from "../../texture";
-import { ModelMesh } from "../../mesh";
-import { Buffer } from "../../graphic";
-import { WGSL, WGSLSkyboxFragment, WGSLSkyboxVertex } from "../../shaderlib";
+import { Subpass } from "../rendering";
+import { Engine } from "../Engine";
+import { Scene } from "../Scene";
+import { Camera } from "../Camera";
+import { Image } from "../image/Image";
+import { ModelMesh } from "../mesh";
+import { Buffer } from "../graphic";
 import {
   BindGroupDescriptor,
   BindGroupEntry,
@@ -22,23 +21,22 @@ import {
   VertexState,
   BufferBindingLayout,
   TextureBindingLayout,
-  SamplerBindingLayout
-} from "../../webgpu";
-import { PrimitiveMesh } from "../../mesh";
+  SamplerBindingLayout,
+  SamplerDescriptor
+} from "../webgpu";
+import { PrimitiveMesh } from "../mesh";
 import { Matrix } from "@arche-engine/math";
-import { ShaderMacroCollection } from "../../shader";
-import { ShaderProgram } from "../../shader/ShaderProgram";
+import { Shader, ShaderMacroCollection } from "../shader";
 
 export class SkyboxSubpass extends Subpass {
   private static _vpMatrix: Matrix = new Matrix();
   private _type: SkyBoxType;
   private _mesh: ModelMesh;
-  private _cubeMap: SampledTextureCube;
+  private _cubeMap: Image;
   private _vpBuffer: Buffer;
 
-  private _vertexSource: WGSL;
-  private _fragmentSource: WGSL;
-
+  private _shader: Shader;
+  private __samplerDesc = new SamplerDescriptor();
   private _forwardPipelineDescriptor: RenderPipelineDescriptor = new RenderPipelineDescriptor();
   private _depthStencilState = new DepthStencilState();
   private _fragment = new FragmentState();
@@ -61,11 +59,11 @@ export class SkyboxSubpass extends Subpass {
   /**
    * Texture cube map of the sky box material.
    */
-  get textureCubeMap(): SampledTextureCube {
+  get textureCubeMap(): Image {
     return this._cubeMap;
   }
 
-  set textureCubeMap(v: SampledTextureCube) {
+  set textureCubeMap(v: Image) {
     this._cubeMap = v;
   }
 
@@ -73,8 +71,7 @@ export class SkyboxSubpass extends Subpass {
     super(engine);
     this._vpBuffer = new Buffer(engine, 64, GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST);
     this.createCuboid();
-    this._vertexSource = new WGSLSkyboxVertex();
-    this._fragmentSource = new WGSLSkyboxFragment();
+    this._shader = Shader.find("skybox");
   }
 
   createSphere(radius: number) {
@@ -99,17 +96,11 @@ export class SkyboxSubpass extends Subpass {
     // Shader
     {
       const macros = new ShaderMacroCollection();
-      const program = new ShaderProgram(
-        this.engine.device,
-        this._vertexSource.compile(macros)[0],
-        GPUShaderStage.VERTEX,
-        null,
-        this._fragmentSource.compile(macros)[0]
-      );
+      const shaderProgram = this._shader.passes[0]._getShaderProgram(this.engine, macros);
       this._vertex.entryPoint = "main";
-      this._vertex.module = program.vertexShader;
+      this._vertex.module = shaderProgram.vertxShader;
       this._fragment.entryPoint = "main";
-      this._fragment.module = program.fragmentShader;
+      this._fragment.module = shaderProgram.fragmentShader;
     }
     // DepthStencilState
     {
@@ -197,8 +188,8 @@ export class SkyboxSubpass extends Subpass {
     Matrix.multiply(projectionMatrix, vpMatrix, vpMatrix);
     device.queue.writeBuffer(this._vpBuffer.buffer, 0, vpMatrix.elements, 0, 16);
 
-    this._bindGroupEntries[1].resource = this._cubeMap.textureView;
-    this._bindGroupEntries[2].resource = this._cubeMap.sampler;
+    this._bindGroupEntries[1].resource = this._cubeMap.getImageView("cube").handle;
+    this._bindGroupEntries[2].resource = this.engine._resourceCache.requestSampler(this.__samplerDesc);
     renderPassEncoder.setBindGroup(0, device.createBindGroup(this._bindGroupDescriptor));
     renderPassEncoder.setPipeline(this._renderPipeline);
 
