@@ -3,9 +3,12 @@ import {
   BindGroupDescriptor,
   BindGroupEntry,
   BindGroupLayout,
+  BindGroupLayoutDescriptor,
+  BindGroupLayoutEntry,
   ComputePipelineDescriptor,
   PipelineLayoutDescriptor,
-  ProgrammableStage
+  ProgrammableStage,
+  ShaderStage
 } from "../webgpu";
 import { Engine } from "../Engine";
 import { EngineObject } from "../base";
@@ -20,14 +23,16 @@ export class ComputePass extends EngineObject {
   private _workgroupCountZ: number = 1;
   private _data: DisorderedArray<ShaderData> = new DisorderedArray();
 
-  private _source: Shader;
+  private _shader: Shader;
   private _computePipelineDescriptor = new ComputePipelineDescriptor();
-
-  private _bindGroupDescriptor = new BindGroupDescriptor();
-  private _bindGroupEntries: BindGroupEntry[] = [];
 
   private _pipelineLayoutDescriptor = new PipelineLayoutDescriptor();
   private _pipelineLayout: GPUPipelineLayout;
+
+  private _bindGroupLayoutEntryVecMap: Map<number, Array<BindGroupLayoutEntry>> = new Map();
+  private _bindGroupLayoutDescriptor = new BindGroupLayoutDescriptor();
+  private _bindGroupEntryVecMap: Map<number, Array<BindGroupEntry>> = new Map();
+  private _bindGroupDescriptor = new BindGroupDescriptor();
 
   get workgroupCountX(): number {
     return this._workgroupCountX;
@@ -41,9 +46,9 @@ export class ComputePass extends EngineObject {
     return this._workgroupCountZ;
   }
 
-  constructor(engine: Engine, source: Shader) {
+  constructor(engine: Engine, shader: Shader) {
     super(engine);
-    this._source = source;
+    this._shader = shader;
     this._computePipelineDescriptor.compute = new ProgrammableStage();
     this._computePipelineDescriptor.compute.entryPoint = "main";
   }
@@ -80,84 +85,52 @@ export class ComputePass extends EngineObject {
       ShaderMacroCollection.unionCollection(compileMacros, element._macroCollection, compileMacros);
     }
 
+    const bindGroupLayoutEntryVecMap = this._bindGroupLayoutEntryVecMap;
+    const bindGroupEntryVecMap = this._bindGroupEntryVecMap;
     const device = this._engine.device;
-    // PSO
-    {
-      const shader = this._source;
-      const program = shader.getShaderProgram(this._engine, compileMacros);
-      this._computePipelineDescriptor.compute.module = program.computeShader;
+    const passes = this._shader.passes;
+    for (let i = 0; i < passes.length; i++) {
+      const pass = passes[i];
+      const shaderProgram = pass._getShaderProgram(this._engine, compileMacros);
+
+      this._computePipelineDescriptor.compute.module = shaderProgram.computeShader;
+      bindGroupLayoutEntryVecMap.clear();
+      bindGroupEntryVecMap.clear();
+      const elements = data._elements;
+      for (let i = data.length - 1; i >= 0; --i) {
+        const shaderData = elements[i];
+        shaderData.bindData(
+          ShaderStage.COMPUTE,
+          shaderProgram.computeIntrospection,
+          bindGroupLayoutEntryVecMap,
+          bindGroupEntryVecMap
+        );
+      }
 
       const bindGroupDescriptor = this._bindGroupDescriptor;
-      const bindGroupEntries = this._bindGroupEntries;
-
-      const bindGroupLayoutDescriptors = program.bindGroupLayoutDescriptorMap;
+      const bindGroupLayoutDescriptor = this._bindGroupLayoutDescriptor;
       let bindGroupLayouts: BindGroupLayout[] = [];
-      bindGroupLayoutDescriptors.forEach((descriptor, group) => {
-        const bindGroupLayout = device.createBindGroupLayout(descriptor);
-        this._bindGroupEntries = [];
-        bindGroupEntries.length = descriptor.entries.length;
-        for (let i = 0, n = descriptor.entries.length; i < n; i++) {
-          const entry = descriptor.entries[i];
-          bindGroupEntries[i] = new BindGroupEntry(); // cache
-          bindGroupEntries[i].binding = entry.binding;
-          if (entry.buffer !== undefined) {
-            this._bindingData(bindGroupEntries[i]);
-          } else if (entry.texture !== undefined || entry.storageTexture !== undefined) {
-            this._bindingTexture(bindGroupEntries[i]);
-          } else if (entry.sampler !== undefined) {
-            this._bindingSampler(bindGroupEntries[i]);
-          }
-        }
+      bindGroupLayoutEntryVecMap.forEach((entries, group) => {
+        bindGroupLayoutDescriptor.entries = entries;
+        const bindGroupLayout = this.engine.device.createBindGroupLayout(bindGroupLayoutDescriptor);
+
+        const bindGroupEntryVec = bindGroupEntryVecMap.get(group);
         bindGroupDescriptor.layout = bindGroupLayout;
-        bindGroupDescriptor.entries = bindGroupEntries;
-        const uniformBindGroup = device.createBindGroup(bindGroupDescriptor);
+        bindGroupDescriptor.entries = bindGroupEntryVec;
+        const uniformBindGroup = this.engine.device.createBindGroup(bindGroupDescriptor);
         passEncoder.setBindGroup(group, uniformBindGroup);
         bindGroupLayouts.push(bindGroupLayout);
       });
-      shader.flush();
 
       this._pipelineLayoutDescriptor.bindGroupLayouts = bindGroupLayouts;
       this._pipelineLayout = device.createPipelineLayout(this._pipelineLayoutDescriptor);
       this._computePipelineDescriptor.layout = this._pipelineLayout;
       const computePipeline = device.createComputePipeline(this._computePipelineDescriptor);
       passEncoder.setPipeline(computePipeline);
-    }
+      passEncoder.dispatchWorkgroups(this._workgroupCountX, this._workgroupCountY, this._workgroupCountZ);
 
-    passEncoder.dispatchWorkgroups(this._workgroupCountX, this._workgroupCountY, this._workgroupCountZ);
-  }
-
-  _bindingData(entry: BindGroupEntry) {
-    const data = this._data;
-    const elements = data._elements;
-    for (let i = data.length - 1; i >= 0; --i) {
-      const shaderData = elements[i];
-      const buffer = shaderData._getDataBuffer(entry.binding);
-      if (buffer) {
-        entry.resource = buffer;
-      }
-    }
-  }
-
-  _bindingTexture(entry: BindGroupEntry) {
-    const data = this._data;
-    const elements = data._elements;
-    for (let i = data.length - 1; i >= 0; --i) {
-      const shaderData = elements[i];
-      const textureView = shaderData.getTextureView(entry.binding);
-      if (textureView) {
-        entry.resource = textureView;
-      }
-    }
-  }
-
-  _bindingSampler(entry: BindGroupEntry) {
-    const data = this._data;
-    const elements = data._elements;
-    for (let i = data.length - 1; i >= 0; --i) {
-      const shaderData = elements[i];
-      const sampler = shaderData.getSampler(entry.binding);
-      if (sampler) {
-        entry.resource = sampler;
+      for (let i = data.length - 1; i >= 0; --i) {
+        elements[i].resetPool();
       }
     }
   }

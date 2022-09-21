@@ -27,6 +27,8 @@ export class ShaderData implements IRefObject, IClone {
   _propertyFunctors: Record<number, () => Buffer> = Object.create(null);
   /** @internal */
   _macroCollection: ShaderMacroCollection = new ShaderMacroCollection();
+  /** @internal */
+  _index: number;
 
   private _bindGroupLayoutEntryPool: ClassPool<BindGroupLayoutEntry>;
   private _bindGroupEntryPool: ClassPool<BindGroupEntry>;
